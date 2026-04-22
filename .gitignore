@@ -1,0 +1,40 @@
+# Environment
+.env
+.env.local
+.venv/
+venv/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Consumer-owned runtime state (should never be in library git)
+data/
+.cache/
+jobs.sqlite
+jobs.sqlite-journal
+jobs.sqlite-wal
+jobs.sqlite-shm
+*.log
+
+# Playwright browser profiles (per-domain state)
+.playwright-profiles/
