@@ -200,6 +200,7 @@ Shared Tier 2 parsing helpers live in `scrapers_lib.tier2.base` (`parse_product_
 
 ## Documentation
 
+- [`docs/CONSUMER_GUIDE.md`](docs/CONSUMER_GUIDE.md) — **start here if you're building a consumer project.** Recipes for anchors, Scheduler wiring, SQLite sinks, error handling, refresh cadences, and per-source data-shape quick reference.
 - [`docs/PRD.md`](docs/PRD.md) — what this library is, what it's for, what it's not
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — design details: schemas, Scheduler, per-source coverage
 - [`docs/TASKS.md`](docs/TASKS.md) — roadmap grouped by implementation wave
