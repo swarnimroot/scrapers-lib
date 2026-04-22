@@ -6,6 +6,26 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 ---
 
+## Current state
+
+**Last updated:** 2026-04-21
+
+- **Last session:** Wave 1 partial — `core/schemas.py` and `core/attribution.py` implemented with 55 passing unit tests (commits `2dfbe2a` scaffold, `798ef6d` core schemas + attribution). Top-level re-exports in place at `scrapers_lib`.
+- **In progress:** Wave 1 continues.
+- **Next:** `core/logging_config.py`, then `core/cache.py`, `core/rate_limiter.py`, `core/http_client.py`, `core/robots.py`, `core/playwright_base.py`, `core/registry.py`, `core/scheduler.py`.
+- **Dev env:** `.venv/` in place with `pydantic>=2.0` and `pytest>=8.0`; extend with additional deps as later modules need them (`httpx`, `diskcache`, `playwright`, etc.).
+- **Open questions:** none blocking.
+
+### How to resume in a new session
+
+Say "Resume scrapers-lib" (or similar). Claude will read memory files (auto-loaded), this Current state block, and `git log --oneline -10`, then summarize and propose the next step before touching anything.
+
+### End-of-session ritual
+
+Say "wrap this session" (or similar). Claude will commit any in-flight work (or mark it WIP), update this Current state block, check off completed items below, and add a line to `CHANGELOG.md` `[Unreleased]` if anything user-visible changed.
+
+---
+
 ## Current demo drivers
 
 - **Demo 1 — Alienware Competitive Response Drafter.** Standalone, already built. **Not a constraint on the library.** Will port onto scrapers-lib later if and when the user chooses. Not scheduled.
@@ -29,10 +49,10 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 Build order within Wave 1 — later items depend on earlier ones:
 
 - [ ] `core/logging_config.py` — stdlib logging, per-module loggers
-- [ ] `core/schemas.py` — Anchor, ProductSnapshot, RawMention (Pydantic v2) + enums
-  - [ ] Unit tests: schema validation happy path + failure cases
-- [ ] `core/attribution.py` — regex gate, URL-map gate, deterministic mention-ID helpers
-  - [ ] Unit tests: primary-only, primary+corroboration, exclusion, ambiguous-match routing
+- [x] `core/schemas.py` — Anchor, ProductSnapshot, RawMention (Pydantic v2) + enums
+  - [x] Unit tests: schema validation happy path + failure cases
+- [x] `core/attribution.py` — regex gate, URL-map gate, deterministic mention-ID helpers
+  - [x] Unit tests: primary-only, primary+corroboration, exclusion, ambiguous-match routing
 - [ ] `core/cache.py` — diskcache wrapper with per-source TTL, URL-default keys
   - [ ] Unit tests: cache hit/miss, TTL expiry
 - [ ] `core/rate_limiter.py` — per-domain token buckets
