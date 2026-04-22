@@ -10,7 +10,7 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-21
 
-- **Last session:** Wave 1 partial — `core/schemas.py` and `core/attribution.py` implemented with 55 passing unit tests (commits `2dfbe2a` scaffold, `798ef6d` core schemas + attribution). Top-level re-exports in place at `scrapers_lib`.
+- **Last session:** Wave 0 scaffold complete and Wave 1 partial — `core/schemas.py` and `core/attribution.py` implemented with 55 passing unit tests. Top-level re-exports in place at `scrapers_lib`. Commits: `2dfbe2a` scaffold, `798ef6d` core schemas + attribution, `fb2e95e` tasks housekeeping.
 - **In progress:** Wave 1 continues.
 - **Next:** `core/logging_config.py`, then `core/cache.py`, `core/rate_limiter.py`, `core/http_client.py`, `core/robots.py`, `core/playwright_base.py`, `core/registry.py`, `core/scheduler.py`.
 - **Dev env:** `.venv/` in place with `pydantic>=2.0` and `pytest>=8.0`; extend with additional deps as later modules need them (`httpx`, `diskcache`, `playwright`, etc.).
@@ -36,13 +36,13 @@ Say "wrap this session" (or similar). Claude will commit any in-flight work (or 
 
 ## Wave 0 — Scaffold
 
-- [ ] Create folder structure (`scrapers_lib/core`, `tier1`, `tier2`, `tier3`, `tests/`, `docs/`)
-- [ ] `pyproject.toml` with pinned dependencies, hatch build backend
-- [ ] `.env.example` listing Reddit + BestBuy keys (more added as sources land)
-- [ ] `.gitignore` (`.env`, `.venv`, `__pycache__`, `.cache`, `data/`, `jobs.sqlite`)
-- [ ] `LICENSE` (MIT)
-- [ ] Empty module files in each package (`schemas.py`, `cache.py`, etc.) so imports resolve
-- [ ] Local `git init`; first commit = "scaffold"
+- [x] Create folder structure (`scrapers_lib/core`, `tier1`, `tier2`, `tier3`, `tests/`, `docs/`)
+- [x] `pyproject.toml` with pinned dependencies, hatch build backend
+- [x] `.env.example` listing Reddit + BestBuy keys (more added as sources land)
+- [x] `.gitignore` (`.env`, `.venv`, `__pycache__`, `.cache`, `data/`, `jobs.sqlite`, `.claude/`)
+- [x] `LICENSE` (MIT) + `CHANGELOG.md`
+- [x] Empty module files in each package (`schemas.py`, `cache.py`, etc.) so imports resolve
+- [x] Local `git init`; first commit = "scaffold" (`2dfbe2a`)
 
 ## Wave 1 — Core library
 
