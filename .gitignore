@@ -38,3 +38,4 @@ jobs.sqlite-shm
 
 # Playwright browser profiles (per-domain state)
 .playwright-profiles/
+.profiles/

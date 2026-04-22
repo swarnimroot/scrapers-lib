@@ -255,7 +255,8 @@ This table will be filled in and refined as each fetcher is built. v0.1 shows in
 | Article body (trafilatura) | 1 | RawMention | raw_text (full article) | partial failures on paywalled sites |
 | YouTube transcripts | 1 | RawMention | transcript chunks, video metadata | ~15% of videos lack captions; no fallback in library |
 | BestBuy Developer API | 1 | ProductSnapshot | price, stock, specs | no user reviews via API |
-| Dell, HP, Lenovo, ASUS, Acer, MSI | 2 | ProductSnapshot | specs (deep), price where shown, variants | site redesigns break parsers; per-site success rates reported |
+| Dell | 2 | ProductSnapshot | One snapshot per pre-built tile; specs from Dell's `csbapi/unifiedpd/techspecs` endpoint (~20 categories: processor, GPU, memory, storage, display, ports, slots, dimensions & weight, keyboard, camera, audio, chassis, wireless, services); `price` / `list_price`; brand, rating, `image_url` from JSON-LD | Akamai-protected — requires stealth browser session with session warming; pure configurator-only pages (no pre-built tiles) not yet supported; per-SKU modal-specs only (line-level datasheet not harvested) |
+| HP, Lenovo, ASUS, Acer, MSI | 2 | ProductSnapshot | TBD (Wave 2b) | pending reconnaissance — each manufacturer likely exposes specs via a different mechanism than Dell's unified-product-detail API |
 | BestBuy (reviews) | 3 | RawMention | review body, rating, reviewer, date | 60–80% success rate on patient pacing |
 | Amazon (product + reviews) | 3 | ProductSnapshot + RawMention | price, rating, review body | Akamai-protected; 60–80% success rate |
 
@@ -272,6 +273,8 @@ Callable[[str, list[Anchor] | None, **fetch_options], list[RawMention] | list[Pr
 A future plugin-registration API (`register_fetcher(name, fn)`) can be added without breaking existing code. Not built in v0.1; the signature discipline is the preparation.
 
 ### 12.2 Adding a new source
+
+> **Tier 2 sources (manufacturer spec pages) — read [`docs/ADDING_A_SOURCE.md`](ADDING_A_SOURCE.md) first.** That guide covers reconnaissance techniques, per-manufacturer acquisition patterns (Dell's internal API, Lenovo's likely PSREF, etc.), the decision tree for picking a pattern, and the Dell case study. The generic steps below still apply; Tier 2 has additional discipline on top.
 
 The tier folders (`tier1/`, `tier2/`, `tier3/`) are not closed sets. New sources are added by dropping a new file into the appropriate tier. The steps:
 

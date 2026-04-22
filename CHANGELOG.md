@@ -4,6 +4,50 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-04-21
+
+### Added
+- `scrapers_lib.tier2._base`: shared Tier 2 parsing helpers — `parse_product_jsonld`
+  (schema.org Product extraction across single / array / `@graph` shapes),
+  `parse_inline_json` (`<script id="__NEXT_DATA__">` tags and `window.X = {...};`
+  assignments with string-aware balanced-brace walker), `parse_spec_table`
+  (`<table>` and `<dl>` patterns with optional container scoping),
+  `normalize_spec_value` (whitespace + nbsp collapse), and `fetch_rendered_html`
+  (thin Playwright wrapper around `core.playwright_base.stealth_context`).
+- `scrapers_lib.tier2.dell`: `fetch_dell_product` — stealth browser session
+  fetches the product page, then calls Dell's own `csbapi/unifiedpd/techspecs`
+  endpoint for each pre-built configuration tile through the same session
+  (Akamai cookies ride along). Emits one `ProductSnapshot` per tile with
+  ~20 detailed spec categories (processor, display, memory, storage, ports,
+  dimensions, wireless, chassis, etc.). Falls back to the tile's six-bullet
+  summary when a techspecs response fails, so partial-success tiles still
+  ship a valid snapshot.
+- `beautifulsoup4>=4.12` dependency for HTML parsing in Tier 2.
+- 46 unit tests for `tier2._base`, 47 unit tests for `tier2.dell` (against
+  Alienware Aurora 16X + Dell XPS 16 fixtures), 1 gated live integration
+  test.
+- `docs/ADDING_A_SOURCE.md` — operational guide for adding new Tier 2 fetchers:
+  reconnaissance techniques (DevTools Network tab, DOM attribute search,
+  framework state blobs, scroll/click probes, bot-protection check), living
+  catalog of per-manufacturer acquisition patterns, decision tree, and the
+  Dell build captured as a worked case study.
+- `scripts/dell/` — re-runnable reconnaissance scripts that captured the
+  committed Dell fixtures; referenced from `docs/ADDING_A_SOURCE.md` as the
+  template for future-site recon.
+
+### Changed
+- `scrapers_lib.core.playwright_base`: `stealth_context` now integrates
+  `playwright-stealth` (navigator.webdriver override, chrome-object spoof,
+  permissions shim, webgl vendor override, etc.) with a current Chrome-145
+  user agent. Wave 1's shallow stealth tripped Akamai on dell.com; the
+  upgrade was verified against Alienware + XPS product pages. New kwargs
+  on `stealth_context`: `locale` (default `"en-US"`) and `use_stealth`
+  (default `True`; opt out for plain persistent-profile contexts).
+- `tests/core/test_registry.py` and `tests/core/test_scheduler.py`:
+  registry-reset fixtures now snapshot-and-restore instead of wiping, so
+  import-time registrations by production modules (e.g. `tier2.dell`) are
+  preserved across the test run.
+
 ## [0.1.0] — 2026-04-21
 
 ### Added
