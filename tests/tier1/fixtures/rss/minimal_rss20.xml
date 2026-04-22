@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Minimal Test Feed</title>
+    <link>https://minimal.test/</link>
+    <description>Edge-case fixture: missing author, missing published date, missing summary.</description>
+    <item>
+      <title>Entry with only a title</title>
+      <link>https://minimal.test/a</link>
+      <guid>minimal-001</guid>
+    </item>
+    <item>
+      <title>Entry without guid or link but with title</title>
+    </item>
+  </channel>
+</rss>

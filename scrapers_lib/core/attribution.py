@@ -104,6 +104,57 @@ def attribute_regex(text: str, anchors: list[Anchor]) -> Attribution | None:
     )
 
 
+def attribute_regex_all(text: str, anchors: list[Anchor]) -> list[Attribution]:
+    """Return one :class:`Attribution` per Anchor that matches ``text``.
+
+    Unlike :func:`attribute_regex`, this does NOT drop multi-match cases on
+    the floor — it returns every matching anchor. Use this for news and
+    community-text sources where a single article or post can legitimately
+    refer to several anchors (e.g. "Microsoft buys Activision" mentions
+    Microsoft, Activision, and any affected game series).
+
+    Matching rules per Anchor are identical to :func:`attribute_regex`:
+    exclusion drops the anchor; at least one primary token must match; if
+    corroboration is non-empty, at least one corroboration must also match.
+
+    Returns an empty list when ``text`` or ``anchors`` is empty, or when no
+    Anchor matches.
+    """
+    if not text or not anchors:
+        return []
+
+    out: list[Attribution] = []
+
+    for anchor in anchors:
+        rules = anchor.attribution_regex
+
+        if _check_tokens(text, rules.exclusion):
+            continue
+
+        primary_hits = _check_tokens(text, rules.primary)
+        if not primary_hits:
+            continue
+
+        if rules.corroboration:
+            corrob_hits = _check_tokens(text, rules.corroboration)
+            if not corrob_hits:
+                continue
+            matched = primary_hits + corrob_hits
+        else:
+            matched = primary_hits
+
+        out.append(
+            Attribution(
+                anchor_id=anchor.anchor_id,
+                confidence=1.0,
+                method="regex",
+                matched_tokens=matched,
+            )
+        )
+
+    return out
+
+
 def attribute_url(url: str, source: str, anchors: list[Anchor]) -> Attribution | None:
     """Return an :class:`Attribution` if exactly one Anchor has ``source_urls[source] == url``.
 
@@ -189,3 +240,13 @@ def bestbuy_review_id(sku: str, author: str, body: str) -> str:
     same review and unlikely to collide across reviews on the same SKU.
     """
     return f"bestbuy_{sku}_{_hash_short(author + '|' + body[:200])}"
+
+
+def article_mention_id(source_slug: str, url: str) -> str:
+    """Deterministic ID for a full-body article fetch.
+
+    The article's canonical URL is the stable identifier — two fetches
+    of the same URL produce the same ID; anchor-mode callers append
+    the anchor_id externally for per-anchor uniqueness.
+    """
+    return f"article_{_slugify(source_slug)}_{_hash_short(url)}"

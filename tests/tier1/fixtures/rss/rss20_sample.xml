@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Test Gaming News</title>
+    <link>https://example-news.test/</link>
+    <description>Synthetic RSS feed for rss_feed parser unit tests.</description>
+    <language>en-us</language>
+    <pubDate>Wed, 22 Apr 2026 10:00:00 GMT</pubDate>
+    <item>
+      <title>Alan Wake 2 expansion launch date revealed</title>
+      <link>https://example-news.test/articles/alan-wake-2-expansion</link>
+      <description>Remedy Entertainment's Sam Lake confirms the &lt;b&gt;Alan Wake 2&lt;/b&gt; Night Springs expansion drops in June.</description>
+      <pubDate>Wed, 22 Apr 2026 09:15:00 GMT</pubDate>
+      <guid isPermaLink="false">test-aw2-expansion-001</guid>
+      <dc:creator>Jane Reporter</dc:creator>
+    </item>
+    <item>
+      <title>Microsoft closes Activision Blizzard acquisition, changes studio leadership</title>
+      <link>https://example-news.test/articles/ms-activision-close</link>
+      <description>Microsoft completed its $68.7B acquisition of Activision Blizzard this week; Phil Spencer announced restructuring.</description>
+      <pubDate>Tue, 21 Apr 2026 14:00:00 GMT</pubDate>
+      <guid isPermaLink="false">test-ms-acti-002</guid>
+      <dc:creator>John Analyst</dc:creator>
+    </item>
+    <item>
+      <title>Best cooking gadgets of 2026</title>
+      <link>https://example-news.test/articles/best-cooking</link>
+      <description>A roundup of the top kitchen gadgets we tested this spring.</description>
+      <pubDate>Tue, 21 Apr 2026 12:00:00 GMT</pubDate>
+      <guid isPermaLink="false">test-cooking-003</guid>
+      <dc:creator>Maria Chef</dc:creator>
+    </item>
+    <item>
+      <title>AW2 Night Springs hands-on preview</title>
+      <link>https://example-news.test/articles/aw2-preview</link>
+      <description>We played two hours of AW2 Night Springs at Remedy's Helsinki office.</description>
+      <pubDate>Mon, 20 Apr 2026 18:30:00 GMT</pubDate>
+      <guid isPermaLink="false">test-aw2-preview-004</guid>
+    </item>
+  </channel>
+</rss>

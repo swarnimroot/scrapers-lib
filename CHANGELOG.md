@@ -4,6 +4,119 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-04-22
+
+### Added
+- `scrapers_lib.tier1.rss`: `fetch_rss_feed` (`@register("rss")` →
+  `list[RawMention]`). Feedparser-based RSS / Atom fetcher that
+  normalizes both dialects into one entry shape. Emits one
+  `RawMention` per entry (discovery mode, `anchors=None`) or one per
+  matching anchor (anchor-driven mode, `anchors=[...]`). Composes
+  `raw_text` from `title` + `summary` + `content[0].value` with HTML
+  tag-stripping; `published_at` from `published_parsed` /
+  `updated_parsed`; `author` from `author` / `author_detail.name`
+  fallback; `channel` from the feed's own title ("IGN Articles",
+  "Test Gaming News"). `source` = caller's `source_slug` or derived
+  from the feed URL's hostname (`feeds.ign.com` → "ign"). Deterministic
+  `mention_id` via `rss_article_id(slug, guid)` suffixed with the
+  anchor_id in anchor-mode. 41 unit tests (RSS 2.0 + Atom +
+  edge-case-minimal fixtures), 2 gated live integration tests against
+  IGN's live games feed.
+- `scrapers_lib.tier1.article`: `fetch_article` (`@register("article")`
+  → `list[RawMention]`). Trafilatura-based full-body extractor for
+  follow-up when RSS summaries are teasers. Fetches via httpx, passes
+  to `trafilatura.bare_extraction(with_metadata=True)`, emits one
+  `RawMention` per anchor match (or one discovery mention). Populates
+  `source_title`, `author`, `published_at`, `channel` (prefers
+  trafilatura's `sitename` over `hostname`), `raw_text` (full article
+  body, minimum 200 chars default) plus `raw.image` /
+  `raw.description`. **Partial-success first**: returns empty list
+  when trafilatura can't extract a usable body (paywall, 404 body
+  chrome, too-short extraction) — never raises on quality; HTTP
+  errors still raise for Scheduler retry. 38 unit tests (real IGN +
+  Polygon article fixtures + synthetic paywall fixture, both
+  different CMS shapes for §5.7 generality), 2 gated live
+  integration tests.
+- `scrapers_lib.tier1.reddit`: two registered fetchers. **Uses
+  unauthenticated JSON endpoints** — PRAW OAuth self-service
+  registration is closed per the Nov-2025 Reddit Responsible Builder
+  Policy (`project_reddit_api_blocked` memory, empirically confirmed
+  by a rejected formal application 2026-04-22). Public signatures
+  stay PRAW-compatible (`sort` / `time_filter` / `limit` / `after`
+  kwargs) so OAuth could swap in later without breaking callers.
+  - `fetch_reddit_listing` (`@register("reddit")`) — pulls
+    `reddit.com/r/<sub>/<sort>.json` (new / hot / top / rising, with
+    `time_filter` for top) and emits one `RawMention` per post
+    (`source_type="post"`). Accepts subreddit URLs, `r/Games`
+    shorthand, or bare names.
+  - `fetch_reddit_comments` (`@register("reddit_comments")`) — pulls
+    `reddit.com/comments/<id>.json` and emits post + comments in
+    pre-order depth-first traversal (post first, then comment tree
+    with `source_type="comment"`, `parent_id` = post fullname
+    `t3_<id>`). Skips `[deleted]` / `[removed]` content; counts
+    unfollowed `kind="more"` stubs into `raw.more_count` for
+    downstream awareness rather than recursing.
+  - Deterministic IDs via `reddit_post_id` / `reddit_comment_id`
+    helpers. 53 unit tests (real r/Games listing + comments
+    fixtures + synthetic nested-tree fixture covering deletion,
+    depth > 1, and more-stubs), 3 gated live integration tests.
+- `scrapers_lib.tier1.youtube`: `fetch_youtube_transcript`
+  (`@register("youtube")` → `list[RawMention]`). Pulls auto / manual
+  captions via `youtube-transcript-api` 1.2+ and groups the very
+  fine-grained per-word snippets (often 1–2 s each) into coherent
+  **time-windowed chunks** (default 60 s ≈ ~150 words of speech per
+  chunk — enough context for anchor matching and sentiment
+  analysis). Emits one `RawMention` per chunk with `source_type=
+  "transcript_chunk"`, `parent_id` = video ID,
+  `raw.chunk_start_seconds` / `raw.chunk_end_seconds`, and a
+  **deep-linked `source_url`** (`?t=<start>s`) that jumps the viewer
+  back to the chunk's start moment. URL normalizer accepts
+  `watch?v=` / `youtu.be/` / `embed/` / `shorts/` / `v/` forms plus
+  bare 11-char IDs. Translates library-side exceptions:
+  `NoTranscriptFound` / `TranscriptsDisabled` / `VideoUnavailable`
+  / `AgeRestricted` / `InvalidVideoId` all map to empty-list
+  (partial success); `RequestBlocked` / `IpBlocked` /
+  `PoTokenRequired` raise `BlockedError` so the Scheduler can back
+  off at the domain level. 46 unit tests (real Rick Astley transcript
+  fixture + synthetic chunking edge cases including boundary snippet
+  behavior, non-zero start offsets, and exception translation), 2
+  gated live integration tests.
+- `scrapers_lib.core.schemas`: `RawMention.attribution` widened from
+  required to `Attribution | None` — unlocks **discovery-driven
+  fetching** (`anchors=None` produces mentions without pre-filtering
+  for downstream consumer analysis). All Tier 2 / Tier 3 fetchers
+  continue to produce non-None attribution via URL-map; this change
+  is additive, not a breaking API change for existing consumers.
+- `scrapers_lib.core.attribution`: `attribute_regex_all(text, anchors)
+  -> list[Attribution]` — multi-anchor matching variant that does NOT
+  drop ambiguous multi-matches. Used by the four Wave 3 fetchers to
+  emit one mention per matching anchor when a single article / post
+  / comment / transcript-chunk is relevant to several anchors at
+  once. Also adds `article_mention_id(slug, url)` ID helper.
+- `scripts/rss/probe_feeds.py` + `README.md` — RSS / Atom feed
+  discovery tooling. Probed 13 user-confirmed gaming-news sites,
+  catalogued the canonical feed URL per site (VentureBeat's
+  games-only subpath 403s but the site-wide feed works and is
+  accepted per user decision to let all content flow through).
+- Demo 3 feed catalog (12 gaming-focused sites + VentureBeat mixed)
+  documented in `scripts/rss/README.md`.
+- `tests/tier1/fixtures/` now contains per-fetcher subdirectories:
+  `rss/`, `article/`, `reddit/`, `youtube/`.
+
+### Removed
+- `praw>=7.7` dependency — the library no longer requires PRAW since
+  Reddit's closed self-service registration makes OAuth unreachable
+  for this project. Fetcher signatures stay PRAW-compatible for
+  future swap-in.
+
+### Changed
+- Bumped `pyproject.toml` + `scrapers_lib/__init__.py` +
+  `README.md` version header to **0.5.0**.
+- Full test suite: **762 passed, 16 skipped** (one gated live
+  integration per active source — Dell / HP / Lenovo / ASUS / Amazon
+  / BestBuy API / BestBuy reviews / RSS x2 / article x2 / Reddit x3 /
+  YouTube x2).
+
 ## [0.4.0] — 2026-04-22
 
 ### Added

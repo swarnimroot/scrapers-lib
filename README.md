@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** draft &nbsp;·&nbsp; **Library version:** 0.4.0 (pre-release)
+**Status:** draft &nbsp;·&nbsp; **Library version:** 0.5.0 (pre-release)
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 

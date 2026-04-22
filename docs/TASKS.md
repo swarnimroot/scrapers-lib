@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 0.4.0 (pre-release)
+**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 0.5.0 (pre-release)
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -10,11 +10,11 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-22 (session-end wrap)
 
-- **Last session:** **Wave 2c COMPLETE.** Three new fetchers shipped: `tier3/amazon.py` (product + reviews via plain httpx — Amazon's PDP is reachable at the TLS layer, counter to its Tier 3 reputation; 78 unit tests across two ASINs exercising both `#bylineInfo` render variants), `tier1/bestbuy_api.py` (BestBuy Developer API — 55 unit tests against synthetic fixtures matching the documented API schema, live test doubly-gated on `BESTBUY_API_KEY` + `SCRAPERSLIB_LIVE_TESTS=1`), and `tier3/bestbuy.py` (reviews only; uses **curl_cffi with Chrome TLS impersonation on HTTP/1.1** — the combination that bypasses Akamai's HTTP/2 RST-stream gate after a three-step recon escalation proved plain httpx, stealth Playwright, and curl_cffi-on-HTTP/2 all fail; 37 unit tests across two Alienware SKUs). One dependency added: `curl_cffi>=0.7` (free, open-source, drop-in `requests`-like API — same upgrade path documented for HP's coverage gap). **Full suite: 584 passed, 7 skipped** (one live integration per active source — Dell / HP / Lenovo / ASUS / Amazon / BestBuy API / BestBuy reviews).
-- **In progress:** none (pause point). User has the Reddit PRAW walkthrough instructions; BestBuy Developer API registration pending (approval ~1 week from submission).
-- **Next:** **Wave 3** (Demo 3 gaming radar) — RSS → article → Reddit → YouTube. Four fetchers, each adding one dep (`feedparser`, `trafilatura`, `praw`, `youtube-transcript-api`) — flagged for approval per `CLAUDE.md` before installing. Reddit is the dep where the user's PRAW walkthrough credentials become load-bearing.
-- **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4` + `playwright` + `playwright-stealth` + `curl_cffi` (new in Wave 2c) and Chromium installed via `playwright install chromium`.
-- **Open questions:** none blocking. BestBuy reviews pagination (`/site/reviews/name/<SKU>?page=N`) and Amazon `/product-reviews/<ASIN>/` deep pagination are deferred as future-wave enhancements once a demo needs the long-tail reviews; current PDP-inlined coverage (~5 BestBuy, ~10 Amazon) meets Demo 1 / Demo 2 needs.
+- **Last session:** **Wave 3 COMPLETE.** Four new Tier 1 fetchers shipped: `tier1/rss.py` (feedparser, dual-mode discovery/anchor-driven — 41 unit tests + 2 gated live against IGN), `tier1/article.py` (trafilatura with `with_metadata=True`, partial-success on paywalls — 38 unit tests + 2 gated live against IGN/Polygon), `tier1/reddit.py` (**unauthenticated** `.json` endpoints — PRAW OAuth is closed per Reddit's Nov-2025 policy, empirically confirmed by a rejected formal application; two registered fetchers: `reddit` listings + `reddit_comments` post-plus-tree bundles — 53 unit tests + 3 gated live against r/Games), `tier1/youtube.py` (`youtube-transcript-api`, 60s default time-windowed chunking with `?t=<s>s` deep-linked `source_url` — 46 unit tests + 2 gated live). **Two library-level additions**: `RawMention.attribution` widened to `Attribution | None` (unlocks discovery mode: pass `anchors=None` → emit everything unfiltered, downstream consumer filters), and `attribute_regex_all(text, anchors) -> list[Attribution]` (multi-anchor matching helper — "Microsoft buys Activision" article fans out to both Microsoft and Activision anchors instead of being dropped on ambiguity). `praw` dropped from `pyproject.toml` since OAuth path is closed. 12-site RSS feed catalog discovered via `scripts/rss/probe_feeds.py` + documented in `scripts/rss/README.md` (IGN / GameSpot / Polygon / PCGamer / Kotaku / Eurogamer / GameInformer / GamesIndustry / GameDeveloper / RockPaperShotgun / VG247 / TheGamer) plus VentureBeat's mixed-content site-wide feed per user decision to let non-gaming content flow through. **Full suite: 762 passed, 16 skipped** (one gated live integration per active fetcher across all three tiers).
+- **In progress:** none (pause point).
+- **Next:** **Wave 4** (v1.0 readiness) — review public APIs for stability, flip doc status headers to "stable", remove `draft` / *(subject to revision)* qualifications, ensure integration tests cover every fetcher, final per-source coverage table, tag `v1.0.0`. After Wave 4: **Wave 2d** — BestBuy review pagination (`/site/reviews/name/<SKU>?page=N`) that unlocks `published_at` and long-tail reviews; scheduled as the first post-v1.0.0 additive feature (tag `v1.1.0`). Amazon `/product-reviews/<ASIN>/` deep pagination remains out of reach without credentials (sign-in wall); accept the PDP-inlined top-10 as the reachable subset.
+- **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4` + `playwright` + `playwright-stealth` + `curl_cffi` + `feedparser` + `trafilatura` + `youtube-transcript-api` (no `praw`). Chromium installed via `playwright install chromium`.
+- **Open questions:** none blocking.
 
 ### How to resume in a new session
 
@@ -111,20 +111,42 @@ Driver: the need for retailer product + review data. Recon during this wave prov
 - [x] Dependency added with user approval: `curl_cffi>=0.7`
 - [x] Tag `v0.4.0` on Wave 2c completion
 
+## Wave 2d — BestBuy reviews: long-tail pagination *(scheduled post-v1.0.0)*
+
+**Scheduled after Wave 4.** This wave extends `tier3/bestbuy.py` from the
+inline PDP review cap (~5 per fetch, no `datePublished`) to full
+pagination of `bestbuy.com/site/reviews/name/<SKU>?page=N`. The
+fetched page carries `datePublished` per review — unlocks time-series
+sentiment on BestBuy, which v0.4.0 cannot do. Same `curl_cffi` +
+Chrome impersonation + HTTP/1.1 primitive that `tier3/bestbuy.py`
+already uses is presumptively sufficient (same host, same Akamai
+deployment); needs a probe before build.
+
+- [ ] Recon probe: confirm `/site/reviews/name/<SKU>` reachable via curl_cffi + HTTP/1.1 + homepage warming; inspect review-card DOM shape on page 1 + page 2
+- [ ] Add a paginated-review fetcher (new function, does not replace the fast inline-5 path) — caps configurable via `max_pages` / `per_page` kwargs to respect patient-pacing
+- [ ] Populate `published_at` on each RawMention from the page
+- [ ] Unit tests + fixtures for page 1 + page 2 on two unrelated SKUs
+- [ ] `docs/ARCHITECTURE.md` §11 coverage-row update (BestBuy reviews with full-tail + dates)
+- [ ] CHANGELOG bullet; tag `v1.1.0` (additive post-1.0 feature)
+
 ## Wave 3 — Demo 3 sources (gaming radar)
 
-Driver: **Demo 3**. Order — RSS first (simplest), then article body, then Reddit, then YouTube (optional).
+Driver: **Demo 3**. Order — RSS first (simplest), then article body, then Reddit, then YouTube. Dual-mode (discovery / anchor-driven) was added to the schema in this wave to support both "what's popular right now, no filter" and "what's being said about X" use cases.
 
-- [ ] `tier1/rss.py` — feedparser-based; emits RawMentions from feed entries
-  - [ ] Integration test (gated): fetch one known feed
-- [ ] `tier1/article.py` — trafilatura-based; follow-up body fetch when RSS summary is insufficient
-  - [ ] Integration test (gated): fetch body from one known article URL
-- [ ] `tier1/reddit.py` — PRAW-based; emits RawMentions from posts + comment trees with per-comment attribution
-  - [ ] Integration test (gated): search one subreddit for a known topic
-- [ ] `tier1/youtube.py` — youtube-transcript-api; emits RawMentions from transcript chunks
-  - [ ] Integration test (gated): fetch one known video's transcript
-- [ ] Per-source coverage notes updated
-- [ ] Tag `v0.5.0` on Wave 3 completion
+- [x] `tier1/rss.py` — feedparser-based; emits RawMentions from feed entries. Dual-mode via `anchors=None`-or-list. 41 unit + 2 gated live tests.
+  - [x] Integration test (gated): fetch IGN's games feed, verify discovery + anchor modes
+  - [x] Feed-discovery tooling: `scripts/rss/probe_feeds.py` + Demo 3 catalog of 12 gaming sites (+ VentureBeat mixed) in `scripts/rss/README.md`
+- [x] `tier1/article.py` — trafilatura-based; follow-up body fetch when RSS summary is insufficient. Partial-success on paywalls (returns empty list, never raises on quality). 38 unit + 2 gated live tests.
+  - [x] Integration test (gated): fetch body from IGN + Polygon URLs (different CMS shapes)
+- [x] `tier1/reddit.py` — **unauthenticated JSON endpoints** (`.json` suffix) — PRAW OAuth self-service closed by Reddit's Nov-2025 policy, formal application rejected. Two registered fetchers (listing + comments). Public signature stays PRAW-compatible. 53 unit + 3 gated live tests.
+  - [x] Integration test (gated): r/Games listing + one post's comments bundle + anchor-mode sanity check
+- [x] `tier1/youtube.py` — `youtube-transcript-api`; emits RawMentions from time-windowed transcript chunks (60s default). Deep-linked `source_url` with `?t=<s>s`. Translates library exceptions (no-transcript/age-gated → empty list; RequestBlocked/IpBlocked → BlockedError). 46 unit + 2 gated live tests.
+  - [x] Integration test (gated): Rick Astley stable canary + anchor-mode match
+- [x] **Library-level schema change**: `RawMention.attribution: Attribution | None` (additive; existing consumers unaffected).
+- [x] **New helper**: `attribute_regex_all` (multi-anchor match) + `article_mention_id` ID helper.
+- [x] **Dep removed**: `praw` (OAuth path closed).
+- [x] Per-source coverage rows updated in `docs/ARCHITECTURE.md` §11.
+- [x] Tag `v0.5.0` on Wave 3 completion
 
 ## Wave 4 — v1.0 readiness
 

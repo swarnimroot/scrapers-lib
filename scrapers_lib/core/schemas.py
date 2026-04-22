@@ -116,7 +116,13 @@ class ProductSnapshot(BaseModel):
 
 
 class RawMention(BaseModel):
-    """A piece of verbatim text from a source, attributed to an Anchor."""
+    """A piece of verbatim text from a source, optionally attributed to an Anchor.
+
+    ``attribution`` is ``None`` when the fetcher was invoked in discovery mode
+    (``anchors=None``) — the downstream consumer applies its own filters. When
+    ``anchors=[...]`` is passed, the fetcher emits one ``RawMention`` per
+    matched anchor and ``attribution`` is populated.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -132,7 +138,7 @@ class RawMention(BaseModel):
     published_at: datetime | None = None
     fetched_at: datetime = Field(default_factory=_utc_now)
     raw_text: str = Field(..., min_length=1)
-    attribution: Attribution
+    attribution: Attribution | None = None
     raw: dict[str, Any] | None = None
 
     @field_validator("raw_text")

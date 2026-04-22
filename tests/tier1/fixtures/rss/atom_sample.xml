@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Test Atom Gaming</title>
+  <link href="https://atom-test.example/" rel="alternate" />
+  <link href="https://atom-test.example/feed" rel="self" />
+  <updated>2026-04-22T10:00:00Z</updated>
+  <id>https://atom-test.example/</id>
+  <entry>
+    <title>Alan Wake 2 expansion drops in June</title>
+    <link href="https://atom-test.example/articles/aw2-june" />
+    <id>tag:atom-test.example,2026-04-22:aw2-june</id>
+    <updated>2026-04-22T09:30:00Z</updated>
+    <published>2026-04-22T09:15:00Z</published>
+    <author><name>Author Atom</name></author>
+    <summary type="html">&lt;p&gt;Remedy confirms the Night Springs expansion.&lt;/p&gt;</summary>
+    <content type="html">&lt;p&gt;Remedy Entertainment confirmed today that Alan Wake 2's Night Springs expansion will launch in June. Sam Lake spoke at a press event in Helsinki.&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Indie shmup of the month</title>
+    <link href="https://atom-test.example/articles/indie-shmup" />
+    <id>tag:atom-test.example,2026-04-21:indie-shmup</id>
+    <updated>2026-04-21T16:00:00Z</updated>
+    <author><name>Another Author</name></author>
+    <summary>A retro-styled indie shoot-em-up worth your weekend.</summary>
+  </entry>
+</feed>

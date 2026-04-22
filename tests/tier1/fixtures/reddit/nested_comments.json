@@ -1,0 +1,135 @@
+[
+  {
+    "kind": "Listing",
+    "data": {
+      "children": [
+        {
+          "kind": "t3",
+          "data": {
+            "id": "pxxxxx",
+            "name": "t3_pxxxxx",
+            "title": "Nested comments test post",
+            "author": "poster_user",
+            "selftext": "Body text of the post mentioning Alan Wake 2 explicitly.",
+            "created_utc": 1776000000.0,
+            "permalink": "/r/TestSub/comments/pxxxxx/nested_comments_test_post/",
+            "subreddit": "TestSub",
+            "score": 100,
+            "num_comments": 5,
+            "url": "https://www.reddit.com/r/TestSub/comments/pxxxxx/nested_comments_test_post/",
+            "is_self": true,
+            "over_18": false
+          }
+        }
+      ]
+    }
+  },
+  {
+    "kind": "Listing",
+    "data": {
+      "children": [
+        {
+          "kind": "t1",
+          "data": {
+            "id": "c001",
+            "name": "t1_c001",
+            "author": "alice",
+            "body": "Top-level comment mentioning Microsoft once.",
+            "created_utc": 1776000100.0,
+            "parent_id": "t3_pxxxxx",
+            "link_id": "t3_pxxxxx",
+            "depth": 0,
+            "score": 12,
+            "permalink": "/r/TestSub/comments/pxxxxx/nested/c001",
+            "replies": {
+              "kind": "Listing",
+              "data": {
+                "children": [
+                  {
+                    "kind": "t1",
+                    "data": {
+                      "id": "c002",
+                      "name": "t1_c002",
+                      "author": "bob",
+                      "body": "Reply at depth 1 also about Microsoft and Sony.",
+                      "created_utc": 1776000200.0,
+                      "parent_id": "t1_c001",
+                      "link_id": "t3_pxxxxx",
+                      "depth": 1,
+                      "score": 7,
+                      "permalink": "/r/TestSub/comments/pxxxxx/nested/c002",
+                      "replies": {
+                        "kind": "Listing",
+                        "data": {
+                          "children": [
+                            {
+                              "kind": "t1",
+                              "data": {
+                                "id": "c003",
+                                "name": "t1_c003",
+                                "author": "carol",
+                                "body": "Depth 2 reply with no anchor hits, just some chatter.",
+                                "created_utc": 1776000300.0,
+                                "parent_id": "t1_c002",
+                                "link_id": "t3_pxxxxx",
+                                "depth": 2,
+                                "score": 1,
+                                "permalink": "/r/TestSub/comments/pxxxxx/nested/c003",
+                                "replies": ""
+                              }
+                            },
+                            {
+                              "kind": "more",
+                              "data": {
+                                "count": 4,
+                                "id": "more1",
+                                "name": "t1_more1",
+                                "children": ["c004","c005","c006","c007"]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "kind": "t1",
+          "data": {
+            "id": "c010",
+            "name": "t1_c010",
+            "author": "[deleted]",
+            "body": "[removed]",
+            "created_utc": 1776000400.0,
+            "parent_id": "t3_pxxxxx",
+            "link_id": "t3_pxxxxx",
+            "depth": 0,
+            "score": 0,
+            "permalink": "/r/TestSub/comments/pxxxxx/nested/c010",
+            "replies": ""
+          }
+        },
+        {
+          "kind": "t1",
+          "data": {
+            "id": "c011",
+            "name": "t1_c011",
+            "author": "dave",
+            "body": "Another top-level but no interesting keywords here.",
+            "created_utc": 1776000500.0,
+            "parent_id": "t3_pxxxxx",
+            "link_id": "t3_pxxxxx",
+            "depth": 0,
+            "score": 3,
+            "permalink": "/r/TestSub/comments/pxxxxx/nested/c011",
+            "replies": ""
+          }
+        }
+      ]
+    }
+  }
+]
