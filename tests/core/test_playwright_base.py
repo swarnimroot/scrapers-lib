@@ -4,7 +4,16 @@ The ``stealth_context`` context manager is integration-only and tested when
 Tier 2/3 fetchers exercise it.
 """
 
-from scrapers_lib.core.playwright_base import BrowserProfile, _safe_domain
+import inspect
+import re
+
+from scrapers_lib.core.playwright_base import (
+    DEFAULT_LOCALE,
+    DEFAULT_USER_AGENT,
+    BrowserProfile,
+    _safe_domain,
+    stealth_context,
+)
 
 
 class TestSafeDomain:
@@ -87,3 +96,37 @@ class TestStealthContextImport:
         assert hasattr(playwright_base, "stealth_context")
         assert hasattr(playwright_base, "BrowserProfile")
         assert hasattr(playwright_base, "DEFAULT_USER_AGENT")
+
+
+class TestDefaultUserAgent:
+    def test_chrome_major_is_current(self):
+        # Regression guard: Wave 1 shipped Chrome/124 which tripped Akamai.
+        # Bump together with the Chromium install when Chromium itself moves
+        # to a new major.
+        m = re.search(r"Chrome/(\d+)", DEFAULT_USER_AGENT)
+        assert m is not None, f"no Chrome major in UA: {DEFAULT_USER_AGENT!r}"
+        assert int(m.group(1)) >= 145
+
+    def test_ua_is_windows_chrome(self):
+        assert "Windows NT 10.0" in DEFAULT_USER_AGENT
+        assert "Safari/537.36" in DEFAULT_USER_AGENT
+
+
+class TestStealthContextSignature:
+    def test_accepts_use_stealth_kwarg(self):
+        sig = inspect.signature(stealth_context)
+        assert "use_stealth" in sig.parameters
+        assert sig.parameters["use_stealth"].default is True
+
+    def test_accepts_locale_kwarg(self):
+        sig = inspect.signature(stealth_context)
+        assert "locale" in sig.parameters
+        assert sig.parameters["locale"].default == DEFAULT_LOCALE
+
+    def test_profiles_dir_and_domain_required(self):
+        sig = inspect.signature(stealth_context)
+        # Both must be keyword-only with no default (required).
+        for name in ("profiles_dir", "domain"):
+            assert name in sig.parameters
+            assert sig.parameters[name].kind == inspect.Parameter.KEYWORD_ONLY
+            assert sig.parameters[name].default is inspect.Parameter.empty
