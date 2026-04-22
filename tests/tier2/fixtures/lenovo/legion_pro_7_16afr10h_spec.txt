@@ -1,0 +1,339 @@
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+OVERVIEW
+1. Headphone / microphone combo jack (3.5mm) 6. HDMI
+USB-C (USB 10Gbps), with USB PD 95-100W &
+2. USB-A (USB 5Gbps) 7.
+DP 2.1
+3. USB-A (USB 5Gbps) 8. USB-C (USB 10Gbps), with DP 2.1
+4. 2.5GbE (RJ-45) 9. USB-A (USB 10Gbps), Always On
+5. Power connector
+Legion Pro 7 16AFR10H - April 21 2026 1 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+PERFORMANCE
+Processor
+Processor Family
+AMD Ryzen™ 9 9000 Series Processor
+Processor**
+Processor Name Cores Threads Base Frequency Max Frequency Cache Processor Graphics
+AMD Ryzen™ 9 9955HX 16 32 2.5GHz 5.4GHz 16MB L2 / 64MB L3 AMD Radeon™ 610M
+AMD Ryzen™ 9 9955HX3D 16 32 2.5GHz 5.4GHz 16MB L2 / 128MB L3 AMD Radeon™ 610M
+AI (Artificial Intelligence)
+AI PC Category
+AI-Powered Gaming PC[1]
+Notes:
+[1] AI-Powered Gaming PCs feature Lenovo® AI Engine+ and NVIDIA® GeForce RTX™ GPUs to handle AI-driven tasks and
+deliver exceptional gaming performance.
+Operating System
+Operating System**
+• Windows® 11 Pro
+• Windows® 11 Home
+• Windows® 11 Home Single Language
+• No preload operating system
+Graphics
+Graphics**
+Boost AI TOPS
+Graphics Type Memory TGP Key Features
+Clock (Peak)
+NVIDIA® GeForce RTX™ 5070 Ti 12GB DLSS 4, DirectX® 12
+Discrete 2220 MHz 140W 992 TOPS
+Laptop GPU GDDR7 Ultimate
+NVIDIA® GeForce RTX™ 5080 Laptop 16GB DLSS 4, DirectX® 12
+Discrete 2287 MHz 175W 1334 TOPS
+GPU GDDR7 Ultimate
+Monitor Support
+Monitor Support
+Supports up to 4 independent displays (native display and 3 external monitors via HDMI® and USB-C®)
+• HDMI® supports up to 8K@60Hz
+• USB-C® supports up to 8K@60Hz
+Chipset
+Chipset
+AMD SoC (System on Chip) platform
+Memory
+Max Memory[1]
+Up to 64GB DDR5-5600 offering
+Memory Slots
+Two DDR5 SODIMM slots, dual-channel capable
+Memory Type
+DDR5-5600
+Notes:
+[1] The max memory is based on the test results with current Lenovo® memory offerings.
+Legion Pro 7 16AFR10H - April 21 2026 2 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+Storage
+Max Storage Support[1]
+Up to two drives, 2x M.2 SSD
+• M.2 2280 SSD up to 2TB[2]
+Storage Slot[3]
+Two M.2 slots
+• One M.2 2280 PCIe® 5.0 x4 slot
+• One M.2 2280 PCIe® 4.0 x4 slot
+Storage Type***
+Disk Type Interface Offering
+M.2 2242 SSD PCIe® NVMe®, PCIe® 4.0 x4 1TB
+M.2 2280 SSD PCIe® NVMe®, PCIe® 5.0 x4 Performance 1TB / 2TB
+Notes:
+[1] The storage capacity supported is based on the test results with current Lenovo® storage offerings.
+[2] The system supports dual SSD via two M.2 slots, but Lenovo® offers only one SSD configuration with a second slot for
+user self-expansion.
+[3] The actual data transfer rate of the following PCIe® interface also depends on the capabilities of the connected PCIe®
+device. The listed values represent theoretical maximums.
+PCIe® 3.0 (x2 / x4): 2 GB/s (16 Gbps) / 4 GB/s (32 Gbps);
+PCIe® 4.0 (x2 / x4): 4 GB/s (32 Gbps) / 8 GB/s (64 Gbps);
+PCIe® 5.0 (x2 / x4): 8 GB/s (64 Gbps) / 16 GB/s (128 Gbps).
+Removable Storage
+Card Reader
+No card reader
+Multi-Media
+Audio Chip
+High Definition (HD) Audio, Realtek® ALC3306 codec
+Speakers
+4 stereo speakers, 2W x2 (woofers), 2W x2 (tweeters), optimized with Nahimic Audio, Smart Amplifier (AMP)
+Microphone
+Dual-microphone array
+Camera**
+• 5.0MP, with E-shutter, fixed focus
+• HD 720p, with E-shutter, fixed focus
+Battery
+Battery**
+• 80Wh Rechargeable Li-ion Battery, supports Super Rapid Charge (10min charge 0~30% capacity, 30min charge 0~70%
+capacity, 80min charge 0~100% capacity)
+• 99.9Wh Rechargeable Li-ion Battery, supports Super Rapid Charge (10min charge 0~30% capacity, 30min charge
+0~70% capacity, 80min charge 0~100% capacity)
+Max Battery Life[1]
+• Models with 80Wh battery:
+MobileMark® 30@250nits: 1.9 hr
+Local video (1080p) playback@150nits: 2.9 hr
+• Models with 99.9Wh battery:
+MobileMark® 30@250nits: 2.5 hr
+Local video (1080p) playback@150nits: 3.7 hr
+Notes:
+[1] All battery life claims are approximate maximum and based on results using the MobileMark® 2014, MobileMark® 2018,
+MobileMark® 25, MobileMark® 30, JEITA 2.0, JEITA 3.0, continuous 1080p video playback (with 150nits brightness and
+Legion Pro 7 16AFR10H - April 21 2026 3 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+default volume level) or Google Power Load Test (PLT) battery-life benchmark tests. Actual battery life will vary
+depending on many factors such as product configuration and usage, software use, wireless functionality, power
+management settings, and screen brightness. The maximum capacity of the battery will decrease with time and use.
+Power Adapter
+Power Adapter**[1]
+• 300W slim tip (3-pin) AC adapter, 100-240V, 50-60Hz
+• 400W slim tip (3-pin) AC adapter, 100-240V, 50-60Hz
+• No power adapter
+Notes:
+[1] AC adapter offerings depend on the country.
+Special Features
+Special Features
+AI Chip: LA3
+DESIGN
+Display
+Display
+Viewing
+Aspect Contrast Color Refresh
+Size Resolution Touch Type Brightness Surface Angle Key Features
+Ratio Ratio Gamut Rate
+(L/R/U/D)
+DisplayHDR™
+True Black 1000,
+Dolby Vision®,
+NVIDIA® G-
+SYNC®, AMD
+1100nits
+FreeSync™,
+(HDR
+100% Advanced
+WQXGA Non- peak) / 89° / 89° /
+16" OLED Glossy 16:10 1,000,000:1 DCI- 240Hz Optimus
+(2560x1600) touch 500nits 89° / 89°
+P3 support, TÜV
+(SDR
+Low Blue Light,
+typical)
+TÜV High
+Gaming
+Performance,
+TÜV Rheinland®
+Flicker Free
+Touchscreen
+Non-touch
+Screen-to-Body Ratio
+92% AAR (active area ratio)
+Color Calibration
+X-Rite® factory color calibration
+Input Device
+Pen
+No support
+Keyboard
+6-row, multimedia Fn keys, numeric keypad, key travel 1.6mm, cap recess 0.3mm, Copilot key
+Keyboard Backlight
+Per-key RGB backlight (with lighting lens on the front side)
+Touchpad
+Buttonless Mylar® surface multi-touch touchpad, 75 x 120 mm (2.95 x 4.72 inches)
+Legion Pro 7 16AFR10H - April 21 2026 4 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+Mechanical
+Dimensions (WxDxH)[1]
+364.38 x 275.94 x 21.9-26.65 mm (14.35 x 10.86 x 0.86-1.05 inches)
+Weight[2]
+Starting at 2.56 kg (5.64 lbs)
+Case Color
+Eclipse black
+Case Material
+Aluminium (top), aluminium (bottom)
+Surface Treatment
+Anodizing sandblasting
+System Lighting
+"Legion" logo with RGB lighting on top cover
+RGB lighting on rear thermal vent
+Notes:
+[1] The system dimensions may vary depending on configurations.
+[2] The system weight is approximate and based on results in Lenovo® lab, which varies depending on the source of
+component, variance of the distribution of each component, and manufacturing process. It may not be the exact weight
+for each specific model.
+CONNECTIVITY
+Network
+WLAN + Bluetooth®[1]
+Wi-Fi® 7, 802.11be 2x2 Wi-Fi® + Bluetooth® 5.4, M.2 card
+WWAN
+No support
+Ethernet
+2.5GbE, 1x RJ-45
+Notes:
+[1] Wi-Fi® operation (including Wi-Fi® 6, Wi-Fi® 6E, Wi-Fi® 7, etc.) is subject to the regulatory requirements of each country.
+Bluetooth® may operate at a lower version than hardware design depending on the factors such as operating system,
+driver, etc.
+Ports[1]
+Standard Ports
+• 2x USB-A (USB 5Gbps)
+• 1x USB-A (USB 10Gbps), Always On
+• 1x USB-C® (USB 10Gbps), with USB PD 95-100W and DisplayPort™ 2.1[2]
+• 1x USB-C® (USB 10Gbps), with DisplayPort™ 2.1
+• 1x HDMI® 2.1, up to 8K/60Hz
+• 1x Headphone / microphone combo jack (3.5mm)
+• 1x Ethernet (2.5GbE RJ-45)
+• 1x Slim tip Power connector
+Notes:
+[1] The transfer speed of following ports will vary and, depending on many factors, such as the processing speed of the
+host device, file attributes and other factors related to system configuration and your operating environment, will be
+slower than theoretical speed.
+USB 2.0: 480 Mbit/s;
+USB 3.2 Gen 1 (SuperSpeed USB 5Gbps, formerly USB 3.0 / USB 3.1 Gen 1): 5 Gbit/s;
+USB 3.2 Gen 2 (SuperSpeed USB 10Gbps, formerly USB 3.1 Gen 2): 10 Gbit/s;
+USB4® 20Gbps / USB 3.2 Gen 2x2 (SuperSpeed USB 20Gbps): 20 Gbit/s;
+Legion Pro 7 16AFR10H - April 21 2026 5 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+USB4® 40Gbps (USB 40Gbps): 40 Gbit/s;
+Thunderbolt™ 3/4: 40 Gbit/s.
+Thunderbolt™ 5: 80 Gbit/s (bidirectional), up to 120 Gbit/s in bandwidth boost mode for video-intensive applications.
+[2] Supports Lenovo® protocol for 140W charging but requires a unique Lenovo® adapter for operation.
+Docking
+Docking
+Various docking solutions supported via USB-C®.
+For more compatible docking solutions, please visit Docking for Legion Pro 7 16AFR10H
+SECURITY & PRIVACY
+Security
+Security Chip
+Firmware TPM 2.0 integrated in SoC
+Fingerprint Reader
+No fingerprint reader
+BIOS Security[1]
+• Administrator password
+• Master hard disk password
+• Power-on password
+• User hard disk password
+• User password
+• Self-healing BIOS
+Other Security
+E-shutter
+Notes:
+[1] More BIOS security features, please visit BIOS Simulator
+SERVICE
+Warranty
+Base Warranty**
+• 1-year courier or carry-in service
+• 2-year (1-yr battery) courier or carry-in service
+• 3-year (1-yr battery) courier or carry-in service
+ACCESSORIES
+Bundled Accessories
+Bundled Accessories***[1]
+• 4 switchable keycaps
+• Anti-Reflection screen protector
+• Lenovo® Legion™ Gaming Speed Mouse Pad M
+• None
+Notes:
+[1] For more compatible accessory solutions, please visit Accessories for Legion Pro 7 16AFR10H.
+OPERATING REQUIREMENTS
+Operating Environment
+Temperature[1]
+Legion Pro 7 16AFR10H - April 21 2026 6 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+At altitudes up to 2438 m (8,000 ft)
+- Operating: 5°C to 35°C (41°F to 95°F)
+- Storage: 5°C to 43°C (41°F to 109°F)
+Relative Humidity
+• Operating: 8% to 95% at wet-bulb temperature 23°C (73°F)
+• Storage: 5% to 95% at wet-bulb temperature 27°C (81°F)
+Altitude
+Maximum altitude (without pressurization): 3048 m (10,000 ft)
+Notes:
+[1] When you charge the battery, its temperature must be no lower than 10°C (50°F).
+CERTIFICATIONS
+Green Certifications[1]
+Green Certifications
+• ErP Lot 3
+• RoHS compliant
+Notes:
+[1] The items listed under the "Green Certifications" section may not only refer to certification but also registration or self-
+declaration. For ESG & regulatory compliance documents, please visit https://compliance.lenovo.com.
+Other Certifications
+Other Certifications
+• Pantone® SkinTone™ Validated
+• Pantone® Validated
+• TÜV Rheinland® Flicker Free
+• TÜV Rheinland® High Gaming Performance
+• TÜV Rheinland® Low Blue Light (Hardware Solution)
+• Feature with ** means that only one option listed under the feature can be configured on selected models.
+Please refer to the model configuration for specific information.
+• Feature with *** means that one or more options listed under the feature can be configured on selected
+models. Please refer to the model configuration for specific information.
+• Lenovo reserves the right to change specifications or other product information without notice. Lenovo is not
+responsible for photographic or typographical errors. LENOVO PROVIDES THIS PUBLICATION "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING THE IMPLIED WARRANTIES
+OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. Some jurisdictions do not allow
+disclaimer of express or implied warranties in certain transactions, therefore this disclaimer may not apply to
+you.
+• The specifications on this page may not be available in all regions, and may be changed or updated without
+notice.
+Legion Pro 7 16AFR10H - April 21 2026 7 of 8
+
+PSREF
+Product Specifications
+Legion Pro 7 16AFR10H
+Reference
+Legion Pro 7 16AFR10H - April 21 2026 8 of 8

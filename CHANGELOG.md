@@ -4,6 +4,22 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+### Added
+- `scrapers_lib.tier2.lenovo`: `fetch_lenovo_product` — plain-httpx fetcher
+  that extracts the PSREF `ProductKey` from a product URL and calls Lenovo's
+  own `/api/product/Compare/LoadSpecData` endpoint. Returns one
+  `ProductSnapshot` per URL (per-model-family granularity) with 50+ feature
+  keys flattened from PSREF's nested `L1 > L2 > Features` tree; multi-option
+  Features (e.g. two CPU SKUs) are serialized as newline-joined alternative
+  rows so consumers can split and compare. No Playwright, no stealth,
+  no new deps — PSREF has no bot gating. 47 unit tests (Legion Pro 7 16AFR10H +
+  LOQ 15IRX10 fixtures), 1 gated live integration test.
+- `scripts/lenovo/` — re-runnable PSREF reconnaissance probes: `probe_psref.py`
+  (plain httpx baseline), `probe_psref_xhr.py` (Playwright XHR+iframe trace
+  for SPA hydration discovery), `probe_psref_pdf.py` (PDF datasheet coverage
+  witness using `pdfplumber` — installed into `.venv/` for the experiment
+  only, **not** added to `pyproject.toml`).
+
 ## [0.2.0] — 2026-04-21
 
 ### Added

@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta property="og:title" content="PSREF" />
+    <meta property="og:description" content="Lenovo Product Specifications Reference" />
+    <meta property="og:image" content="https://psrefstuff.lenovo.com/syspool/logo/PSREF_logo.png" />
+    <meta property="og:image:type" content="image/png" />
+    <title>Product Specifications Reference(PSREF) Product</title>
+    <link type="image/x-icon" rel="shortcut icon" href="/favicon.ico" />
+    <link type="image/x-icon" rel="bookmark" href="/favicon.ico" />
+    <link type="image/x-icon" rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/Styles/Site.css?v=1.20260325" />
+    <link rel="stylesheet" href="/frameworkFiles/jquery-ui.min.css?v=1.20260325" />
+    <link rel="stylesheet" href="/Styles/pagestyle.css?v=1.20260325" />
+    <link rel="stylesheet" href="/frameworkFiles/squareloading.css?v=1.20260325" />
+    <link rel="stylesheet" href="/v2/css/index.css?v=1.20260325" />
+    <link rel="stylesheet" href="/v2/css/home.css?v=1.20260325" />
+    <link rel="stylesheet" href="/v2/css/menu.css?v=1.20260325" />
+    <link rel="stylesheet" href="/Styles/ProductConfigurationDetail.css?v=1.20260325" />
+    <link rel="stylesheet" href="/frameworkFiles/FixedTable/fixed-table.css?v=1.20260325" />
+    <link rel="stylesheet" href="/Content/spec_module/index.css?v=1.20260325" />
+    <link rel="stylesheet" href="/Content/tom-select/tom-select.css?v=1.20260325" />
+    <link rel="stylesheet" href="/Styles/note_tooltip.css?v=1.20260325" />
+    <link rel="stylesheet" href="/Styles/compare-products-dialog.css?v=1.20260325" />
+    <style type="text/css">
+        .as_showmodel .compare_button {
+            display: inline-table !important;
+            line-height: 41px;
+            padding-right: 25px;
+            margin-right: 0px !important;
+            border-right: 0px solid #dfe6ec;
+        }
+
+        .head_sorting {
+            display: none;
+        }
+
+        .copy_modelcode {
+            width: 17px;
+            position: relative;
+            left: 10px;
+            top: 3px;
+            cursor: pointer;
+        }
+
+        .copy_anime {
+            font-weight: 100 !important;
+        }
+
+        .as_showmodel th:first-child:not(.td_group__header) {
+            width: 150px;
+        }
+
+        .as_showmodel th:first-child:not(.td_group__header),
+        .as_showmodel td:first-child:not(.td_group__header) {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 45px;
+            text-align: left;
+        }
+
+        .as_showmodel tbody tr th {
+            position: relative;
+        }
+
+        .as_showmodel .head_operation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 35px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+
+        .filtered-head-blue {
+            background-color: #294E95 !important;
+            color: white !important;
+        }
+
+            .filtered-head-blue .filtering {
+                background-color: white !important;
+                background: url(/content/svg/filter_select_x30.svg) no-repeat center;
+            }
+
+
+        .filtering {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background: url(/content/svg/filter_unselect_x30.svg) no-repeat center;
+            transform: translate(-50%, -50%);
+            background-size: 25px 25px !important;
+        }
+
+        .as_showmodel thead tr > * {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding-right: 85px;
+            z-index: 5;
+        }
+
+        .ss_btnx {
+            right: 32px;
+        }
+
+        .as_showmodel td {
+            max-width: 384px;
+            min-width: 384px;
+            white-space: pre-wrap;
+            padding-left: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            line-height: 24px;
+            position: relative;
+        }
+
+        .as_showmodel tr.highlight td {
+            background-color: #D2F0FC !important;
+        }
+
+        thead tr td {
+            position: relative;
+        }
+
+            thead tr td > b {
+                position: absolute;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+        #exampleTableDIV a {
+            margin-left: 0;
+            font-weight: 600;
+        }
+
+        .as_showmodel th:first-child:not(.td_group__header),
+        .as_showmodel td:first-child:not(.td_group__header),
+        .as_showmodel td,
+        .as_showmodel th {
+            border-color: #E6E2E4;
+            border-right: 0px;
+            border-left: 0;
+        }
+
+        .as_showmodel thead tr th,
+        .as_showmodel thead tr td {
+            border-top: 1px solid #333;
+        }
+
+        .as_showmodel thead tr td {
+            background-color: #1E0013 !important;
+            border: 0;
+            border-left: 1px solid white;
+            border-right: 1px solid white;
+        }
+
+            .as_showmodel thead tr td a {
+                color: white;
+            }
+
+        .as_showmodel th:first-child:not(.td_group__header) {
+            background-color: #d0cecf;
+            color: rgb(85, 85, 85);
+            cursor: pointer;
+        }
+
+        .as_showmodel tr:hover {
+            background-color: unset;
+        }
+
+        .td-col.highlight-col {
+            background-color: #eef1f6 !important;
+            border-left: 1px solid #E6E2E4 !important;
+            border-right: 1px solid #E6E2E4 !important;
+        }
+
+        .td_group__header2.highlight-col {
+            background-color: white !important;
+        }
+
+        .td_group__header.highlight-col {
+            background-color: white !important;
+        }
+
+        .as_showmodel thead tr th[as_data="Model"] {
+            position: sticky !important;
+            top: 0;
+            z-index: 5;
+            border-left: 0;
+            border-bottom: 0px;
+        }
+
+        .as_showmodel .compare_button {
+            display: inline-block;
+            padding-right: 10px;
+            width: calc(60px + 20px) !important;
+            text-align: right;
+            font-size: 12px;
+            color: white;
+            background-position: left center;
+            background-repeat: no-repeat;
+        }
+
+        .ss_div {
+            border-radius: 5px;
+            overflow: hidden;
+            border-color: #ddd;
+        }
+
+        #btn_where_like_Server {
+            background-color: #294E95;
+        }
+
+        #where_like_Server::placeholder {
+            font-style: italic;
+            font-size: 12px;
+            color: #aaa;
+            font-weight: 600;
+            transform-origin: left;
+        }
+
+        .remove_compare {
+            background: url(/images/remove_compare_white.png) no-repeat center;
+            background-size: 15px 16px;
+        }
+
+        .add_compare {
+            background: url(/images/add_compare_white.png) no-repeat center;
+            background-size: 15px 16px;
+        }
+
+        .as_showmodel tbody tr th.td_group__header {
+            position: relative;
+            height: 34px;
+            line-height: 34px;
+            text-align: left;
+            padding-left: 35px;
+            color: #dc291e;
+            font-size: 130%;
+            z-index: 4;
+            border-left: none;
+            border-right: 1px solid white !important;
+            border-top: none;
+            border-bottom: 1px solid #E6E2E4;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .as_showmodel th:first-child {
+            background-color: white;
+        }
+
+        .td_group__header::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #ABA8B1;
+            cursor: pointer;
+            border-right: 2px solid #ABA8B1;
+            transform: translateY(-50%) rotate(45deg);
+            transition: transform 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .td-col-info {
+            border-left: 1px solid #E6E2E4 !important;
+            border-right: 1px solid #E6E2E4 !important;
+        }
+
+        .as_showmodel table {
+            border-collapse: collapse;
+        }
+
+        .td_group__header.expanded::before {
+            transform: translateY(-50%) rotate(135deg);
+        }
+
+        #as_differences {
+            position: relative;
+            top: 2px;
+            cursor: pointer;
+        }
+
+        #divModels b {
+            user-select: none;
+            line-height: 43px;
+        }
+
+        .as_showmodel thead tr th[as_data='Model'] {
+            z-index: 6;
+            background-color: #1E0013 !important;
+            color: white;
+            border: 0;
+        }
+
+            .as_showmodel thead tr th[as_data='Model'] span {
+                color: white;
+            }
+
+        .as_showmodel th:first-child, .as_showmodel td:first-child {
+            position: sticky !important;
+            border-right: 1px solid #dfe6ec !important;
+        }
+
+        .ss_btny {
+            background-image: url('/images/search.svg');
+            background-repeat: no-repeat;
+            background-size: 70% auto;
+            background-position: center center;
+            background-color: #e0e0e0;
+        }
+
+        .ss_div {
+            position: static;
+            width: 260px;
+        }
+
+        .ss_txt {
+            width: 215px;
+        }
+
+        .top_btn {
+            float: left;
+        }
+
+        .productsearchremark {
+            left: 5px;
+            top: 29px;
+            width: 245px !important;
+        }
+
+        #divModels .first_line {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, auto));
+            height: 40px;
+            position: absolute;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .ckrdForSearch {
+            position: relative;
+            top: 2px;
+        }
+
+        .as_showmodel td:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .as_showmodel td:nth-child(even) {
+            background-color: white;
+        }
+
+        .TopSeller {
+            padding: 0px;
+        }
+
+        #search_model_panel {
+            width: 270px;
+            margin-left: 0px;
+            float: none;
+            display: inline-grid;
+            top: 0;
+        }
+
+        #exportbox {
+            right: 0;
+            margin-left: 2px;
+            float: none;
+            display: inline-grid;
+            width: 135px;
+            height: 27px;
+            border-radius: 3px;
+            top: 1px;
+        }
+
+            #exportbox a {
+                width: 27px;
+                height: 27px;
+                display: block;
+                float: right;
+                border-radius: 5px;
+                position: absolute;
+                right: -32px;
+                padding-left: 0px;
+                top: 0px;
+                background-size: 27px 27px;
+                background: url(https://psrefstuff.lenovo.com/images/icon_close_big.png) no-repeat center;
+            }
+
+            #exportbox div {
+                line-height: 27px;
+            }
+
+        #example-two .top_btn {
+            top: 0px !important;
+            right: 0;
+            position: static;
+        }
+
+        #showLoadingCount {
+            float: left;
+            position: static;
+        }
+
+        .as_mask_layer_content > .left {
+            height: 100%;
+        }
+
+        .as_select_color {
+            position: relative;
+            top: 0;
+        }
+
+        #dialog_filter input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 13px;
+            height: 13px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+            #dialog_filter input[type="checkbox"]:checked {
+                background-color: #294E95;
+                border-color: #294E95;
+            }
+
+                #dialog_filter input[type="checkbox"]:checked::after {
+                    content: "✓";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                    font-size: 12px;
+                }
+
+        .clear_filters {
+            height: 28px;
+            border-radius: 3px;
+            position: relative;
+            top: 1px;
+            font-size: 14px;
+            width: 100px;
+            color: white;
+            background-color: #DCDCDC;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+            .clear_filters.active {
+                background-color: #294E95;
+            }
+
+        #where_like_Server::placeholder {
+            font-weight: 100;
+        }
+
+        .dialog_modelcode {
+            padding-top: 0 !important;
+        }
+
+        .as_search_modelcode_contains {
+            padding-bottom: 10px;
+            position: sticky;
+            top: 0px;
+            width: 100%;
+            padding-top: 10px;
+            background-color: white;
+            z-index: 5;
+        }
+
+        .as_search_modelcode {
+            border: solid 1px #ABA8B1;
+            width: calc(100% - 20px);
+            padding-right: 20px;
+            line-height: 24px;
+            padding-left: 2px;
+            font-size: 14px !important;
+        }
+
+            .as_search_modelcode::placeholder {
+                font-size: 14px !important;
+            }
+
+        .filter_dialog_note {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            color: #0d5c91;
+            font-size: 9px;
+            line-height: 14px;
+            max-width: 360PX;
+            font-weight: 100;
+            z-index: 10;
+            font-size: 13px;
+            white-space: normal;
+        }
+
+        #dialog_filter {
+            position: relative;
+        }
+
+        .ui-dialog.filterDialogs {
+            position: relative;
+        }
+
+        .custom-button {
+            position: absolute;
+            left: 12px;
+            outline: none;
+        }
+
+        .export {
+            width: 70px !important;
+        }
+
+        .as_model_clear {
+            background: url(https://psrefstuff.lenovo.com/images/icon_delete.png) no-repeat scroll;
+            border: none;
+            cursor: pointer;
+            height: 17px;
+            position: absolute;
+            top: 14px;
+            width: 19px;
+            right: 0px;
+        }
+
+        .sl_RegionSelect {
+            line-height: 24px;
+            font-size: 12px;
+            width: 128px;
+            height: 24px;
+            position: relative;
+            top: 5px;
+            border: 1px solid #4E444E;
+            cursor: pointer;
+            background: url(/Content/svg/dropdown_arrow.svg) no-repeat right;
+            background-size: 15px 25px !important;
+            padding-left: 2px;
+            padding-right: 15px;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .class_filter_blue {
+            background-color: #294E95 !important;
+            color: white !important;
+        }
+
+        .product_show_item_title {
+            position: relative;
+            WIDTH: 100%;
+            DISPLAY: inline;
+        }
+
+        .as_show_right h2 {
+            line-height: 44px;
+        }
+
+        .original-name, .marketing-name {
+            line-height: 48px;
+            font-weight: 100;
+        }
+
+        .marketing-name {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: none;
+            background-color: #E6E2E4;
+        }
+
+
+        .as_show_right .marketing-name {
+            line-height: 48px;
+        }
+
+
+
+        #pro_name .marketing-name {
+            line-height: 48px;
+            font-size: 40px !important;
+        }
+
+        .as_info_productName, .product_show_item_title {
+            height: 30px;
+            line-height: 30px;
+            font-size: 40px;
+            font-weight: 100;
+        }
+
+        .product_show_item_title_parent:hover .original-name {
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .product_show_item_title_parent:hover .marketing-name {
+            visibility: visible;
+            display: inline;
+            position: relative;
+            user-select: text;
+        }
+
+        .breadcrumb_panel {
+            top: 7px;
+        }
+
+        .mianDesktop h1 {
+            position: relative;
+            top: 10px;
+        }
+
+        .as_layer_button_note {
+            position: absolute;
+            font-size: 14px;
+            bottom: 0px;
+            margin: 0 auto;
+            color: #555555;
+            background-color: #ffffff36;
+        }
+
+        .as_photo_note_close {
+            background: url(https://psrefstuff.lenovo.com/images/icon_delete.png) no-repeat scroll;
+            border: none;
+            cursor: pointer;
+            display: inline;
+            height: 13px;
+            width: 19px;
+        }
+
+        .note_icon {
+            position: absolute;
+            width: 18px;
+            padding-left: 5px;
+            cursor: pointer;
+        }
+
+        .value_note {
+            padding-top: 3px;
+        }
+
+        .mianDesktop .icon_country_region_note {
+            padding-top: 8px;
+            padding-left: 4px;
+            line-height: 26px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+            .mianDesktop .icon_country_region_note div.noteContentPanel {
+                display: none;
+                z-index: 10002;
+                position: absolute;
+                max-width: 580px;
+                background-color: white;
+                border: 1px solid darkgrey;
+                border-radius: 5px;
+                top: 30px;
+                margin-left: 10px;
+                font-size: 14px;
+                font-weight: normal;
+                padding: 8px;
+                min-height: 20px;
+                box-shadow: 2px 2px 5px 2px #c1c1c1;
+                line-height: 22px;
+            }
+
+        .icon_country_region_note .noteContentPanel .noteContentItem {
+            line-height: 22px;
+            white-space: pre-wrap !important;
+        }
+
+        .icon_country_region_note .noteContentPanel .noteContentList {
+            list-style: decimal;
+            list-style-position: outside;
+            margin-left: 20px;
+            line-height: 30px;
+            white-space: pre-wrap;
+        }
+
+        #div_mask_product_overview {
+            background-color: #666666a8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+            #div_mask_product_overview .as_left_title {
+                position: absolute;
+                padding: 0;
+                padding-left: 10px;
+                padding-top: 10px;
+                width: 98%;
+                border-radius: 10px;
+                background-color: white;
+            }
+
+            #div_mask_product_overview.as_mask_layer .as_mask_layer_content {
+                height: 80%;
+                width: 80%;
+            }
+
+            #div_mask_product_overview .as_cancel_button {
+                right: 13px;
+                top: 5px;
+            }
+
+            #div_mask_product_overview .as_overview_content {
+                height: 100%;
+            }
+
+            #div_mask_product_overview .as_overview_img {
+                margin-top: 0;
+                padding-top: 25px;
+            }
+
+            #div_mask_product_overview .as_center_container {
+                display: block;
+                overflow-y: auto;
+            }
+
+            #div_mask_product_overview .right {
+                overflow-y: auto;
+                border-radius: 10px;
+            }
+
+                #div_mask_product_overview .right::-webkit-scrollbar-track {
+                    border-radius: 10px;
+                }
+
+            #div_mask_product_overview .as_overview_img img {
+                max-height: 50vh;
+            }
+    </style>
+
+                              <script>!function(e){var n="https://s.go-mpulse.net/boomerang/";if("False"=="True")e.BOOMR_config=e.BOOMR_config||{},e.BOOMR_config.PageParams=e.BOOMR_config.PageParams||{},e.BOOMR_config.PageParams.pci=!0,n="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="EAHL9-X4DA3-FW2FQ-TF9NY-WECDA",function(){function e(){if(!o){var e=document.createElement("script");e.id="boomr-scr-as",e.src=window.BOOMR.url,e.async=!0,i.parentNode.appendChild(e),o=!0}}function t(e){o=!0;var n,t,a,r,d=document,O=window;if(window.BOOMR.snippetMethod=e?"if":"i",t=function(e,n){var t=d.createElement("script");t.id=n||"boomr-if-as",t.src=window.BOOMR.url,BOOMR_lstart=(new Date).getTime(),e=e||d.body,e.appendChild(t)},!window.addEventListener&&window.attachEvent&&navigator.userAgent.match(/MSIE [67]\./))return window.BOOMR.snippetMethod="s",void t(i.parentNode,"boomr-async");a=document.createElement("IFRAME"),a.src="about:blank",a.title="",a.role="presentation",a.loading="eager",r=(a.frameElement||a).style,r.width=0,r.height=0,r.border=0,r.display="none",i.parentNode.appendChild(a);try{O=a.contentWindow,d=O.document.open()}catch(_){n=document.domain,a.src="javascript:var d=document.open();d.domain='"+n+"';void(0);",O=a.contentWindow,d=O.document.open()}if(n)d._boomrl=function(){this.domain=n,t()},d.write("<bo"+"dy onload='document._boomrl();'>");else if(O._boomrl=function(){t()},O.addEventListener)O.addEventListener("load",O._boomrl,!1);else if(O.attachEvent)O.attachEvent("onload",O._boomrl);d.close()}function a(e){window.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!window.BOOMR||!window.BOOMR.version&&!window.BOOMR.snippetExecuted){window.BOOMR=window.BOOMR||{},window.BOOMR.snippetStart=(new Date).getTime(),window.BOOMR.snippetExecuted=!0,window.BOOMR.snippetVersion=12,window.BOOMR.url=n+"EAHL9-X4DA3-FW2FQ-TF9NY-WECDA";var i=document.currentScript||document.getElementsByTagName("script")[0],o=!1,r=document.createElement("link");if(r.relList&&"function"==typeof r.relList.supports&&r.relList.supports("preload")&&"as"in r)window.BOOMR.snippetMethod="p",r.href=window.BOOMR.url,r.rel="preload",r.as="script",r.addEventListener("load",e),r.addEventListener("error",function(){t(!0)}),setTimeout(function(){if(!o)t(!0)},3e3),BOOMR_lstart=(new Date).getTime(),i.parentNode.appendChild(r);else t(!1);if(window.addEventListener)window.addEventListener("load",a,!1);else if(window.attachEvent)window.attachEvent("onload",a)}}(),"".length>0)if(e&&"performance"in e&&e.performance&&"function"==typeof e.performance.setResourceTimingBufferSize)e.performance.setResourceTimingBufferSize();!function(){if(BOOMR=e.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var n=""=="true"?1:0,t="",a="raywspax2uwri2piiaeq-f-63f76a7fe-clientnsv4-s.akamaihd.net",i="false"=="true"?2:1,o={"ak.v":"39","ak.cp":"476774","ak.ai":parseInt("307559",10),"ak.ol":"0","ak.cr":7,"ak.ipv":4,"ak.proto":"h2","ak.rid":"b2530602","ak.r":50172,"ak.a2":n,"ak.m":"x","ak.n":"essl","ak.bpcip":"136.49.105.0","ak.cport":55678,"ak.gh":"23.192.37.202","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.0rtt.ed":"","ak.csrc":"-","ak.acc":"","ak.t":"1776828425","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==09tdOlXgKlRV5LmgmeFUduhxyZOZC7erzz0L5llTo1C+S8U1VxH9q/yEJsgWKxX7eDAVxRxDZQjLiHWRQfjPQBS+Th6MhdiYW+pYR6dX0+Prm9C105LcfQT/3FddhMrbg8qwoqxefcVBv0McibL6FaGGdgbjT8/5Ks7caMvLwjJCPXEaazgIiQ0xB9TGebU0SBFKqxoMlbl1CHgabmEJUz/eh4w1SoOhn24uimMf6AlgtcYdEMX2XR3UIwPj9xh/fYz78E/mXPiR+M5PaHH/kFojfNSARhXsvWSN5wtiyvhFUNAbdQUN6Vet3vYB09dNwsophseGIDlcHxRGenxkg7HkYwCZasaHtdrq4l1Wg5XZjriJvIF3uXLRhphN7itO1Gn6OTHujX6bJlBsbjQQg1jK+W2lQEZuEHfHro+zRzw=","ak.pv":"30","ak.dpoabenc":"","ak.tf":i};if(""!==t)o["ak.ruds"]=t;var r={i:!1,av:function(n){var t="http.initiator";if(n&&(!n[t]||"spa_hard"===n[t]))o["ak.feo"]=void 0!==e.aFeoApplied?1:0,BOOMR.addVar(o)},rv:function(){var e=["ak.bpcip","ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.0rtt.ed","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(e)}};BOOMR.plugins.AK={akVars:o,akDNSPreFetchDomain:a,init:function(){if(!r.i){var e=BOOMR.subscribe;e("before_beacon",r.av,null,null),e("onbeacon",r.rv,null,null),r.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script></head>
+
+<body style="overflow-y: inherit; position: relative; background-color: white; overflow-y: hidden;">
+    <!--where to buy 悬浮弹窗-->
+    <div id="wheretobuy" style="">
+        <div class="wheretobuy_header">
+            <img class="wheretobuy_header_close_icon" onclick="fn_wheretobuy_close()" src="/Content/icon/newsletter_close.png" />
+        </div>
+        <table style="border-collapse: collapse; border: 1px solid gray">
+            <tr>
+                <td style="border: 1px solid gray; vertical-align: top; background-color: white;">
+                    <div style="margin: 20px; flex: 1">
+                        <div style="">
+                            <div style="display: inline-block; float: left; width: 100px">
+                                <svg width="80" height="80" viewBox="15 0 200 240" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" overflow="hidden">
+                                <defs>
+                                <clipPath>
+                                <rect x="210" y="282" width="222" height="236" />
+                      </clipPath>
+                    </defs>
+                                <g clip-path="url(#clip0)" transform="translate(-210 -282)">
+                                <path d="M431.5 422.598 431.5 319.118 237.746 319.118 237.746 306.607C237.731 293.299 227.032 282.515 213.83 282.5L213.527 282.5C211.855 282.5 210.5 283.866 210.5 285.552 210.5 287.237 211.855 288.603 213.527 288.603L213.83 288.603C223.691 288.613 231.682 296.668 231.692 306.607L231.692 459.487C231.706 470.783 240.443 480.116 251.63 480.784 242.382 486.538 239.513 498.759 245.221 508.08 250.929 517.402 263.054 520.294 272.302 514.541 281.55 508.787 284.419 496.566 278.711 487.244 277.124 484.652 274.966 482.464 272.404 480.848L384.721 480.848C375.51 486.662 372.719 498.902 378.487 508.186 384.256 517.47 396.399 520.283 405.61 514.469 414.82 508.654 417.611 496.415 411.843 487.131 410.263 484.588 408.132 482.44 405.61 480.848L428.473 480.848C430.145 480.848 431.5 479.482 431.5 477.796 431.5 476.111 430.145 474.745 428.473 474.745L252.883 474.745C244.528 474.735 237.756 467.91 237.746 459.487L237.746 440.907ZM395.171 511.363C387.647 511.363 381.548 505.215 381.548 497.631 381.548 490.047 387.647 483.899 395.171 483.899 402.695 483.899 408.794 490.047 408.794 497.631 408.786 505.211 402.691 511.354 395.171 511.363ZM261.966 511.363C254.442 511.363 248.342 505.215 248.342 497.631 248.342 490.047 254.442 483.899 261.966 483.899 269.49 483.899 275.589 490.047 275.589 497.631 275.58 505.211 269.486 511.354 261.966 511.363ZM237.746 361.839 280.13 361.839 280.13 392.354 237.746 392.354ZM377.007 392.354 334.623 392.354 334.623 361.839 377.007 361.839ZM383.062 361.839 425.445 361.839 425.445 392.354 383.062 392.354ZM334.623 398.457 377.007 398.457 377.007 421.615 334.623 425.616ZM328.568 426.192 286.185 430.193 286.185 398.457 328.568 398.457ZM334.623 355.736 334.623 325.221 377.007 325.221 377.007 355.736ZM328.568 355.736 286.185 355.736 286.185 325.221 328.568 325.221ZM328.568 361.839 328.568 392.354 286.185 392.354 286.185 361.839ZM237.746 398.457 280.13 398.457 280.13 430.77 237.746 434.77ZM383.062 421.038 383.062 398.457 425.445 398.457 425.445 417.038ZM425.445 355.736 383.062 355.736 383.062 325.221 425.445 325.221ZM280.13 325.221 280.13 355.736 237.746 355.736 237.746 325.221Z" stroke="#000000" stroke-width="0.458333" stroke-miterlimit="8" fill-rule="evenodd" />
+                    </g>
+                  </svg>
+                            </div>
+                            <div style="margin-left: 110px; margin-right: 20px">
+                                <div style="font-size: 20px; font-weight: 600">
+                                    Where to buy
+                                </div>
+                                <div>
+                                    <p>
+                                        You can purchase Lenovo products online, shop direct from Lenovo or via selected retailers and resellers.
+                                    </p>
+                                    <p>
+                                        Please note that the models showing on PSREF may not be available in your country. Please check with Lenovo local sales or business partners for the availability.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; margin-left: 110px; width: 80%; line-height: 30px;">
+                            <div style="display: inline-block; font-size: 16px; font-weight: 600;">
+                                Select your location
+                            </div>
+                            <div style="display: inline-block; margin-left: 20px">
+                                <select id="sl_WhereToBuy" style="min-width: 160px; background-color: #ffffff; background-image: none !important; filter: none !important; border: 1px solid #e5e5e5; outline: none; height: 25px !important; line-height: 30px; border-radius: 5px;"></select>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td style=" border: 1px solid gray; vertical-align: top; background-color: white;">
+                    <div style="margin: 20px; flex: 1">
+                        <div style="">
+                            <div style="display: inline-block; float: left; width: 100px">
+                                <img src="/Content/icon/find_a_dealer.svg" />
+                            </div>
+                            <div style="margin-left: 110px; margin-right: 20px">
+                                <div style="font-size: 20px; font-weight: 600">
+                                    Find a dealer
+                                </div>
+                                <div>
+                                    <p>
+                                        Lenovo has an extensive and knowledgeable network of business partners who are available to help you choose from a range of PCs, accessories and unique technologies.
+                                    </p>
+                                </div>
+                                <div>
+                                    <a href="https://support.lenovo.com/partnerlocator" title="Search now" target="_blank" style="font-size: 14px; font-weight: 600" latag="latag_pc_psref_product_finddealer">
+                                        Search now >
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="footer" style="display: none"></div>
+    <div id="virtualDivForMainPanelLocation"></div>
+    <div class="mainNewbg psrefmainpanel" id="DivPSREFMainPanel">
+        <div title="Feedback" id="master_feedbackdiv" class="alert_default feedback">
+            <div>
+                <label for="feedback_email">Email:</label><input type="text" name="f_b_email" id="f_b_email" />
+                <textarea rows="6" id="f_b_content" maxlength="900" placeholder="If you hava any advices or questions,please enter your comments in this page,we will reply you as soon as possible."></textarea>
+                <input type="button" value="SUBMIT" id="f_b_btnsubmit" class="alt_sub" />&nbsp;&nbsp;&nbsp;
+                <input type="button" value="Cancel" class="alt_canel" id="f_b_btncancel" onclick="javascript: $('#master_feedbackdiv').dialog('close');" />
+            </div>
+        </div>
+        <div title="Favorite" id="master_favoritediv" class="alert_default favorite">
+            <div>
+                <label for="txt_fav_title">Name:</label>
+                <input type="text" value="demo" id="txt_fav_title" />
+                <input type="button" value="OK" id="fav_btnOk" class="alt_ok" />
+            </div>
+            <ul id="oldfavoritelist" data-frist="1" class="favoritelist"></ul>
+        </div>
+        <form id="form1" runat="server">
+            <div>
+                <input type="hidden" id="hidTableHeaderFilter" value="" />
+                <input type="hidden" id="DTFC_LeftBodyWrapper_height" value="" />
+                <input type="hidden" id="hidJsonData" value="" />
+                <input type="hidden" id="as_product_id" value="" />
+                <input type="hidden" id="as_product_name" value="" />
+                <input type="hidden" id="hidProductKey" value="" />
+                <input type="hidden" id="as_product_key" value="" />
+                <input type="hidden" id="hidProductLine" value="" />
+                <input type="hidden" id="hidClassification" value="" />
+                <input type="hidden" id="as_info_IsDigitalSpec" value="{}" />
+                <input type="hidden" id="hid_ProductWithdraw" value="" />
+                <input type="hidden" id="hidMachineTypeQuery" value="" />
+                <input type="hidden" id="as_info_sc" value="" />
+                <input type="hidden" id="hid_PhotoList" value="" />
+                <input type="hidden" id="hid_SearchFilterText" value="" />
+                <input type="hidden" id="hid_CompareModelCountLimit" value="10" />
+                <input type="hidden" id="hidCountrySalesogJson" value="{}" />
+                <div id="tableHeadFilterDIV" style="display: none"></div>
+                <div id="div_mask_product_photo"
+                     class="as_mask_layer"
+                     style="display: none">
+                    <div class="as_mask_layer_content">
+                        <p class="as_left_title product_show_item_title_parent">
+                            <span class="as_info_productName product_show_item_title" onclick="fn_info_productName_click()" style="cursor: pointer"></span>
+                            <span style="color: #dc291e; margin-left: 15px" class="as_info_IsWithdraw">
+                                (Withdrawn)
+                            </span>
+                        </p>
+                        <div class="as_share_button" onclick="fn_share_click()">
+                            <img src="/Content/icon/copy2.png" />
+                        </div>
+                        <div class="as_cancel_button">
+                            <svg style="border-radius: 100%" xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path style="fill: black" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </div>
+
+                        <div class="left">
+                            <!--as_mask_title-->
+                            <div class="top" style="min-height: 40px; height: 10%; "></div>
+                            <div class="top2" style=" min-height: 36px; height: 7%;">
+                                <div class="as_select_color">
+                                    <img class="as_select_color_img" src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23444e5a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e" />
+                                    <select id="select-beast" style="width: 95%" class="as_casecolor" placeholder="Select a color"></select>
+                                </div>
+                            </div>
+                            <div class="center" style="height: 40px;">
+                                <p class="thumbnail_current_statistic"></p>
+                            </div>
+                            <div class="bottom" style="min-height: 690px; height: max-content; ">
+                                <div class="bottom-left" id="as_thumbnails">
+                                    <button id="up-btn" class="scroll-btn">▲</button>
+                                    <div class="thumbnails"></div>
+                                    <button id="down-btn" class="scroll-btn">▼</button>
+                                </div>
+                                <div class="bottom-right">
+                                    <div class="zoomSliderBtn" id="ZoomIn" title="Zoom in" style="left: 206px">
+                                        +
+                                    </div>
+                                    <div class="zoomSliderBtn" id="ZoomOut" title="Zoom out">
+                                        -
+                                    </div>
+                                    <div class="slider-container">
+                                        <input type="range" id="zoomSlider" min="1" max="3" step="0.01" value="1" />
+                                        <span id="rangeValue" style=""></span>
+                                    </div>
+
+                                    <div class="dot_svg_3602">
+                                        <img src="/Content/icon/360long.svg" style="width: 65px; position: relative; top: 15px; right: -1px;" />
+                                    </div>
+                                    <img class="svg_3d as_hide" onclick="fn_as_3d_show()" src="/Content/icon/3D.svg" style="position: absolute; top: 77px; left: 135px; width: 44px;" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right">
+                            <div class="as_center_container">
+                                <div class="as_video"></div>
+                                <div class="image-container" id="as_zoomableImage">
+                                    <svg class="left_arrow" onclick="scrollUp()" style="width: 60px; height: 500px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"></path>
+                                    </svg>
+                                    <img id="zoomableImage" src="" alt="Zoomable Image" />
+                                    <svg class="right_arrow" onclick="scrollDown()" style="width: 60px; height: 500px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="as_layer_button_note">
+                            <p>The product images are for illustration purposes only. The actual product appearance, ports, keyboard layout, and accessories may vary between models.<button type="button" class="as_photo_note_close" onclick="fn_photo_note_close()" title="Clear" style=""></button></p>
+                        </div>
+                    </div>
+                    <div title="Select product to compare" id="generalcompareproductAddMore" class="alert_default alt_newsletter">
+                        <div id="dialog_top_panle_title"></div>
+                        <table id="generalcompareproduct_table">
+                            <tr>
+                                <th>Product Line:</th>
+                                <td>
+                                    <select id="sl_AddCompareProductLine" name=""></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Series:</th>
+                                <td>
+                                    <select id="sl_AddCompareSeries" name=""></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Product:</th>
+                                <td>
+                                    <select id="sl_AddCompareProduct" name=""></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="height: 10px">
+                                    <hr />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Search:</th>
+                                <td>
+                                    <input type="text" id="txt_AddCompareSearch" autocomplete="off" maxlength="200" />
+                                    <div type="button" id="btn_ClearCompareSearch" onclick="$('#txt_AddCompareSearch').val('');"></div>
+                                    <div id="div_AddComparePromptPanel" style="display: none">
+                                        <ul></ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <div id="div_ProductListForComparePanel"></div>
+                                </td>
+                            </tr>
+                            <tr></tr>
+                        </table>
+                        <div id="div_CompareProductListPanel"></div>
+                        <div id="dialogBottomBottonPanel">
+                            <a href="javascript:;" onclick="AddTempCompareProduct();">Compare</a>
+                        </div>
+                    </div>
+                </div>
+                <div id="window_3d" class="as_mask_layer" style="display: none"></div>
+                <div id="div_mask_product_overview" class="as_mask_layer" style="display: none">
+                    <div class="as_mask_layer_content">
+                        <p class="as_left_title product_show_item_title_parent">
+                            <span class="as_info_productName product_show_item_title"></span>
+                            <span style="color: #dc291e; margin-left: 15px" class="as_info_IsWithdraw">
+                                (Withdrawn)
+                            </span>
+                        </p>
+                        <div class="as_cancel_button">
+                            <svg style="border-radius: 100%" xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path style="fill: black" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </div>
+                        <div class="right">
+                            <div class="as_center_container"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="div_mask_product_dimension_diagram" class="as_mask_layer_small" style="display: none">
+                    <div class="as_mask_layer_content">
+                        <div class="as_cancel_button">
+                            <svg style="border-radius: 100%" xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path style="fill: black" d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </div>
+                        <div class="as_center_container"></div>
+                    </div>
+                </div>
+                <!--主体内容 Begin-->
+                <div class="mainbox">
+                    <div class="mianDesktop" id="mianDesktop_content">
+                        <!-- 代码开始 -->
+                        <div id="page-wrap" style="margin-top: 130px !important">
+                            <div id="example-two">
+                                <div class="list-wrap">
+                                    <div id="as_show" class="as_box">
+                                        <div class="banner">
+                                            <div class="as_banner" id="as_box">
+                                                <div class="as_small" id="as_small_box">
+                                                    <div class="slide"></div>
+                                                    <div class="mask" id="mask"></div>
+                                                </div>
+                                            </div>
+                                            <div class="as_dots_contans">
+                                                <div class="dots"></div>
+                                            </div>
+                                            <div class="arrow next">
+                                                <svg style="width: 40px; height: 40px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                                                </svg>
+                                            </div>
+                                            <div class="arrow prev">
+                                                <svg style="width: 40px; height: 40px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="as_big" id="as_big_box">
+                                            <div class="as_big_contains" id="as_big_contains">
+                                                <img id="as_big_image" src="" />
+                                            </div>
+                                        </div>
+                                        <div class="as_show_right">
+                                            <h2 class="product_show_item_title_parent">
+                                                <span class="as_info_productName product_show_item_title"> </span>
+                                                <span class="as_info_IsWithdraw" style="color: #dc291e; margin-left: 15px"></span>
+                                                <span id="product_name_top_icon_two" class="product_name_top_icon two">
+                                                    <img src="/Content/icon/product_dotdotdot.svg" onclick="fn_product_name_top_icon_interlayer_show()" />
+                                                    <span id="product_name_top_icon_interlayer_two" class="product_name_top_icon_interlayer two" style="display: none">
+                                                        <span class="interlayer_item pdf_download">
+                                                            <img class="interlayer_item_img" src="/images/icons/PDF.svg" />
+                                                            <span class="interlayer_item_text" style="">Specs</span>
+                                                        </span>
+                                                        <span class="interlayer_item" onclick="fn_wheretobuy_open();">
+                                                            <img class="interlayer_item_img" src="/Content/icon/purchase.svg" />
+                                                            <span class="interlayer_item_text">Purchase</span>
+                                                        </span>
+                                                        <span class="interlayer_item" onclick="fn_click_help();">
+                                                            <img class="interlayer_item_img" src="/Content/icon/help.svg" />
+                                                            <span class="interlayer_item_text">Help</span>
+                                                        </span>
+                                                    </span>
+                                                </span>
+                                            </h2>
+                                            <div class="as_show_right_content"></div>
+                                            <div class="as_show_right_footer" style="color: #0d5c91; background-color: white; padding-bottom: 15px;">
+                                                Note: some configurations are only available on selected models and may not be available in all regions
+                                            </div>
+                                            <div id="breadcrumb_topFull" class="breadcrumb_panel">
+                                                <ol class="breadcrumb"></ol>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="example-three">
+                                        <div id="pro_name">
+                                            <h1 class="product_show_item_title_parent">
+                                                <span style="display: inline-block; height: 30px; line-height: 30px; position: relative; top: 10px;">
+                                                    <span class="as_info_productName product_show_item_title"> </span>
+                                                    <span class="as_info_IsWithdraw" style="color: #dc291e; margin-left: 15px">
+                                                    </span>
+                                                    <span class="product_name_top_icon">
+                                                        <img src="/Content/icon/product_dotdotdot.svg" style="top: 4px" onclick="fn_product_name_top_icon_interlayer_show()" />
+                                                        <span class="product_name_top_icon_interlayer hide">
+                                                            <span class="interlayer_item pdf_download">
+                                                                <img class="interlayer_item_img" src="/images/icons/PDF.svg" />
+                                                                <span class="interlayer_item_text">Specs</span>
+                                                            </span>
+                                                            <span class="interlayer_item" onclick="fn_wheretobuy_open();">
+                                                                <img class="interlayer_item_img" src="/Content/icon/purchase.svg" />
+                                                                <span class="interlayer_item_text">Purchase</span>
+                                                            </span>
+                                                            <span class="interlayer_item" onclick="fn_click_help();">
+                                                                <img class="interlayer_item_img" src="/Content/icon/help.svg" />
+                                                                <span class="interlayer_item_text">Help</span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </span>
+                                            </h1>
+                                            <input type="hidden" name="search_models" id="search_models" value="" />
+                                            <input type="hidden" name="search_models" id="hf_product_msg_data" value="" />
+                                            <input type="hidden" name="ids" id="ides" value=" " />
+                                            <div class="clear"></div>
+                                            <div id="breadcrumb_bottomFull" class="breadcrumb_panel">
+                                                <ol class="breadcrumb"></ol>
+                                            </div>
+                                        </div>
+                                        <ul class="nav" id="pro_ul_nav" style="margin-bottom: 10px">
+                                            <li class="tabnav">
+                                                <span class="current" data="#as_site_Overview" data-div="Overview">Overview</span>
+                                            </li>
+                                            <li class="tabnav" style="position: relative">
+                                                <span class="" data="#as_site_divModels" data-div="divModels">Models</span>
+                                                <img style="left: calc(50% + 40px)" src="/images/loading_3.gif" class="as_tab_loading_img" />
+                                            </li>
+                                            <li class="tabnav" style="position: relative">
+                                                <span class="" data="#as_site_divSpec" data-div="divSpec">Specifications</span>
+                                                <img style="left: calc(50% + 68px)" src="/images/loading_3.gif" class="as_tab_loading_img" />
+                                            </li>
+                                            <li class="tabnav as_tab_Documentation" style="position: relative">
+                                                <span class="" data="#as_site_divDocument" data-div="divDocument">Documentation</span>
+                                                <img style="left: calc(50% + 75px)" src="/images/loading_3.gif" class="as_tab_loading_img" />
+                                            </li>
+                                            <li class="tabnav">
+                                                <span class="User_Guide" data="" data-div="">User&nbsp;Guide</span>
+                                            </li>
+                                            <li class="tabnav" id="nav_accessories"></li>
+                                            <li class="tabnav" id="nav_services"></li>
+                                        </ul>
+                                    </div>
+                                    <div id="Overview" class="tab_view" style="display: block;position: relative;top: -60px;padding-top: 60px;background-color: white;">
+                                        <div class="as_overview_content">
+                                            <div class="as_overview_img">
+                                                <img src="" />
+                                            </div>
+                                            <div class="as_overview_tabal"></div>
+                                            <div class="as_overview_notes"></div>
+                                        </div>
+                                    </div>
+                                    <div id="divModels" class="tab_view" style="display: none">
+                                        <div id="dialog_filter" title="" class="dialog">
+                                        </div>
+                                        <div class="TopSeller ">
+                                            <div class="first_line">
+                                                <div class="grid-item" style="width: 845px;">
+                                                    <span style="display:inline-flex;">
+                                                        <label id="sl_RegionSelect_label" style="float: left; font-size: 12px; padding-right: 5px; line-height: 35px; ">
+                                                            Select Country / Region
+                                                        </label>
+                                                        <span id="sl_RegionSelect" class="sl_RegionSelect">Select</span>
+                                                        <div class="icon_country_region_note" style="float:left;">
+                                                            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="M512 958.016C266.08 958.016 65.984 757.952 65.984 512 65.984 266.08 266.08 65.984 512 65.984c245.952 0 446.016 200.064 446.016 446.016 0 245.952-200.064 446.016-446.016 446.016z m0-828.032c-210.656 0-382.016 171.36-382.016 382.016 0 210.624 171.36 382.016 382.016 382.016 210.624 0 382.016-171.36 382.016-382.016S722.624 129.984 512 129.984z" fill="#294E95"></path><path d="M464 304a1.5 1.5 0 1 0 96 0 1.5 1.5 0 1 0-96 0zM512 768c-17.664 0-32-14.304-32-32V448c0-17.664 14.336-32 32-32s32 14.336 32 32v288c0 17.696-14.336 32-32 32z" fill="#294E95"></path></svg>
+                                                            <div class="noteContentPanel" style="display: none; right: auto;">
+                                                                <div class="noteContentItem"></div>
+                                                            </div>
+                                                        </div>
+                                                    </span>
+                                                    <input class="clear_filters" type="button" value="Clear filters" onclick="fn_clear_filters()">
+                                                    <div id="search_model_panel">
+                                                        <div class="ss_div">
+                                                            <input type="hidden" id="hidden_where_like_Server" />
+                                                            <input name="ctl00$ContentPlaceHolder1$where_like_Server" type="text" id="where_like_Server" class="ss_txt" placeholder="Enter Model No. or other keywords" autocomplete="off" />
+                                                            <button type="button" class="ss_btnx" onclick="btn_where_like_Server_Clear()" title="Clear"></button>
+                                                            <input type="button" name="ctl00$ContentPlaceHolder1$btn_where_like_Server" value="" onclick="btn_where_like_Server_Click()" id="btn_where_like_Server" class="ss_btny" />
+                                                            <div class="productsearchremark" style="display: none">
+                                                                <p style="color: black; padding-right: 5px">
+                                                                    Use ";" to split your keywords, e.g.
+                                                                    "keyword1;keyword2;keyword3".
+                                                                </p>
+                                                                <br />
+                                                                <div style="display: inline-block; font-size: 14px; height: 20px; line-height: 20px; width: 100%; text-align: center; vertical-align: middle; ">
+                                                                    Keywords logic:
+                                                                    <span class="ckrdForSearch" title="Result contains keyword a and keyword b">
+                                                                        <input id="rd_SearchAnd" type="radio" name="ctl00$ContentPlaceHolder1$checkRdForSearch" value="rd_SearchAnd" checked="checked">
+                                                                    </span><label class="lblForSearch" for="rd_SearchAnd" style="" title="Result contains keyword a and keyword b">and</label>
+                                                                    <span class="ckrdForSearch" title="Result contains keyword a or keyword b">
+                                                                        <input id="rd_SearchOr" type="radio" name="ctl00$ContentPlaceHolder1$checkRdForSearch" value="rd_SearchOr">
+                                                                    </span><label class="lblForSearch" for="rd_SearchOr" title="Result contains keyword a or keyword b">or</label>
+                                                                    <input type="hidden" name="ctl00$ContentPlaceHolder1$hid_ForSearchRadio" id="hid_ForSearchRadio" value="and">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div id="exportbox" class="blue_box">
+                                                        <div onclick="CompareClick();">
+                                                            Compare (<span id="exportCount"></span>/10)
+                                                        </div>
+                                                        <a id="cancelcompare" href="javascript:void(0);" title="clear compare">&nbsp;</a>
+                                                    </div>
+                                                </div>
+                                                <div class="grid-item" style="width:440px;">
+                                                    <div style="float: left; position: relative; top: 0px; display: inline-block; font-size: 12px; height: 40px; line-height: 40px; vertical-align: middle; padding-right: 10px; padding-left: 10px; ">
+                                                        <input type="checkbox" id="as_differences" />
+                                                        <label style="user-select:none;cursor:pointer;" for="as_differences">Highlight the differences</label>
+                                                    </div>
+                                                    <div class="top_btn">
+                                                        <div class="export" style="width: 50px" id="btn_export"></div>
+                                                    </div>
+                                                    <div id="showLoadingCount">
+                                                        Total loaded items:
+                                                        <span id="TotalCountSpan">0</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="exampleTableDIV" class="test-fixedTable">
+                                            <div class="table_wrap as_showmodel">
+                                                <table>
+                                                    <thead></thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="divSpec" class="tab_view" style="display: none">
+                                        <div id="as_SpecHtmlFileFullContent"></div>
+                                        <div class="page_panel">
+                                            <div class="top_panel">
+                                                <div class="left_blank flow_show">
+                                                    <div class="left_title_content">Product</div>
+                                                </div>
+                                                <div class="right_title flow_show">
+                                                    <div class="title_first title_children"></div>
+                                                    <div class="title_second title_children"></div>
+                                                </div>
+                                            </div>
+                                            <div class="mainPanal">
+                                                <div class="left_Nav flow_show"></div>
+                                                <div class="left_fold">
+                                                    <div class="left_fold_button unfold"></div>
+                                                </div>
+                                                <div class="right_Show flow_show">
+                                                    <div class="product_first product_children"></div>
+                                                    <div class="product_second product_children"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="divDocument" class="tab_view" style="display: none"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 代码结束 -->
+                    </div>
+                    <div id="floatExistProduct"></div>
+                    <div id="divModelID" style="display: none;height: 100px;width: 100px;background-color: red;position: absolute;float: left;left: 100px;top: 100px;"></div>
+
+                    <!-- Compare弹窗 -->
+                    <div class="CompareMask" id="CompareBox" style="display: none">
+                        <ul class="CompareList" id="compareBox_ul"></ul>
+                        <div class="Compare_panel_bottom">
+                            <a href="/l/CompareModels/" target="_blank" rel="opener">COMPARE ITEMS</a>
+                            <p>
+                                <b>Did you know?</b> You can compare models across different products and series
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Export弹窗 -->
+                    <div class="ExportMask" id="ExportFloatBox" style="display: none">
+                        <div class="blankdivgrey"></div>
+                        <ul class="ExportList" id="exportBox_ul"></ul>
+                        <div class="Export_panel_bottom" style="text-align: center">
+                            <a href="/l/CompareModels/" class="ddd" target="_blank" rel="opener">Go to compare</a>
+                            <a href="javascript:;" class="aaa" id="btnclearCompare">Clear all</a>
+                            <!--<a href="javascript:;" id="exportcompareModelPDF">Download all >PDFs</a>-->
+                            <a href="javascript:;" id="exportcompareModelExcel" style="margin-left: calc(50% - 121px) !important">Download in Excel</a>
+                        </div>
+                    </div>
+                    <div class="exportexcelremark">
+                        <p>
+                            1. Click the Excel button to export all models to an Excel file.
+                        </p>
+                        <p>2. Or filter the models you need, then click Excel.</p>
+                    </div>
+                    <input id="hidDialogID" type="text" style="display: none" value="dialog_2" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="loadingcontainer hide">
+        <div class="loadingrow">
+            <div class="loadingcontent hide">
+                <div class="square">
+                    <div class="box">
+                        <div class="square-gradient">
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                            <i class="gradient"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="/frameworkFiles/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="/frameworkFiles/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/v2/js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="/v2/js/asut.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/frameworkFiles/psrefmsg/psrefmsg.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/Content/tippyjs/popper.min.js"></script>
+    <script type="text/javascript" src="/Content/tippyjs/tippy-bundle.umd.min.js"></script>
+    <script type="text/javascript" src="/Content/tom-select/tom-select.complete.min.js"></script>
+    <script type="text/javascript" src="/Scripts/ProductPageInitialRouter.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/frameworkFiles/FixedTable/FixedTable.js"></script>
+    <script type="text/javascript" src="/Scripts/ProductConfigurationDetail.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/Content/spec_module/index.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/v2/js/menu.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/v2/js/home.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/Scripts/ProductPageNew.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/Scripts/master.js?v=1.20260325"></script>
+    <script type="text/javascript" src="/Scripts/compare-products-dialog.js?v=1.20260325"></script>
+    <script type="text/javascript">
+        $(function () {
+            var locationHost = window.top.location.host;
+            if (locationHost.toLowerCase() == "psrefstuff.lenovo.com") {
+                var locationHref = window.top.location.href;
+                window.top.location.href = locationHref.replace(
+                    locationHost,
+                    "psref.lenovo.com"
+                );
+            }
+
+            $("#ifr_SpecPage").contents().on("click", "body", function () {
+                $("#DivPSREFMainPanel", parent.document).click();
+                return false;
+            });
+
+            $("body").contents().on("click", ".as_lenovo_logo", function () {
+                window.top.location.href = "/";
+                return false;
+            });
+
+            masterfun();
+
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 580) {
+                    $(".search").hide();
+                } else {
+                    $(".search").show();
+                }
+            });
+        });
+
+        function btn_where_like_Server_Clear() {
+            $(".ss_btnx").css("display", "none");
+            $("#where_like_Server").val("");
+            $("#where_like_Server").css("background-color", "");
+            $("#hidden_where_like_Server").val("");
+            fn_showmodel(1);
+        }
+        function btn_where_like_Server_Click() {
+            fn_showmodel(1);
+        }
+        function fn_photo_note_close() {
+            $(".as_layer_button_note").addClass(`hide`);
+        }
+    </script>
+    <script>
+        window.MobileAccessConfig = {
+            page: "product",
+            id: function () {
+                return $("#as_product_id").val() || "";
+            },
+            title: function () {
+                return $("#as_product_name").val() || $.trim($(".as_info_productName").first().text()) || "";
+            }
+        };
+    </script>
+    <script type="text/javascript" src="/Scripts/MobileAccess.js?v=1.20251224"></script>
+</body>
+</html>

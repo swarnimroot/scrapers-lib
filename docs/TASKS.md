@@ -10,9 +10,9 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-21
 
-- **Last session:** **Wave 2a COMPLETE (narrowed scope). `v0.2.0` tagged.** `tier2/_base.py` with 46 unit tests; `tier2/dell.py` with 47 unit tests + 1 gated live integration test (verified against Alienware Aurora 16X + Dell XPS 16). `core/playwright_base.py` upgraded to Chrome-145 UA + integrated `playwright-stealth` (Wave 1 stealth was insufficient against Akamai). Dell fetcher emits one `ProductSnapshot` per pre-built tile with ~20 detailed spec categories pulled from Dell's own `csbapi/unifiedpd/techspecs` endpoint. `docs/ADDING_A_SOURCE.md` added: reconnaissance methodology, per-manufacturer acquisition-pattern catalog, decision tree, Dell case study — read before any Wave 2b work.
+- **Last session:** **Wave 2b Lenovo COMPLETE.** `tier2/lenovo.py` — plain-httpx fetcher that extracts the PSREF `ProductKey` from the URL, calls `/api/product/Compare/LoadSpecData` directly, and flattens the nested `L1 > L2 > Features > FVs > FVGs > FVGItem` tree into one `ProductSnapshot` per URL (50+ feature keys; multi-option Features serialized as newline-joined alternatives). No Playwright, no stealth, no new deps — PSREF has no bot gating. 47 unit tests (Legion Pro 7 16AFR10H + LOQ 15IRX10 fixtures) + 1 gated live integration test. Three reconnaissance probes committed at `scripts/lenovo/` (plain-httpx baseline, Playwright XHR trace, PDF datasheet coverage witness). Wave 2a Dell remains the first Tier 2 source — still green.
 - **In progress:** none (pause point).
-- **Next:** Wave 2b — remaining manufacturer scrapers (HP, Lenovo, ASUS, Acer, MSI). Each likely exposes specs via a different mechanism than Dell's unified-product-detail API; starts with short reconnaissance per site.
+- **Next:** Wave 2b continues — HP / ASUS / Acer / MSI. Each requires its own reconnaissance per the golden rule in `docs/ADDING_A_SOURCE.md` §2 (do **not** assume Lenovo's pattern hoists). §5 decision tree is the starting framework; `scripts/lenovo/probe_psref.py` is the lightest-weight probe template.
 - **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4`, `playwright`, `playwright-stealth`, and Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking.
 
@@ -84,15 +84,15 @@ Driver: **Demo 2**. Scope narrowed to `_base` + Dell only so the shared helpers 
 
 ## Wave 2b — remaining Tier 2 manufacturers
 
-Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition pattern than Dell (Dell → internal `csbapi` endpoint; Lenovo likely → PSREF separate site; HP/ASUS/Acer/MSI to be determined by per-site recon). Don't assume the Dell pattern hoists into `_base` until a second site confirms it.
+Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition pattern than Dell (Dell → internal `csbapi` endpoint; Lenovo → PSREF `LoadSpecData` JSON API; HP/ASUS/Acer/MSI to be determined by per-site recon). Don't assume one pattern hoists into `_base` until a second site confirms it.
 
 - [ ] `tier2/hp.py` — reconnaissance then fetcher
-- [ ] `tier2/lenovo.py` — reconnaissance then fetcher (PSREF is a candidate source)
+- [x] `tier2/lenovo.py` — PSREF `LoadSpecData` JSON endpoint, plain httpx (no stealth); verified on Legion Pro 7 16AFR10H + LOQ 15IRX10 (47 unit tests + 1 gated live integration)
 - [ ] `tier2/asus.py`
 - [ ] `tier2/acer.py`
 - [ ] `tier2/msi.py`
-- [ ] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11
-- [ ] Hoist any patterns that recur across two or more sites into `tier2/_base.py`
+- [ ] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo
+- [ ] Hoist any patterns that recur across two or more sites into `tier2/_base.py` (so far Dell's HTML-fragment parsing and Lenovo's nested-JSON flattening share no helpers — no hoisting yet)
 - [ ] Tag `v0.3.0` on Wave 2b completion
 
 ## Wave 2c — BestBuy + Amazon

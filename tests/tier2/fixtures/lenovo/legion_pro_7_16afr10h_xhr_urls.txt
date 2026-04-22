@@ -1,0 +1,27 @@
+document 200 text/html                                                2550 https://psref.lenovo.com/l/Product/Legion/Legion_Pro_7_16AFR10H?tab=spec
+xhr      200 application/json; charset=utf-8                        350843 https://psref.lenovo.com/api/home/menu/info?IsPreviewProduct=true
+document 200 text/html                                               14315 https://psref.lenovo.com/Product/Legion/Legion_Pro_7_16AFR10H?tab=spec
+xhr      200 application/json                                          717 https://c.go-mpulse.net/api/config.json?key=EAHL9-X4DA3-FW2FQ-TF9NY-WECDA&d=psref.lenovo.com&t=5922761&v=1.720.0&sl=0&si=1069e02b-11bb-4f18-b56f-4a9078490368-tdvll5&plugins=AK,ConfigOverride,Continuity,PageParams,IFrameDelay,AutoXHR,SPA,History,Angular,Backbone,Ember,RT,CrossDomain,BW,PaintTiming,NavigationTiming,ResourceTiming,Memory,CACHE_RELOAD,Errors,TPAnalytics,UserTiming,Akamai,Early,EventTiming,LOGN&acao=&ak.ai=307559
+xhr      200 application/json                                          780 https://c.go-mpulse.net/api/config.json?key=EAHL9-X4DA3-FW2FQ-TF9NY-WECDA&d=psref.lenovo.com&t=5922761&v=1.720.0&sl=0&si=56ed903e-c43f-434d-a6d6-aa3444ca4b2a-tdvll6&plugins=AK,ConfigOverride,Continuity,PageParams,IFrameDelay,AutoXHR,SPA,History,Angular,Backbone,Ember,RT,CrossDomain,BW,PaintTiming,NavigationTiming,ResourceTiming,Memory,CACHE_RELOAD,Errors,TPAnalytics,UserTiming,Akamai,Early,EventTiming,LOGN&acao=&ak.ai=307559
+xhr      200 application/json; charset=utf-8                           821 https://psref.lenovo.com/api/product/Info/GetInfoByUrl?t=null
+xhr      200 application/json; charset=utf-8                           113 https://psref.lenovo.com/api/product/Info/ProductPageTabVisibility?ProductKey=Legion_Pro_7_16AFR10H&t=null
+xhr      200 application/json; charset=utf-8                            70 https://psref.lenovo.com/api/home/VersionTimestamp?t=1776828426
+xhr      200 application/json; charset=utf-8                          2175 https://psref.lenovo.com/api/product/Info/WhereToBuy?t=1776828426
+xhr      200 application/json; charset=utf-8                           242 https://psref.lenovo.com/api/product/Info/AccessoriesAndServices?ProductKey=Legion_Pro_7_16AFR10H&t1776828426
+xhr      200 application/json; charset=utf-8                           301 https://psref.lenovo.com/api/product/Photo/0?ProductKey=Legion_Pro_7_16AFR10H&t=1776828426
+xhr      200 application/json; charset=utf-8                           414 https://psref.lenovo.com/api/product/Info/ShowDocumentations?ProductKey=Legion_Pro_7_16AFR10H&t1776828426
+xhr      200 application/json; charset=utf-8                          2265 https://psref.lenovo.com/api/product/Info/ShowSpecPage?ProductKey=Legion_Pro_7_16AFR10H&show_mail_to=1&t=1776828426
+xhr      200 application/json; charset=utf-8                           182 https://psref.lenovo.com/api/product/Compare/GetCompareProductListInfo?ProductKey=Legion_Pro_7_16AFR10H&t=20260422094816627
+xhr      200 application/json; charset=utf-8                            60 https://psref.lenovo.com/api/product/Compare/ProductCompare
+xhr      200 application/json; charset=utf-8                          6082 https://psref.lenovo.com/api/search/DefinitionFilterAndSearch/ShowModel?pageindex=1&pagesize=30&product_key=Legion_Pro_7_16AFR10H&t=1776828426&filter=%5B%5D&search=&search_rule=1&orderby=&In_positive_or_reverse_order=0&filter_option=&mt=&vertical=true
+xhr      200 application/json; charset=utf-8                          3415 https://psref.lenovo.com/api/model/Compare/MultipleCompare
+xhr      200 application/json; charset=utf-8                           397 https://psref.lenovo.com/api/product/Highlight?productKey=Legion_Pro_7_16AFR10H&t=1776828426
+xhr      200 application/json; charset=utf-8                           340 https://psref.lenovo.com/api/product/overview?productKey=Legion_Pro_7_16AFR10H&t=1776828426
+xhr      200 application/json; charset=utf-8                               https://psref.lenovo.com/api/home/menu/info?IsPreviewProduct=true&v=1776828426
+xhr      200 application/json; charset=utf-8                          8803 https://psref.lenovo.com/api/product/Compare/LoadSpecData?&ProductKey=Legion_Pro_7_16AFR10H&t=20260422094816627
+xhr      200 application/json; charset=utf-8                            21 https://psref.lenovo.com/api/model/Compare/ModelCompare
+xhr      200 application/json; charset=utf-8                            21 https://psref.lenovo.com/api/model/Compare/ModelCompare
+xhr      302                                                             0 https://trial-eum-clientnsv4-s.akamaihd.net/eum/getdns.txt?c=p2gsn8a22
+xhr      302                                                             0 https://trial-eum-clienttons-s.akamaihd.net/eum/getdns.txt?c=p2gsn8a22
+xhr      200 text/plain                                                  8 https://raywspax3t5ta2piiaga-p2gsn8-34a819ec9-clientnsv4-s.akamaihd.net/eum/results.txt
+xhr      200 text/plain                                                  8 https://136-49-105-60_s-23-220-162-148_ts-1776828428-clienttons-s.akamaihd.net/eum/results.txt
