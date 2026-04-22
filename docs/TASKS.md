@@ -12,7 +12,7 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 - **Last session:** **Wave 3 COMPLETE.** Four new Tier 1 fetchers shipped: `tier1/rss.py` (feedparser, dual-mode discovery/anchor-driven — 41 unit tests + 2 gated live against IGN), `tier1/article.py` (trafilatura with `with_metadata=True`, partial-success on paywalls — 38 unit tests + 2 gated live against IGN/Polygon), `tier1/reddit.py` (**unauthenticated** `.json` endpoints — PRAW OAuth is closed per Reddit's Nov-2025 policy, empirically confirmed by a rejected formal application; two registered fetchers: `reddit` listings + `reddit_comments` post-plus-tree bundles — 53 unit tests + 3 gated live against r/Games), `tier1/youtube.py` (`youtube-transcript-api`, 60s default time-windowed chunking with `?t=<s>s` deep-linked `source_url` — 46 unit tests + 2 gated live). **Two library-level additions**: `RawMention.attribution` widened to `Attribution | None` (unlocks discovery mode: pass `anchors=None` → emit everything unfiltered, downstream consumer filters), and `attribute_regex_all(text, anchors) -> list[Attribution]` (multi-anchor matching helper — "Microsoft buys Activision" article fans out to both Microsoft and Activision anchors instead of being dropped on ambiguity). `praw` dropped from `pyproject.toml` since OAuth path is closed. 12-site RSS feed catalog discovered via `scripts/rss/probe_feeds.py` + documented in `scripts/rss/README.md` (IGN / GameSpot / Polygon / PCGamer / Kotaku / Eurogamer / GameInformer / GamesIndustry / GameDeveloper / RockPaperShotgun / VG247 / TheGamer) plus VentureBeat's mixed-content site-wide feed per user decision to let non-gaming content flow through. **Full suite: 762 passed, 16 skipped** (one gated live integration per active fetcher across all three tiers).
 - **In progress:** none (pause point).
-- **Next:** **Wave 4** (v1.0 readiness) — review public APIs for stability, flip doc status headers to "stable", remove `draft` / *(subject to revision)* qualifications, ensure integration tests cover every fetcher, final per-source coverage table, tag `v1.0.0`. After Wave 4: **Wave 2d** — BestBuy review pagination (`/site/reviews/name/<SKU>?page=N`) that unlocks `published_at` and long-tail reviews; scheduled as the first post-v1.0.0 additive feature (tag `v1.1.0`). Amazon `/product-reviews/<ASIN>/` deep pagination remains out of reach without credentials (sign-in wall); accept the PDP-inlined top-10 as the reachable subset.
+- **Current:** **v1.1.0 shipped 2026-04-22.** Wave 4 closed the public API freeze (v1.0.0); Wave 2d added BestBuy review pagination via a new `paginate=True` kwarg on `fetch_bestbuy_reviews` — unlocks `published_at` and long-tail reviews behind the same curl_cffi + HTTP/1.1 primitive. Amazon `/product-reviews/<ASIN>/` deep pagination remains out of reach without credentials (sign-in wall); accept the PDP-inlined top-10 as the reachable subset. **Next:** user-driven — no committed next wave. Candidate directions when the user decides: Acer/MSI Tier 2 fetchers (deferred post-demo), BestBuy Developer API activation (dormant until credential arrives), or a Demo 1 consumer built on the frozen v1.x library.
 - **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4` + `playwright` + `playwright-stealth` + `curl_cffi` + `feedparser` + `trafilatura` + `youtube-transcript-api` (no `praw`). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking.
 
@@ -111,23 +111,25 @@ Driver: the need for retailer product + review data. Recon during this wave prov
 - [x] Dependency added with user approval: `curl_cffi>=0.7`
 - [x] Tag `v0.4.0` on Wave 2c completion
 
-## Wave 2d — BestBuy reviews: long-tail pagination *(scheduled post-v1.0.0)*
+## Wave 2d — BestBuy reviews: long-tail pagination *(shipped v1.1.0, 2026-04-22)*
 
-**Scheduled after Wave 4.** This wave extends `tier3/bestbuy.py` from the
+**Closed 2026-04-22 at v1.1.0.** Extended `tier3/bestbuy.py` from the
 inline PDP review cap (~5 per fetch, no `datePublished`) to full
-pagination of `bestbuy.com/site/reviews/name/<SKU>?page=N`. The
-fetched page carries `datePublished` per review — unlocks time-series
-sentiment on BestBuy, which v0.4.0 cannot do. Same `curl_cffi` +
-Chrome impersonation + HTTP/1.1 primitive that `tier3/bestbuy.py`
-already uses is presumptively sufficient (same host, same Akamai
-deployment); needs a probe before build.
+pagination of `bestbuy.com/site/reviews/name/<SKU>?page=N` via a new
+`paginate=True` kwarg on the existing `fetch_bestbuy_reviews`. Same
+`curl_cffi` + Chrome impersonation + HTTP/1.1 primitive already used
+by the PDP path works on the reviews-surface. **Wave 2d recon
+revision:** dates live in per-review `<time class="submission-date"
+title="...">` DOM elements, NOT in the JSON-LD — the pre-wave
+assumption in ARCHITECTURE.md §11 was partially wrong.
 
-- [ ] Recon probe: confirm `/site/reviews/name/<SKU>` reachable via curl_cffi + HTTP/1.1 + homepage warming; inspect review-card DOM shape on page 1 + page 2
-- [ ] Add a paginated-review fetcher (new function, does not replace the fast inline-5 path) — caps configurable via `max_pages` / `per_page` kwargs to respect patient-pacing
-- [ ] Populate `published_at` on each RawMention from the page
-- [ ] Unit tests + fixtures for page 1 + page 2 on two unrelated SKUs
-- [ ] `docs/ARCHITECTURE.md` §11 coverage-row update (BestBuy reviews with full-tail + dates)
-- [ ] CHANGELOG bullet; tag `v1.1.0` (additive post-1.0 feature)
+- [x] Recon probe `scripts/bestbuy/probe_reviews_pagination.py`: confirmed `/site/reviews/name/<SKU>` reachable via curl_cffi + HTTP/1.1 + homepage warming; 20 reviews per page in `<li class="review-item">` containers; 3 pages captured as fixtures from SKU 6628371 (Alienware Area-51)
+- [x] Extended `fetch_bestbuy_reviews` with `paginate: bool = False`, `max_pages: int | None = None`, `page_delay_seconds: float = 3.0` kwargs; default (paginate=False) preserves the v1.0 PDP-inline behavior verbatim
+- [x] New public pure-parse `parse_bestbuy_reviews_page` for one paginated page
+- [x] Populates `published_at` (UTC-aware from the `<time title>` attr), `raw.verified_purchase`, `raw.helpful_count`, `raw.ownership_duration`
+- [x] 47 new unit tests (parse + date parser + helpful-count + verified-purchase + ownership-duration + orchestration via mocked `_iter_reviews_pages` + pagination termination on empty page and missing rel=next); 2 gated live integration tests (default PDP path unchanged; paginate mode verifies ≥10 reviews + all dated across 2 real pages)
+- [x] `docs/ARCHITECTURE.md` §11 coverage-row updated (BestBuy reviews with paginate mode + dates + helpful_count + verified_purchase + ownership_duration)
+- [x] CHANGELOG v1.1.0 entry; `_version.py` bumped 1.0.0 → 1.1.0; tag `v1.1.0`
 
 ## Wave 3 — Demo 3 sources (gaming radar)
 

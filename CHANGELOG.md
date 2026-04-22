@@ -4,6 +4,66 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-04-22
+
+**First additive release on the frozen v1.0 public API.** Wave 2d
+extends BestBuy reviews coverage without changing any existing
+fetcher signature. `paginate=True` is a new keyword on
+`fetch_bestbuy_reviews`; default behavior is verbatim unchanged from
+v1.0.0. Tests: 809 unit pass / 17 skipped (v1.0.0 was 762 / 16 — 47
+new unit tests, 1 new gated live integration test). Gated live
+integration green against SKU 6628371 (Alienware Area-51 18"):
+default path ~5 reviews, paginate path 40 reviews across 2 pages,
+all with `published_at` populated.
+
+### Added
+- **`fetch_bestbuy_reviews` paginate mode.** New kwargs
+  `paginate: bool = False` (default preserves v1.0 PDP-inline
+  behavior), `max_pages: int | None = None`, and
+  `page_delay_seconds: float = 3.0`. With `paginate=True` the fetcher
+  walks `bestbuy.com/site/reviews/name/<SKU>?page=N` (20 reviews per
+  page) via the same curl_cffi + Chrome impersonation + HTTP/1.1
+  primitive that Wave 2c established for the PDP. Terminates when a
+  page has zero `<li class="review-item">` containers or when the
+  `<link rel="next">` tag drops out. Attribution is resolved once
+  against the caller-supplied PDP URL and reused for every review
+  across all pages.
+- **`parse_bestbuy_reviews_page` pure-parse function** — one
+  reviews-page HTML → list of `RawMention`. Walks each
+  `<li class="review-item">` container, extracts the embedded
+  `<script type="application/ld+json">` `@type: Review` block for
+  body / title / author / rating, and the per-review
+  `<time class="submission-date" title="Mon DD, YYYY H:MM AM/PM">`
+  element for `published_at`.
+- **`published_at`** on paginated reviews. UTC-aware; stored as
+  UTC-naive-promoted-to-UTC because BestBuy's `<time title>` strings
+  carry no timezone info.
+- **New `raw` fields** on paginated reviews: `verified_purchase`
+  (bool), `helpful_count` (int parsed from the helpfulness-button
+  aria-label), `ownership_duration` (e.g. "2 weeks", "6 months"
+  parsed from the "Owned for X when reviewed" phrase).
+- **Recon probe** `scripts/bestbuy/probe_reviews_pagination.py` +
+  three captured fixtures (`tests/tier3/fixtures/bestbuy/
+  reviews_6628371_page1..3.html`) — mirrors the Wave 2c
+  `probe_posture.py` discipline and documents pagination mechanics
+  for future maintenance.
+
+### Changed
+- **`docs/ARCHITECTURE.md` §11 BestBuy-reviews row** updated to
+  document both modes (default / paginate), the full list of
+  populated fields, and the new caveat that BestBuy omits timezone
+  from timestamps. Also corrects a pre-Wave-2d assumption: the
+  earlier note implying JSON-LD on the reviews-surface carried
+  `datePublished` was wrong — dates are in the DOM on both surfaces.
+  Wave 2d recon discovered this before code was written.
+- **Module docstring** (`tier3/bestbuy.py`) rewritten to cover both
+  modes explicitly.
+
+### Memory
+- `project_wave4_closed_v100.md` remains current; Wave 2d completion
+  documented via new `project_wave2d_closed_v110.md` (see
+  `MEMORY.md` index).
+
 ## [1.0.0] — 2026-04-22
 
 **v1.0.0 freezes the public API.** From this release forward, schemas and
