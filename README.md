@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** draft &nbsp;·&nbsp; **Library version:** 0.1.0 (pre-release)
+**Status:** draft &nbsp;·&nbsp; **Library version:** 0.3.0 (pre-release)
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -89,6 +89,7 @@ For long-running, patient scraping across many URLs, use `Scheduler` — see [`d
 - [`docs/PRD.md`](docs/PRD.md) — what this library is, what it's for, what it's not
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — design details: schemas, Scheduler, per-source coverage
 - [`docs/TASKS.md`](docs/TASKS.md) — roadmap grouped by implementation wave
+- [`docs/ADDING_A_SOURCE.md`](docs/ADDING_A_SOURCE.md) — methodology for adding a new Tier 2 fetcher: reconnaissance techniques, per-manufacturer pattern catalog, decision tree, worked case studies
 
 ## Consumers
 

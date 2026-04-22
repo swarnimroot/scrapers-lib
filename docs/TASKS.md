@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-21 &nbsp;·&nbsp; **Library version:** 0.2.0 (pre-release)
+**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 0.3.0 (pre-release)
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -8,7 +8,7 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 ## Current state
 
-**Last updated:** 2026-04-21
+**Last updated:** 2026-04-22 (session-end wrap)
 
 - **Last session:** **Wave 2b COMPLETE (narrowed scope: Acer + MSI deferred post-demo).** Four Tier 2 manufacturer sources shipped — Dell (Wave 2a), Lenovo, HP, and ASUS. ASUS fetcher at `tier2/asus.py` targets `rog.asus.com/laptops/<line>/<model>/spec/` (plain httpx, no stealth), parses SSR'd `<h2>` spec sections via CSS-module class-prefix matching, dedupes per-SKU variant rows, and emits one `ProductSnapshot` per URL with **20+ spec categories** (richest Tier 2 coverage, including Dimensions/Ports/Weight/Power Supply/Security/Wireless-version axes that HP can't deliver). Verified on ROG Strix G16 2025 + ROG Zephyrus G16 2026 (50 unit tests + 1 gated live integration). `shop.asus.com` is DataDome-gated so the ROG marketing surface is the target — that means no prices, same as Lenovo PSREF. Acer and MSI deferred with clear rationale in `ARCHITECTURE §11` / `ADDING_A_SOURCE §4` / this file. **Full suite: 414 passed, 4 skipped** (one live integration per Tier 2 source).
 - **In progress:** none (pause point).
