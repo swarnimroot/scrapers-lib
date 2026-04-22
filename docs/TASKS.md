@@ -10,7 +10,7 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-21
 
-- **Last session:** **Wave 2a COMPLETE (narrowed scope).** `tier2/_base.py` with 46 unit tests; `tier2/dell.py` with 47 unit tests + 1 gated live integration test (verified against Alienware Aurora 16X + Dell XPS 16). `core/playwright_base.py` upgraded to Chrome-145 UA + integrated `playwright-stealth` (Wave 1 stealth was insufficient against Akamai). Dell fetcher emits one `ProductSnapshot` per pre-built tile with ~20 detailed spec categories pulled from Dell's own `csbapi/unifiedpd/techspecs` endpoint. Ready to tag `v0.2.0`.
+- **Last session:** **Wave 2a COMPLETE (narrowed scope). `v0.2.0` tagged.** `tier2/_base.py` with 46 unit tests; `tier2/dell.py` with 47 unit tests + 1 gated live integration test (verified against Alienware Aurora 16X + Dell XPS 16). `core/playwright_base.py` upgraded to Chrome-145 UA + integrated `playwright-stealth` (Wave 1 stealth was insufficient against Akamai). Dell fetcher emits one `ProductSnapshot` per pre-built tile with ~20 detailed spec categories pulled from Dell's own `csbapi/unifiedpd/techspecs` endpoint. `docs/ADDING_A_SOURCE.md` added: reconnaissance methodology, per-manufacturer acquisition-pattern catalog, decision tree, Dell case study — read before any Wave 2b work.
 - **In progress:** none (pause point).
 - **Next:** Wave 2b — remaining manufacturer scrapers (HP, Lenovo, ASUS, Acer, MSI). Each likely exposes specs via a different mechanism than Dell's unified-product-detail API; starts with short reconnaissance per site.
 - **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4`, `playwright`, `playwright-stealth`, and Chromium installed via `playwright install chromium`.
@@ -78,8 +78,9 @@ Driver: **Demo 2**. Scope narrowed to `_base` + Dell only so the shared helpers 
 - [x] `tier2/dell.py` — stealth browser session + `csbapi/unifiedpd/techspecs` endpoint per tile; one `ProductSnapshot` per `data-oc` with ~20 spec categories; tile-bullet fallback on API failure (47 unit tests)
   - [x] Integration test (gated): fetch Alienware Aurora 16X live; validate shape
 - [x] Dell row added to `docs/ARCHITECTURE.md` §11
-- [ ] Bump `version` to `0.2.0` in `pyproject.toml` and `scrapers_lib/__init__.py`
-- [ ] Tag `v0.2.0`
+- [x] Reconnaissance methodology doc (`docs/ADDING_A_SOURCE.md`) + Dell recon scripts (`scripts/dell/`) committed — captures why-we-did-it-this-way and the decision tree for adding new manufacturers
+- [x] Bump `version` to `0.2.0` in `pyproject.toml` and `scrapers_lib/__init__.py`
+- [x] Tag `v0.2.0`
 
 ## Wave 2b — remaining Tier 2 manufacturers
 
