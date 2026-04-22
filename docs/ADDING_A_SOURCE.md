@@ -1,6 +1,6 @@
 # Adding a Tier 2 source
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-04-21 &nbsp;·&nbsp; **Applies to:** library version ≥ 0.2.0
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Applies to:** library version ≥ 0.2.0
 
 Operational guide for adding a new Tier 2 fetcher (manufacturer spec pages: HP,
 Lenovo, ASUS, Acer, MSI — and future additions). Read this *before* touching
@@ -155,7 +155,9 @@ Living table. Add a row when a new Tier 2 source is onboarded.
 ### 4.1. Generic pattern types
 
 Every specific site maps to one of these generic shapes. If you find a new
-shape, add it here.
+shape, add it here. Most patterns here arose from Tier 2 recon, but
+Tier 3 discoveries (notably the `curl_cffi` + HTTP/1.1 bypass for
+Akamai-on-HTTP/2 sites) belong here too — any fetcher may need them.
 
 | Shape | Description | Fetch approach |
 |---|---|---|
@@ -165,6 +167,7 @@ shape, add it here.
 | Framework state blob | Product model serialized into a `<script>` tag. | `_base.parse_inline_json(script_id=...)` or similar. |
 | Lazy-loaded on scroll/click | DOM fills in after user interaction. | Playwright with scroll-to-bottom or click-then-wait, then re-read DOM. |
 | PDF datasheet | Last resort. Manufacturer exposes a data-sheet PDF only. | Add a PDF-parsing dependency (pdfplumber / pypdf). **Flag the user** before adding a new dep. |
+| **Akamai HTTP/2-layer bot gate** (Wave 2c) | Site serves real HTML to browsers but drops bot clients at the HTTP/2 protocol layer — signatures include `RemoteProtocolError: Server disconnected` (plain httpx), `net::ERR_HTTP2_PROTOCOL_ERROR` (stealth Playwright), or `HTTP/2 stream N not closed cleanly: INTERNAL_ERROR` (curl_cffi on HTTP/2). TLS handshake completes; the gate is specifically HTTP/2 frame / fingerprint analysis. | `curl_cffi` with Chrome TLS impersonation **forced onto HTTP/1.1** (`CurlHttpVersion.V1_1`), plus a homepage warm-up to seat Akamai cookies. HTTP/1.1 avoids the gate entirely; Chrome impersonation still clears the TLS check. (BestBuy `/site/...` PDPs — `tier3/bestbuy`. Presumptively works for HP's `/shop/pdp/` wall too; that is a candidate for a future HP-coverage rewrite. New dep `curl_cffi>=0.7` added Wave 2c.) |
 
 ## 5. Decision tree for a new manufacturer
 

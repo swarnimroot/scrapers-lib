@@ -1,0 +1,53 @@
+{
+  "sku": 6587999,
+  "productId": 1234999,
+  "name": "ASUS - ROG Strix G16 (2025) - 16\" 2.5K 240Hz Gaming Laptop - Intel Core Ultra 9 275HX - 32GB DDR5 - NVIDIA GeForce RTX 5080 - 1TB SSD - Eclipse Gray",
+  "type": "HardGood",
+  "upc": "192876555999",
+  "regularPrice": 2899.99,
+  "salePrice": null,
+  "onSale": false,
+  "dollarSavings": 0,
+  "percentSavings": "0.0",
+  "active": true,
+  "orderable": "SoldOut",
+  "manufacturer": "ASUS",
+  "modelNumber": "G615LW-AS96",
+  "url": "https://www.bestbuy.com/site/asus-rog-strix-g16-2025-gaming-laptop/6587999.p?skuId=6587999",
+  "image": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6587/6587999_sd.jpg",
+  "largeFrontImage": null,
+  "thumbnailImage": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6587/6587999_thumb.jpg",
+  "onlineAvailability": false,
+  "onlineAvailabilityText": "Sold Out Online",
+  "inStoreAvailability": false,
+  "inStoreAvailabilityText": "Not available for pickup",
+  "customerReviewCount": 124,
+  "customerReviewAverage": "4.3",
+  "categoryPath": [
+    {"id": "abcat0500000", "name": "Computers & Tablets"},
+    {"id": "abcat0502000", "name": "Laptops"},
+    {"id": "pcmcat748301556679", "name": "Gaming Laptops"}
+  ],
+  "features": [
+    {"feature": "RTX 5080 graphics with 16GB GDDR7 VRAM."},
+    {"feature": "Intel Core Ultra 9 275HX — 24 cores."},
+    {"feature": "ROG Nebula 16:10 2.5K 240Hz display, 3ms response."}
+  ],
+  "details": [
+    {"name": "Processor", "value": "Intel Core Ultra 9 275HX"},
+    {"name": "Graphics", "value": "NVIDIA GeForce RTX 5080"},
+    {"name": "Graphics Memory", "value": "16GB GDDR7"},
+    {"name": "System Memory (RAM)", "value": "32GB"},
+    {"name": "Memory Type", "value": "DDR5"},
+    {"name": "Solid State Drive Capacity", "value": "1TB"},
+    {"name": "Screen Size", "value": "16 inches"},
+    {"name": "Screen Resolution", "value": "2560 x 1600"},
+    {"name": "Refresh Rate", "value": "240Hz"},
+    {"name": "Operating System", "value": "Windows 11 Home"},
+    {"name": "Weight", "value": "6.02 pounds"},
+    {"name": "Color", "value": "Eclipse Gray"},
+    {"name": "Wireless Networking", "value": "Wi-Fi 7"}
+  ],
+  "shortDescription": "ROG Strix G16 pushes peak performance with RTX 5080 and a 240Hz display.",
+  "addToCartUrl": "https://api.bestbuy.com/click/-/6587999/cart"
+}

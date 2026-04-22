@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 0.3.0 (pre-release)
+**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 0.4.0 (pre-release)
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -10,11 +10,11 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-22 (session-end wrap)
 
-- **Last session:** **Wave 2b COMPLETE (narrowed scope: Acer + MSI deferred post-demo).** Four Tier 2 manufacturer sources shipped — Dell (Wave 2a), Lenovo, HP, and ASUS. ASUS fetcher at `tier2/asus.py` targets `rog.asus.com/laptops/<line>/<model>/spec/` (plain httpx, no stealth), parses SSR'd `<h2>` spec sections via CSS-module class-prefix matching, dedupes per-SKU variant rows, and emits one `ProductSnapshot` per URL with **20+ spec categories** (richest Tier 2 coverage, including Dimensions/Ports/Weight/Power Supply/Security/Wireless-version axes that HP can't deliver). Verified on ROG Strix G16 2025 + ROG Zephyrus G16 2026 (50 unit tests + 1 gated live integration). `shop.asus.com` is DataDome-gated so the ROG marketing surface is the target — that means no prices, same as Lenovo PSREF. Acer and MSI deferred with clear rationale in `ARCHITECTURE §11` / `ADDING_A_SOURCE §4` / this file. **Full suite: 414 passed, 4 skipped** (one live integration per Tier 2 source).
-- **In progress:** none (pause point).
-- **Next:** **Wave 2c** (BestBuy API + Amazon + BestBuy reviews) and **Wave 3** (RSS / article / Reddit / YouTube). User to begin the BestBuy Developer API registration at [bestbuyapis.github.io](https://bestbuyapis.github.io/) immediately (approval lead-time ~1 week) so the key is ready when Wave 2c's `tier1/bestbuy_api.py` is the blocking item. Reddit PRAW registration (instant, at `reddit.com/prefs/apps`) can wait until `tier1/reddit.py` in Wave 3. All four Wave 3 fetchers add one dep each (`feedparser`, `trafilatura`, `praw`, `youtube-transcript-api`) — flagged for approval per `CLAUDE.md` "Get explicit approval before new dependencies".
-- **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4`, `playwright`, `playwright-stealth`, and Chromium installed via `playwright install chromium`.
-- **Open questions:** none blocking.
+- **Last session:** **Wave 2c COMPLETE.** Three new fetchers shipped: `tier3/amazon.py` (product + reviews via plain httpx — Amazon's PDP is reachable at the TLS layer, counter to its Tier 3 reputation; 78 unit tests across two ASINs exercising both `#bylineInfo` render variants), `tier1/bestbuy_api.py` (BestBuy Developer API — 55 unit tests against synthetic fixtures matching the documented API schema, live test doubly-gated on `BESTBUY_API_KEY` + `SCRAPERSLIB_LIVE_TESTS=1`), and `tier3/bestbuy.py` (reviews only; uses **curl_cffi with Chrome TLS impersonation on HTTP/1.1** — the combination that bypasses Akamai's HTTP/2 RST-stream gate after a three-step recon escalation proved plain httpx, stealth Playwright, and curl_cffi-on-HTTP/2 all fail; 37 unit tests across two Alienware SKUs). One dependency added: `curl_cffi>=0.7` (free, open-source, drop-in `requests`-like API — same upgrade path documented for HP's coverage gap). **Full suite: 584 passed, 7 skipped** (one live integration per active source — Dell / HP / Lenovo / ASUS / Amazon / BestBuy API / BestBuy reviews).
+- **In progress:** none (pause point). User has the Reddit PRAW walkthrough instructions; BestBuy Developer API registration pending (approval ~1 week from submission).
+- **Next:** **Wave 3** (Demo 3 gaming radar) — RSS → article → Reddit → YouTube. Four fetchers, each adding one dep (`feedparser`, `trafilatura`, `praw`, `youtube-transcript-api`) — flagged for approval per `CLAUDE.md` before installing. Reddit is the dep where the user's PRAW walkthrough credentials become load-bearing.
+- **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4` + `playwright` + `playwright-stealth` + `curl_cffi` (new in Wave 2c) and Chromium installed via `playwright install chromium`.
+- **Open questions:** none blocking. BestBuy reviews pagination (`/site/reviews/name/<SKU>?page=N`) and Amazon `/product-reviews/<ASIN>/` deep pagination are deferred as future-wave enhancements once a demo needs the long-tail reviews; current PDP-inlined coverage (~5 BestBuy, ~10 Amazon) meets Demo 1 / Demo 2 needs.
 
 ### How to resume in a new session
 
@@ -97,17 +97,19 @@ Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition p
 
 ## Wave 2c — BestBuy + Amazon
 
-Driver: the need for retailer product + review data. Builds on the stealth browser primitive from Wave 2a.
+Driver: the need for retailer product + review data. Recon during this wave proved Amazon's PDP is plain-httpx reachable (surprise vs Tier 3 reputation); BestBuy's PDP required a three-step escalation landing on `curl_cffi` + Chrome impersonation + HTTP/1.1 after plain httpx, stealth Playwright, and curl_cffi-on-HTTP/2 all failed to get past Akamai's HTTP/2 RST-stream gate.
 
-- [ ] `tier1/bestbuy_api.py` — product data via BestBuy Developer API (no reviews)
-  - [ ] Integration test (gated): fetch one product by SKU
-- [ ] `tier3/bestbuy.py` — reviews only (URL-driven, Playwright + stealth)
-  - [ ] Integration test (gated): fetch reviews for one URL
-- [ ] `tier3/amazon.py` — product + reviews (URL-driven, Playwright + stealth)
-  - [ ] Integration test (gated): fetch product + reviews for one ASIN URL
-- [ ] Windows Task Scheduler setup guide added to `README.md` (for running the worker 24x7)
-- [ ] Per-source coverage notes updated
-- [ ] Tag `v0.4.0` on Wave 2c completion
+- [x] `tier1/bestbuy_api.py` — product data via BestBuy Developer API (no reviews)
+  - [x] Integration test (gated): fetch one product by SKU (doubly gated on `BESTBUY_API_KEY` + `SCRAPERSLIB_LIVE_TESTS=1`)
+- [x] `tier3/bestbuy.py` — reviews only (curl_cffi + Chrome impersonation + HTTP/1.1; parses JSON-LD `Product.review[*]`)
+  - [x] Integration test (gated): fetch reviews for one URL
+- [x] `tier3/amazon.py` — product + reviews (plain httpx; two registered fetchers in one module — `amazon` for ProductSnapshot, `amazon_reviews` for RawMention)
+  - [x] Integration test (gated): fetch product + reviews for one ASIN URL
+- [x] Windows Task Scheduler setup guide added to `README.md` (for running the worker 24x7)
+- [x] Per-source coverage notes updated in `docs/ARCHITECTURE.md` §11
+- [x] Reconnaissance scripts + per-site READMEs committed: `scripts/amazon/`, `scripts/bestbuy/`
+- [x] Dependency added with user approval: `curl_cffi>=0.7`
+- [x] Tag `v0.4.0` on Wave 2c completion
 
 ## Wave 3 — Demo 3 sources (gaming radar)
 

@@ -174,3 +174,18 @@ def paragraph_id(source: str, anchor_id: str, paragraph_index: int) -> str:
 def youtube_chunk_id(video_id: str, chunk_index: int) -> str:
     """Deterministic ID for a chunk of a YouTube transcript."""
     return f"youtube_{video_id}_chunk_{chunk_index}"
+
+
+def amazon_review_id(asin: str, review_id: str) -> str:
+    """Deterministic ID for an Amazon review. ``review_id`` is Amazon's own R-prefix ID."""
+    return f"amazon_{asin}_{review_id}"
+
+
+def bestbuy_review_id(sku: str, author: str, body: str) -> str:
+    """Deterministic ID for a BestBuy review.
+
+    BestBuy's PDP JSON-LD does not carry stable per-review IDs, so the
+    ID is a short hash of ``(author, body_prefix)`` — stable for the
+    same review and unlikely to collide across reviews on the same SKU.
+    """
+    return f"bestbuy_{sku}_{_hash_short(author + '|' + body[:200])}"

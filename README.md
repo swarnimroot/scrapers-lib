@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** draft &nbsp;·&nbsp; **Library version:** 0.3.0 (pre-release)
+**Status:** draft &nbsp;·&nbsp; **Library version:** 0.4.0 (pre-release)
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -74,6 +74,79 @@ for m in mentions:
 ```
 
 For long-running, patient scraping across many URLs, use `Scheduler` — see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §5.2.
+
+## Running the worker 24x7 on Windows (Task Scheduler)
+
+The Scheduler is designed to run patiently for days at a stretch on a
+personal laptop. Windows Task Scheduler handles the "keep it running,
+restart on failure, start at logon" lifecycle without any service layer.
+
+Minimal setup, assuming your consumer project has a `run_worker.py`
+that calls `Scheduler(...).run(mode="forever")`:
+
+1. **Wrap the run in a `.bat` file** so Task Scheduler has something
+   to execute. Save as `run_worker.bat` next to your consumer project:
+
+   ```bat
+   @echo off
+   cd /d C:\path\to\your-consumer-project
+   call .venv\Scripts\activate.bat
+   python run_worker.py
+   ```
+
+2. **Open Task Scheduler** (`taskschd.msc`) → **Create Task...** (not
+   "Create Basic Task" — you want the full editor).
+
+3. **General** tab:
+   - Name: `scrapers-lib worker`
+   - "Run whether user is logged on or not" — **off** for a personal
+     laptop; **on** if you want it running while locked (requires
+     storing your password).
+   - "Run with highest privileges" — **off** (Playwright does not
+     need elevation; scraping should run as a normal user).
+
+4. **Triggers** tab → **New...**:
+   - Begin the task: **At log on** (any user, or restrict to yours).
+   - Advanced → "Repeat task every" — leave unchecked; the worker's
+     own loop handles repetition.
+
+5. **Actions** tab → **New...**:
+   - Action: **Start a program**.
+   - Program/script: the full path to `run_worker.bat`.
+   - Start in: the consumer project folder (same folder as the
+     `.bat` — needed so relative paths resolve).
+
+6. **Conditions** tab:
+   - "Start the task only if the computer is on AC power" — **off**
+     if you want the worker to run on battery too.
+   - "Wake the computer to run this task" — **off** unless you have
+     a reason.
+
+7. **Settings** tab:
+   - "Allow task to be run on demand" — on (lets you right-click →
+     Run to test).
+   - "If the task fails, restart every" — 5 minutes, up to 3 times
+     (the Scheduler's own backoff handles per-domain failures; this
+     guards against worker-process crashes).
+   - "Stop the task if it runs longer than" — **unchecked** (the
+     worker is designed to run indefinitely).
+
+8. **Save**. You will be prompted for your Windows password if you
+   chose "run whether logged on or not".
+
+Logs: the worker writes to `stderr` by default. To capture them to a
+file, redirect in your `.bat`:
+
+```bat
+python run_worker.py 1>> worker.log 2>&1
+```
+
+or configure Python's `logging` to a rotating file handler inside
+your consumer project.
+
+To check the worker is alive: `Get-Process python` in PowerShell, or
+`tasklist /fi "imagename eq python.exe"` in cmd. To stop: right-click
+the task → **End**, or `taskkill /f /im python.exe` (indiscriminate).
 
 ## Repository layout
 

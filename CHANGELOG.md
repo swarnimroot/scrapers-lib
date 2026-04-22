@@ -4,6 +4,110 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-04-22
+
+### Added
+- `scrapers_lib.tier3.amazon`: two registered fetchers in one module —
+  `fetch_amazon_product` (`@register("amazon")` → `list[ProductSnapshot]`)
+  and `fetch_amazon_reviews` (`@register("amazon_reviews")` →
+  `list[RawMention]`). Reconnaissance in `scripts/amazon/` confirmed that
+  Amazon's `/dp/<ASIN>` PDP returns 2+ MB of real HTML on plain httpx with
+  a current Chrome UA — counter to its Tier 3 reputation — carrying every
+  product field (`#productTitle` / `#acrPopover` / `.priceToPay` /
+  `#landingImage` / `#availability`) in stable containers plus the top
+  ~8-12 reviews as inline `<li data-hook="review">` blocks with full
+  body / rating / date / author / verified-purchase / helpful-count
+  content. Specs come from a set of `<table class="prodDetTable">`
+  expanders (Additional details, Memory, Battery, Ports & Slots, ...)
+  merged into one `{key: value}` dict — ~60-75 rows on the Alienware 16
+  Area-51 fixture, ~50-65 on the ASUS ROG Strix fixture. Brand extractor
+  tries `#bylineInfo` → `#visitStoreDesktopUrl` → `#brandLogoHiResByline`
+  (last two are the "premium PDP" variant for Consumer Electronics where
+  Amazon hides `#bylineInfo` to avoid duplicate renders). The dedicated
+  `/product-reviews/<ASIN>/` surface redirects unauthenticated clients
+  to a sign-in wall and is auth-gated out of reach; PDP-inlined reviews
+  are therefore the reachable subset (documented limitation — upgrade
+  paths noted in `scripts/amazon/README.md`). Amazon stays in **Tier 3**
+  because redesigns are frequent, IP-based rate limits apply on
+  sustained traffic, and review coverage is partial by design. 78 unit
+  tests (Alienware B0F8P6MRQT + ASUS ROG Strix B0DW1FVPK8 fixtures, two
+  bylineInfo variants), 1 gated live integration test.
+- `scripts/amazon/` — `probe_posture.py` + `README.md`. Single probe that
+  exercises §3.8 bot-protection checks + §3.3–§3.5 structural signals
+  against any Amazon URL (defaults to a search surface for cheap first
+  passes); saves fixtures under `tests/tier3/fixtures/amazon/` with
+  tight block-marker regexes anchored against `<title>`/form-action
+  shapes to avoid false positives from stock error-UI template strings
+  baked into legitimate PDP responses.
+- `scrapers_lib.tier1.bestbuy_api`: `fetch_bestbuy_api_product`
+  (`@register("bestbuy_api")`) — Tier 1 fetcher calling BestBuy's
+  Developer API at `api.bestbuy.com/v1/products/<SKU>.json?apiKey=<key>`.
+  Takes the BestBuy *website* URL (the form consumers naturally land on,
+  e.g. `bestbuy.com/site/<slug>/<sku>.p?skuId=<sku>`), extracts SKU from
+  the path or `skuId` query, calls the per-SKU lookup endpoint. Pulls
+  `regularPrice` / `salePrice` / `onSale` / `dollarSavings` (on-sale:
+  `salePrice` → `price`, `regularPrice` → `list_price`; not on sale:
+  `regularPrice` → `price`, `list_price` None); `orderable` / online +
+  in-store availability booleans → `in_stock`; `customerReviewAverage` /
+  `customerReviewCount` → rating / review count; `manufacturer` +
+  `modelNumber` → brand + model; leaf of `categoryPath` → category;
+  `features[]` first 3 → `config_summary`; `details[]` flat list →
+  `specs` dict. `largeFrontImage` → `image_url` with fallbacks to
+  `image` / `thumbnailImage`. 403 on bad key / 404 on unknown SKU raise
+  distinct exceptions. Credential loaded from `BESTBUY_API_KEY`
+  environment variable (or passed explicitly via `api_key=`); missing
+  key raises `RuntimeError` rather than silent failure. Unit tests
+  run against synthetic fixtures matching the documented API schema —
+  one on-sale in-stock Alienware SKU + one regular-price sold-out ASUS
+  SKU to exercise both price paths and both availability paths; live
+  integration test (`test_bestbuy_api_integration.py`) verifies the
+  fixture shape against the real API and is gated behind both
+  `SCRAPERSLIB_LIVE_TESTS=1` and `BESTBUY_API_KEY` so it stays silent
+  until the user's key arrives. 55 unit tests + 1 doubly-gated live test.
+- `scrapers_lib.tier3.bestbuy`: `fetch_bestbuy_reviews`
+  (`@register("bestbuy_reviews")` → `list[RawMention]`) — reviews-only
+  fetcher (retail product fields come from `tier1/bestbuy_api`). After
+  a three-step recon escalation (plain httpx drops at transport;
+  stealth Playwright fails at `net::ERR_HTTP2_PROTOCOL_ERROR`;
+  `curl_cffi` with Chrome impersonation on HTTP/2 gets
+  `HTTP/2 INTERNAL_ERROR` RST_STREAM across five Chrome versions), the
+  fetcher uses `curl_cffi` with Chrome TLS impersonation forced onto
+  **HTTP/1.1** — the combination that cleanly bypasses Akamai's
+  HTTP/2-layer bot gate on `bestbuy.com/site/...` URLs. Warms against
+  the homepage first, then fetches the PDP, then parses the inline
+  `<script type="application/ld+json">` Product block for its
+  `review[*]` list (typically 5 Review objects with `name` / `author.
+  name` / `reviewBody` / `reviewRating.ratingValue`). Deterministic
+  `mention_id` via `bestbuy_review_id(sku, author, body)` since
+  JSON-LD carries no stable per-review ID. **Coverage caveats**:
+  `published_at` is always `None` (JSON-LD Review objects on BestBuy
+  PDPs lack `datePublished`); review count caps at ~5 per fetch
+  (inline PDP cap). The `/site/reviews/name/<SKU>` surface carries
+  dates + full pagination and is the upgrade path for a future wave.
+  37 unit tests (Area-51 18" SKU 6628371 + Aurora 16X SKU 6630638
+  Alienware fixtures via curl_cffi + HTTP/1.1), 1 gated live
+  integration test. Total suite: **584 passed, 7 skipped** (one gated
+  live integration per active source).
+- `scripts/bestbuy/` — `probe_posture.py` (plain-httpx search-surface
+  baseline) + `probe_pdp_stealth.py` (stealth Playwright escalation,
+  kept as negative-result reference documenting the `ERR_HTTP2_
+  PROTOCOL_ERROR` wall) + `README.md` telling the full three-step
+  escalation story from plain httpx drop through stealth Playwright
+  failure to the curl_cffi + HTTP/1.1 bypass. Fixtures under
+  `tests/tier3/fixtures/bestbuy/`: `pdp_6628371.html`,
+  `pdp_6630638.html`, plus the negative-result
+  `search_alienware_gaming_laptop.html` (SPA shell, products
+  XHR-hydrated).
+- `scrapers_lib.core.attribution`: two new deterministic mention-ID
+  helpers — `amazon_review_id(asin, review_id)` (Amazon's own
+  R-prefix ID) and `bestbuy_review_id(sku, author, body)` (short
+  hash, since BestBuy JSON-LD lacks stable per-review IDs).
+- **Dependency**: `curl_cffi>=0.7` — Chrome TLS impersonation over
+  `libcurl`, used by `tier3/bestbuy` to bypass Akamai's HTTP/2 bot
+  gate on `bestbuy.com/site/...` URLs. Free, open-source, drop-in
+  `requests`-like API. Same upgrade path documented in the HP
+  coverage-gap memory for a future HP full-coverage rewrite.
+
 ## [0.3.0] — 2026-04-22
 
 ### Added
