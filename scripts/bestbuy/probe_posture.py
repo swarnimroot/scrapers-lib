@@ -40,7 +40,7 @@ from pathlib import Path
 
 import httpx
 
-from scrapers_lib.tier2._base import parse_inline_json, parse_product_jsonld
+from scrapers_lib.tier2.base import parse_inline_json, parse_product_jsonld
 
 REPO = Path(__file__).resolve().parents[2]
 FIX = REPO / "tests" / "tier3" / "fixtures" / "bestbuy"

@@ -52,7 +52,7 @@ The probe scripts save additional diagnostic artefacts (the state-JSON
 payload as `datasheet_*.pdf` or post-scroll rendered DOM fragments) when
 anything comes through, but these are not referenced by tests.
 
-## Why there's no `tier2/_base` lift
+## Why there's no `tier2/base` lift
 
 Three Tier 2 sources in, still zero shared helpers:
 
@@ -61,7 +61,7 @@ Three Tier 2 sources in, still zero shared helpers:
 - **HP** — extracts a JSON-encoded HTML comment from a hidden div in SSR HTML.
 
 Per `docs/ADDING_A_SOURCE.md` §2, a repeating shape across **two or more**
-sites must be observed before anything lifts into `tier2/_base.py`. Each
+sites must be observed before anything lifts into `tier2/base.py`. Each
 of these three sites has its own bespoke story; nothing to hoist yet.
 
 ## Notes on HP's QuickSpecs datasheets

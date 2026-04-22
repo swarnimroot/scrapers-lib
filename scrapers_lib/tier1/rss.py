@@ -33,6 +33,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from scrapers_lib._version import __version__
 from scrapers_lib.core.attribution import (
     attribute_regex_all,
     rss_article_id,
@@ -45,7 +46,7 @@ logger = logging.getLogger(__name__)
 SOURCE = "rss"
 
 _DEFAULT_USER_AGENT = (
-    "Mozilla/5.0 (compatible; scrapers-lib/0.5; +https://github.com/)"
+    f"Mozilla/5.0 (compatible; scrapers-lib/{__version__}; +https://github.com/)"
 )
 
 

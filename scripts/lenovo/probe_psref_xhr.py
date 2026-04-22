@@ -35,7 +35,7 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
-from scrapers_lib.tier2._base import parse_inline_json, parse_product_jsonld
+from scrapers_lib.tier2.base import parse_inline_json, parse_product_jsonld
 
 REPO = Path(__file__).resolve().parents[2]
 FIX = REPO / "tests" / "tier2" / "fixtures" / "lenovo"
@@ -305,7 +305,7 @@ def main() -> int:
         print("  Next: call that endpoint with httpx; parse as HTML fragment.")
     elif re.search(r"\bprocessor\b", rendered, re.I) and rendered.count("<table") > 0:
         print("DATA IN RENDERED DOM but no obvious model-specific endpoint.")
-        print("  Next: Playwright fetcher that parses rendered DOM via _base.parse_spec_table.")
+        print("  Next: Playwright fetcher that parses rendered DOM via base.parse_spec_table.")
     else:
         print("UNCLEAR — rendered DOM lacks spec keywords. Extend wait or inspect manually.")
 

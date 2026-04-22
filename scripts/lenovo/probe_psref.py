@@ -11,7 +11,7 @@ Goals (mapped to ``docs/ADDING_A_SOURCE.md``):
   we need Playwright + stealth.
 - §3.3 / §3.4 / §3.5 — If the response is real HTML, is the spec data SSR'd
   (tables, ``<dl>`` pairs, JSON-LD, or a framework state blob)? → dictates
-  which ``_base`` parser the fetcher reaches for.
+  which ``base`` parser the fetcher reaches for.
 - Baseline observation for the §5 decision tree — we should stop at step 1
   (dedicated spec-sheet site, SSR'd) if this probe confirms it. Escalate
   only on evidence.
@@ -38,7 +38,7 @@ from pathlib import Path
 
 import httpx
 
-from scrapers_lib.tier2._base import parse_inline_json, parse_product_jsonld
+from scrapers_lib.tier2.base import parse_inline_json, parse_product_jsonld
 
 REPO = Path(__file__).resolve().parents[2]
 FIX = REPO / "tests" / "tier2" / "fixtures" / "lenovo"
@@ -161,14 +161,14 @@ def analyze(html: str) -> None:
     elif dom["<table count"] >= 3 and dom["'Processor' occurrences"] >= 1:
         print(
             "LIKELY SSR (tables) — spec content appears to live in the HTML. "
-            "Next: write a pure-parse function on top of _base.parse_spec_table "
+            "Next: write a pure-parse function on top of base.parse_spec_table "
             "and verify against a second Lenovo product URL."
         )
     elif has_state_blob and dom["'Processor' occurrences"] >= 1:
         print(
             "LIKELY SSR (state blob) — product model appears serialized into a "
             "<script> tag. Next: inspect the blob path to spec data, then write "
-            "a parser on top of _base.parse_inline_json."
+            "a parser on top of base.parse_inline_json."
         )
     elif dom["<table count"] == 0 and not has_state_blob:
         print(

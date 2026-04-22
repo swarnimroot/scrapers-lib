@@ -1,6 +1,6 @@
 # scrapers-lib — Product Requirements Document
 
-**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-21 &nbsp;·&nbsp; **Library version:** 0.1.0 (pre-release)
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.0.0
 
 ---
 
@@ -28,15 +28,15 @@ The library is designed so none of these use cases leak into its code. New consu
 
 ## 4. Success criteria
 
-**v1.0 = production-useful across multiple projects, with the following guarantees:**
+**v1.0.0 shipped on 2026-04-22 with the following guarantees, all met:**
 
-- Three schemas (Anchor, ProductSnapshot, RawMention) are stable and documented; backward-compatible changes only post-1.0.
-- At least one working fetcher per tier; at least one working API-based source; at least one working scraping-based source.
+- Three schemas (Anchor, ProductSnapshot, RawMention) stable and documented; backward-compatible changes only within the 1.x line.
+- Working fetchers across all three tiers: six Tier 1 (rss, article, reddit, reddit_comments, youtube, bestbuy_api), four Tier 2 (dell, hp, lenovo, asus), four Tier 3 (amazon, amazon_reviews, bestbuy, bestbuy_reviews). API-based, feed-based, and scraping-based sources all represented.
 - A queue-based Scheduler that can run unattended for days on a single laptop without losing state.
-- Reasonable success rates per source, documented honestly (no marketing claims about reliability).
-- Consumers can pin a library version and depend on its API behavior.
+- Reasonable success rates per source, documented honestly in ARCHITECTURE.md §11 (coverage, fields populated, and known limitations called out per source — no marketing claims about reliability).
+- Consumers pin a library version and depend on its public API behavior within the 1.x line.
 
-v0.x is the pre-release path: the library is buildable and usable but public APIs may change between minor versions.
+v0.x was the pre-release path (buildable and usable, but public APIs could change between minor versions); that phase closed at v1.0.0.
 
 ## 5. Non-goals
 
@@ -54,7 +54,7 @@ scrapers-lib **does not**:
 - **Free tiers only.** No paid proxies, scraping services, or premium API access.
 - **Residential IP.** All scraping runs from a single home laptop; no proxy rotation.
 - **Python 3.12.**
-- **Local-only development.** Git is local; no remote by default. Library is not published to PyPI in early versions — consumers install via `pip install -e` from a local checkout.
+- **Local-only development.** Git is local; no remote by default. Library is not published to PyPI — consumers install via `pip install -e` from a local checkout.
 - **Windows-first.** Primary development and deployment platform is Windows; Linux/macOS should work but aren't actively tested.
 - **Patient scraping posture.** Real-time data is not a goal. The Scheduler runs 24x7 at slow pacing; data arriving hours or a day later is acceptable. This buys reliability by trading latency.
 
@@ -67,6 +67,6 @@ scrapers-lib **does not**:
 ## 8. Versioning and API stability
 
 - Semantic versioning (`0.x.y` → `1.0.0` → `1.x.y`).
-- Pre-1.0: public APIs may change between minor versions; consumers pin to specific versions.
-- At 1.0.0: schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump.
+- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump.
 - Documented deprecation path: any removed public API goes through a deprecation warning in one minor version before removal.
+- Historical: before v1.0.0 public APIs could change between minor versions; consumers pinned exact versions during the 0.x line.

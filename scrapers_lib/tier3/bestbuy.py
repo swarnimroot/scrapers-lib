@@ -49,7 +49,7 @@ from scrapers_lib.core.attribution import attribute_url, bestbuy_review_id
 from scrapers_lib.core.registry import register
 from scrapers_lib.core.schemas import Anchor, Attribution, RawMention
 from scrapers_lib.core.scheduler import BlockedError
-from scrapers_lib.tier2._base import normalize_spec_value, parse_product_jsonld
+from scrapers_lib.tier2.base import normalize_spec_value, parse_product_jsonld
 
 logger = logging.getLogger(__name__)
 

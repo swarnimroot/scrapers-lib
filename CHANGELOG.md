@@ -4,6 +4,77 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-04-22
+
+**v1.0.0 freezes the public API.** From this release forward, schemas and
+public fetcher signatures are stable; backward-incompatible changes
+require a major bump, and removed public APIs go through a one-minor-
+version deprecation warning before removal. No fetchers added in this
+wave — the wave is purely the stability sweep that completes the 1.0
+contract.
+
+### Changed
+- **`scrapers_lib.tier2._base` → `scrapers_lib.tier2.base`** (breaking).
+  The module was underscore-prefixed (signaling "internal") but is in
+  fact the documented extension surface for building new Tier 2
+  fetchers — five public helpers (`parse_product_jsonld`,
+  `parse_inline_json`, `parse_spec_table`, `normalize_spec_value`,
+  `fetch_rendered_html`), a dedicated test file, and a full section in
+  `docs/ADDING_A_SOURCE.md`. Renamed at the v1.0 boundary so it carries
+  no underscore into the frozen surface. All in-tree importers updated
+  (5 Tier 2 fetchers, 3 Tier 3 / Tier 1 cross-importers, the unit test
+  file, 6 `scripts/` recon probes, `docs/ADDING_A_SOURCE.md`,
+  `docs/TASKS.md`, 3 `scripts/*/README.md` headings). `CHANGELOG.md`
+  historical entries for v0.2.0 / v0.3.0 still reference the original
+  `_base` name — accurate to what shipped at those releases.
+- **Library version is single-sourced from `scrapers_lib/_version.py`.**
+  Previously the version appeared in both `scrapers_lib/__init__.py`
+  (as `__version__`) and `pyproject.toml` (as `version`); four Tier 1
+  / core modules additionally hardcoded stale copies inside User-Agent
+  strings (`robots.py` still said `0.1`, `bestbuy_api.py` said `0.4`,
+  `article.py` / `rss.py` / `reddit.py` said `0.5`). Now: one
+  `__version__` in `_version.py`, `__init__.py` re-exports it,
+  `pyproject.toml` reads it via `[tool.hatch.version]`, and all five
+  UA sites derive it via f-string. Future releases bump one place.
+- **`pyproject.toml` `Development Status` classifier** flipped from
+  `2 - Pre-Alpha` to `5 - Production/Stable`.
+- **`docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/TASKS.md`, `README.md`**
+  status headers flipped from `draft` to `stable`; all "(subject to
+  revision)" qualifiers and the ARCHITECTURE draft-stage callout
+  removed. PRD §4 success criteria rewritten in past tense (all met
+  at v1.0.0); PRD §8 and ARCHITECTURE §14 versioning sections
+  rewritten to reflect post-freeze posture.
+- **README**: new "Public API" section between "Repository layout" and
+  "Documentation" — documents the top-level re-exports, per-module
+  deep-import cheat sheet, and the fetcher signature + registry-key
+  table (14 registered fetchers across the three tiers).
+
+### Fixed
+- **README Quickstart example** called `rss.fetch_feed(...)`; the real
+  registered name is `fetch_rss_feed`. Fixed.
+- **README credentials table** listed a Reddit row requiring
+  `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` / `REDDIT_USER_AGENT`
+  via PRAW — stale since Wave 3 dropped PRAW for unauthenticated
+  JSON (per `project_reddit_api_blocked`). Row rewritten to reflect
+  the unauthenticated posture.
+
+### Removed
+- **`scrapers_lib/tier2/acer.py`** and **`scrapers_lib/tier2/msi.py`**
+  (breaking — empty 1-line scaffolds; docstrings incorrectly claimed
+  "implemented in Wave 2a"). Acer and MSI remain in scope for later
+  minor versions per `docs/TASKS.md` Wave 2b; the modules will return
+  when real fetchers are built. Corresponding `"acer"` and `"msi"`
+  entries in `scrapers_lib.core.cache.DEFAULT_TTLS` removed.
+
+### Test baseline
+- **Unit suite: 762 passed, 16 skipped** — unchanged from v0.5.0
+  (no regressions from the API-stability sweep).
+- Integration suite (`SCRAPERSLIB_LIVE_TESTS=1 pytest`) run live
+  pre-tag against all 14 registered fetchers. The BestBuy Developer
+  API integration is the one expected skip until `BESTBUY_API_KEY`
+  lands in `.env` (~2026-04-29 per registration date); all other
+  gated-live tests verified green at the v1.0.0 boundary.
+
 ## [0.5.0] — 2026-04-22
 
 ### Added

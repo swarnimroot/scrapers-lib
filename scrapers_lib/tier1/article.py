@@ -37,6 +37,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from scrapers_lib._version import __version__
 from scrapers_lib.core.attribution import (
     article_mention_id,
     attribute_regex_all,
@@ -49,7 +50,7 @@ logger = logging.getLogger(__name__)
 SOURCE = "article"
 
 _DEFAULT_USER_AGENT = (
-    "Mozilla/5.0 (compatible; scrapers-lib/0.5; +https://github.com/)"
+    f"Mozilla/5.0 (compatible; scrapers-lib/{__version__}; +https://github.com/)"
 )
 
 # Minimum extracted body length to accept. Below this, the extraction is

@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** draft &nbsp;·&nbsp; **Library version:** 0.5.0 (pre-release)
+**Status:** stable &nbsp;·&nbsp; **Library version:** 1.0.0
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -42,7 +42,7 @@ Not every source needs credentials. The library only reads the env vars for sour
 
 | Source | Env vars | How to get |
 |---|---|---|
-| Reddit (PRAW) | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT` | Create a *script*-type app at [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) — free, ~3 min |
+| Reddit (unauthenticated JSON) | none | Library uses `reddit.com/r/<sub>/<sort>.json` and `reddit.com/comments/<id>.json` at ~60 req/min with a descriptive User-Agent. PRAW OAuth self-service is closed per Reddit's Nov-2025 Responsible Builder Policy; the unauthenticated path is the supported way in v1.0. |
 | BestBuy Developer API | `BESTBUY_API_KEY` | Apply at [bestbuyapis.github.io](https://bestbuyapis.github.io/) — free; approval usually within a week |
 | YouTube transcripts | none | `youtube-transcript-api` uses no auth |
 | RSS feeds | none | public feeds |
@@ -64,7 +64,7 @@ anchor = Anchor(
     attribution_regex={"primary": ["example", "Example Topic"]},
 )
 
-mentions = rss.fetch_feed(
+mentions = rss.fetch_rss_feed(
     "https://example.com/feed.xml",
     anchors=[anchor],
 )
@@ -156,6 +156,47 @@ the task → **End**, or `taskkill /f /im python.exe` (indiscriminate).
 - `scrapers_lib/tier3/` — retailer scraping (fragile)
 - `tests/` — unit tests (fast, offline) and integration tests (gated by `SCRAPERSLIB_LIVE_TESTS=1`)
 - `docs/` — PRD, Architecture, Tasks
+
+## Public API
+
+The top level exports only the headline types. Everything else lives at a deep import path — deliberate, to keep the headline surface narrow and signal that other modules are opt-in.
+
+**Top-level (`from scrapers_lib import ...`):**
+
+- `Scheduler`, `BlockedError` — persistent job queue and its blocking-signal exception.
+- `Anchor`, `AttributionRegex` — consumer-defined targets and the token rules that attribute text to them.
+- `Attribution`, `RawMention`, `ProductSnapshot` — the three return shapes every fetcher emits.
+- `__version__` — library version string.
+
+**Core primitives (`from scrapers_lib.core.<module> import ...`):**
+
+| Module | What's in it |
+|---|---|
+| `scrapers_lib.core.schemas` | Pydantic models (re-exported above) plus `AnchorType`, `MentionSourceType`, `AttributionMethod` literal aliases |
+| `scrapers_lib.core.attribution` | `attribute_regex`, `attribute_regex_all`, `attribute_url` + deterministic ID helpers (`rss_article_id`, `reddit_post_id`, `youtube_chunk_id`, etc.) |
+| `scrapers_lib.core.registry` | `register` decorator, `register_fetcher`, `get_fetcher`, `list_fetchers` — how fetchers bind to source-name strings |
+| `scrapers_lib.core.cache` | `Cache` + `DEFAULT_TTLS` — consumer-scoped disk cache |
+| `scrapers_lib.core.rate_limiter` | `RateLimiter` — per-domain token buckets |
+| `scrapers_lib.core.robots` | `RobotsChecker` — robots.txt awareness |
+| `scrapers_lib.core.http_client` | `HttpClient` — httpx wrapper with retry/backoff |
+| `scrapers_lib.core.playwright_base` | `stealth_context` — Playwright with persistent profiles + fingerprint masking (used by Tier 2/3) |
+| `scrapers_lib.core.logging_config` | `configure_logging` — opt-in helper for consumers |
+
+**Fetcher modules (`from scrapers_lib.tier<N>.<source> import fetch_<source>`):**
+
+Every fetcher follows the same signature and is also available via the registry by a short source-name string:
+
+```python
+fetch_fn(url: str, anchors: list[Anchor] | None = None, *, <source-specific kwargs>) -> list[RawMention] | list[ProductSnapshot]
+```
+
+| Tier | Source names (registry keys) |
+|---|---|
+| 1 (APIs / feeds) | `rss`, `article`, `reddit`, `reddit_comments`, `youtube`, `bestbuy_api` |
+| 2 (manufacturer pages) | `dell`, `hp`, `lenovo`, `asus` |
+| 3 (retailer scraping) | `amazon`, `amazon_reviews`, `bestbuy`, `bestbuy_reviews` |
+
+Shared Tier 2 parsing helpers live in `scrapers_lib.tier2.base` (`parse_product_jsonld`, `parse_inline_json`, `parse_spec_table`, `normalize_spec_value`, `fetch_rendered_html`) — use these when building a new Tier 2 fetcher; see [`docs/ADDING_A_SOURCE.md`](docs/ADDING_A_SOURCE.md).
 
 ## Documentation
 

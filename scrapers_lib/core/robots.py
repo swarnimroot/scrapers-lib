@@ -20,6 +20,8 @@ from urllib.parse import urlparse
 
 import httpx
 
+from scrapers_lib._version import __version__
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,7 @@ class RobotsChecker:
     def __init__(
         self,
         *,
-        user_agent: str = "scrapers-lib/0.1",
+        user_agent: str = f"scrapers-lib/{__version__}",
         timeout: float = 10.0,
         fetch_fn: FetchFn | None = None,
     ) -> None:

@@ -35,7 +35,7 @@ from scrapers_lib.core.playwright_base import stealth_context
 from scrapers_lib.core.registry import register
 from scrapers_lib.core.schemas import Anchor, ProductSnapshot
 from scrapers_lib.core.scheduler import BlockedError
-from scrapers_lib.tier2._base import normalize_spec_value, parse_product_jsonld
+from scrapers_lib.tier2.base import normalize_spec_value, parse_product_jsonld
 
 logger = logging.getLogger(__name__)
 

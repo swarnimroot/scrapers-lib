@@ -48,10 +48,10 @@ full XHR-URL traces, Playwright-rendered iframe content, the spec PDF,
 extracted PDF text, etc.) alongside those fixtures. These are not
 referenced by tests but are useful when investigating PSREF changes.
 
-## Why there's no `tier2/_base` lift
+## Why there's no `tier2/base` lift
 
 Dell's pattern (`scripts/dell/`) parses HTML fragments returned from a
 protected XHR endpoint. Lenovo's pattern parses a nested JSON tree from a
 public endpoint. The two implementations share zero helpers today, so no
 hoist has happened. Per `docs/ADDING_A_SOURCE.md` §2, a third site must
-confirm a repeating shape before anything lifts into `tier2/_base.py`.
+confirm a repeating shape before anything lifts into `tier2/base.py`.

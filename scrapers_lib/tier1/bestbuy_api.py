@@ -50,10 +50,11 @@ from urllib.parse import parse_qs, urlparse
 
 import httpx
 
+from scrapers_lib._version import __version__
 from scrapers_lib.core.attribution import attribute_url
 from scrapers_lib.core.registry import register
 from scrapers_lib.core.schemas import Anchor, ProductSnapshot
-from scrapers_lib.tier2._base import normalize_spec_value
+from scrapers_lib.tier2.base import normalize_spec_value
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +249,7 @@ def _fetch_product(sku: str, *, api_key: str, timeout: float) -> str:
     endpoint = f"{API_BASE}/{sku}.json"
     headers = {
         "Accept": "application/json",
-        "User-Agent": "scrapers-lib/0.4 (+bestbuy_api)",
+        "User-Agent": f"scrapers-lib/{__version__} (+bestbuy_api)",
     }
     r = httpx.get(
         endpoint,

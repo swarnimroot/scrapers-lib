@@ -53,7 +53,7 @@ from scrapers_lib.core.schemas import (
     RawMention,
 )
 from scrapers_lib.core.scheduler import BlockedError
-from scrapers_lib.tier2._base import normalize_spec_value
+from scrapers_lib.tier2.base import normalize_spec_value
 
 logger = logging.getLogger(__name__)
 
@@ -475,7 +475,7 @@ def _parse_prod_detail_tables(soup: Any) -> dict[str, str]:
     (Additional details / Memory / Battery / Ports & Slots / ...); each
     is its own table with the same shape. Later-encountered duplicate
     keys lose — first occurrence wins (consistent with
-    ``_base.parse_spec_table``).
+    ``base.parse_spec_table``).
 
     Warranty/feedback tables on the same page use the same class but
     contain free-prose ``<span>`` content rather than ``<tr><th><td>``

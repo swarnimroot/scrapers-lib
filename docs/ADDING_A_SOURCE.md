@@ -82,7 +82,7 @@ offer (price, availability). Consistent across many sites. Good for
 **enrichment** — rarely carries the full spec sheet, but gives us shared
 metadata for free.
 
-Parser: `scrapers_lib.tier2._base.parse_product_jsonld`.
+Parser: `scrapers_lib.tier2.base.parse_product_jsonld`.
 
 ### 3.4. SSR'd spec tables in the product page
 
@@ -92,7 +92,7 @@ already contains the spec table, parse it directly. Two common shapes:
 - `<table>` with `<tr><th>Label</th><td>Value</td></tr>` rows.
 - `<dl>` with `<dt>Label</dt><dd>Value</dd>` pairs.
 
-Parser: `scrapers_lib.tier2._base.parse_spec_table`. It handles both shapes
+Parser: `scrapers_lib.tier2.base.parse_spec_table`. It handles both shapes
 and takes an optional `container_selector` when a page has multiple unrelated
 tables.
 
@@ -107,7 +107,7 @@ The most common:
 - `window.__PRELOADED_STATE__ = {...};` — some older SSR setups.
 
 When present, these are the cleanest source of structured product data. Parser:
-`scrapers_lib.tier2._base.parse_inline_json`.
+`scrapers_lib.tier2.base.parse_inline_json`.
 
 ### 3.6. Scroll + wait probe
 
@@ -163,8 +163,8 @@ Akamai-on-HTTP/2 sites) belong here too — any fetcher may need them.
 |---|---|---|
 | Internal API + anti-bot | Shop page hints at an endpoint; endpoint is bot-protected. | Stealth Playwright session to bootstrap cookies, then `page.context.request.get()` for the API call. (Dell.) |
 | Dedicated spec-sheet site | Separate domain or subdomain hosts the datasheet. | Plain `httpx`; separate fetcher file per domain if needed. (Lenovo PSREF candidate.) |
-| SSR'd in product page | Specs are in the raw HTML as tables or JSON-LD. | `_base.parse_spec_table` or `_base.parse_product_jsonld`. |
-| Framework state blob | Product model serialized into a `<script>` tag. | `_base.parse_inline_json(script_id=...)` or similar. |
+| SSR'd in product page | Specs are in the raw HTML as tables or JSON-LD. | `base.parse_spec_table` or `base.parse_product_jsonld`. |
+| Framework state blob | Product model serialized into a `<script>` tag. | `base.parse_inline_json(script_id=...)` or similar. |
 | Lazy-loaded on scroll/click | DOM fills in after user interaction. | Playwright with scroll-to-bottom or click-then-wait, then re-read DOM. |
 | PDF datasheet | Last resort. Manufacturer exposes a data-sheet PDF only. | Add a PDF-parsing dependency (pdfplumber / pypdf). **Flag the user** before adding a new dep. |
 | **Akamai HTTP/2-layer bot gate** (Wave 2c) | Site serves real HTML to browsers but drops bot clients at the HTTP/2 protocol layer — signatures include `RemoteProtocolError: Server disconnected` (plain httpx), `net::ERR_HTTP2_PROTOCOL_ERROR` (stealth Playwright), or `HTTP/2 stream N not closed cleanly: INTERNAL_ERROR` (curl_cffi on HTTP/2). TLS handshake completes; the gate is specifically HTTP/2 frame / fingerprint analysis. | `curl_cffi` with Chrome TLS impersonation **forced onto HTTP/1.1** (`CurlHttpVersion.V1_1`), plus a homepage warm-up to seat Akamai cookies. HTTP/1.1 avoids the gate entirely; Chrome impersonation still clears the TLS check. (BestBuy `/site/...` PDPs — `tier3/bestbuy`. Presumptively works for HP's `/shop/pdp/` wall too; that is a candidate for a future HP-coverage rewrite. New dep `curl_cffi>=0.7` added Wave 2c.) |
@@ -185,7 +185,7 @@ Walk this in order. Stop at the first step whose answer is yes.
    Dell pattern. Extract the endpoint from a page attribute
    (`data-url` / `data-endpoint` / similar) so future URL variations don't
    require code changes. Call the endpoint through the browser context.
-4. **Are specs already in the raw HTML source?** → Use `_base` parsers
+4. **Are specs already in the raw HTML source?** → Use `base` parsers
    (`parse_spec_table` / `parse_product_jsonld` / `parse_inline_json`).
 5. **Does scrolling hydrate them?** → Playwright with scroll step before
    `page.content()`.

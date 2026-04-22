@@ -1,5 +1,6 @@
 """scrapers-lib — multi-source scraping library with normalized schemas and a persistent scheduler."""
 
+from scrapers_lib._version import __version__
 from scrapers_lib.core.scheduler import BlockedError, Scheduler
 from scrapers_lib.core.schemas import (
     Anchor,
@@ -8,8 +9,6 @@ from scrapers_lib.core.schemas import (
     ProductSnapshot,
     RawMention,
 )
-
-__version__ = "0.5.0"
 
 __all__ = [
     "__version__",

@@ -43,7 +43,7 @@ per-line category variation — for example, Strix exposes an "AURA SYNC"
 category that Zephyrus does not. The parser must walk `<h2>`s by position,
 never hard-code category names.
 
-## Why there's no `tier2/_base` lift
+## Why there's no `tier2/base` lift
 
 Four Tier 2 sources in (Dell, Lenovo, HP, ASUS), still zero shared helpers:
 
@@ -57,7 +57,7 @@ Four Tier 2 sources in (Dell, Lenovo, HP, ASUS), still zero shared helpers:
 
 Four bespoke stories. Per `docs/ADDING_A_SOURCE.md` §2, a repeating shape
 across **two or more** sites must be observed before anything lifts into
-`tier2/_base.py`. None so far.
+`tier2/base.py`. None so far.
 
 ## The DataDome fork
 

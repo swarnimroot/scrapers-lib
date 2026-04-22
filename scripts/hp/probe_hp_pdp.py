@@ -35,7 +35,7 @@ from pathlib import Path
 
 import httpx
 
-from scrapers_lib.tier2._base import parse_inline_json, parse_product_jsonld
+from scrapers_lib.tier2.base import parse_inline_json, parse_product_jsonld
 
 REPO = Path(__file__).resolve().parents[2]
 FIX = REPO / "tests" / "tier2" / "fixtures" / "hp"
@@ -157,7 +157,7 @@ def analyze(html: str) -> None:
     elif dom["<table count"] >= 3 and dom["'Processor' occurrences"] >= 1:
         print(
             "LIKELY SSR (tables) — spec content appears to live in the HTML. "
-            "Next: write a pure-parse function on top of _base.parse_spec_table "
+            "Next: write a pure-parse function on top of base.parse_spec_table "
             "and verify against a second HP product URL."
         )
     elif has_state_blob and dom["'Processor' occurrences"] >= 1:

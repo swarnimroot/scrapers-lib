@@ -1,8 +1,6 @@
 # scrapers-lib — Architecture
 
-**Status:** draft &nbsp;·&nbsp; **Last updated:** 2026-04-21 &nbsp;·&nbsp; **Library version:** 0.1.0 (pre-release)
-
-> Draft-stage document. Sections marked *(subject to revision)* may change as Wave 1 core code lands and reveals gaps. All details will be reviewed and re-confirmed at v1.0.0.
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.0.0
 
 ---
 
@@ -244,9 +242,9 @@ Respected by default. Per-call `ignore_robots=True` override exists for sites wh
 - **No secrets in logs.** API keys and credentials are loaded via `python-dotenv`; logs reference them by name, never value.
 - **Partial success is a first-class outcome.** A fetcher that gets 80% of a page's specs returns what it has; missing fields are `None`, not faked.
 
-## 11. Per-source coverage *(subject to revision)*
+## 11. Per-source coverage
 
-This table will be filled in and refined as each fetcher is built. v0.1 shows intended coverage.
+Actual coverage per source as of v1.0.0. Rows evolve as fetchers are revised in later minor versions; breaking changes to a row's schema or column semantics would require a major bump.
 
 | Source | Tier | Schema | Fields reliably populated | Known limitations |
 |---|---|---|---|---|
@@ -321,10 +319,11 @@ The library's core (schemas, Scheduler, cache, rate limiter, attribution) does n
 
 ## 14. Versioning and deprecation
 
-- Semantic versioning. Pre-1.0: `0.x.y`, public APIs may change between minor versions.
-- At 1.0.0: public schemas and fetcher signatures frozen. Deprecations go through one minor-version warning before removal.
-- Git tags mark releases (`v0.1.0`, `v0.2.0`, …) on the local repo.
+- Semantic versioning.
+- **As of v1.0.0:** public schemas and fetcher signatures are frozen. Deprecations go through one minor-version warning before removal.
+- Git tags mark releases (`v0.1.0`, `v0.2.0`, …, `v1.0.0`) on the local repo.
 - Consumers install via `pip install -e ../scrapers-lib` and note the tag they are testing against.
+- Library version is single-sourced from `scrapers_lib/_version.py`; `pyproject.toml` reads it via `[tool.hatch.version]`. Bump the one place, the rest follows.
 
 ## 15. Security and secrets
 

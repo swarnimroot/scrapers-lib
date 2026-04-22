@@ -1,8 +1,8 @@
-"""Unit tests for scrapers_lib.tier2._base."""
+"""Unit tests for scrapers_lib.tier2.base."""
 
 import pytest
 
-from scrapers_lib.tier2._base import (
+from scrapers_lib.tier2.base import (
     _find_balanced_brace_end,
     normalize_spec_value,
     parse_inline_json,

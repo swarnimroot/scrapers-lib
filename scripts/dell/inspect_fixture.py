@@ -18,7 +18,7 @@ import json
 import re
 from pathlib import Path
 
-from scrapers_lib.tier2._base import parse_inline_json, parse_product_jsonld
+from scrapers_lib.tier2.base import parse_inline_json, parse_product_jsonld
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURE = REPO / "tests" / "tier2" / "fixtures" / "dell" / "alienware_aurora_16x.html"

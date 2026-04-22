@@ -43,6 +43,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from scrapers_lib._version import __version__
 from scrapers_lib.core.attribution import (
     attribute_regex_all,
     reddit_comment_id,
@@ -59,7 +60,7 @@ SOURCE_COMMENTS = "reddit_comments"
 # Reddit asks for descriptive User-Agents. The format here is the
 # classic "bot-name/version (by author, purpose)" Reddit suggests.
 _DEFAULT_USER_AGENT = (
-    "scrapers-lib/0.5 (personal research; unauthenticated JSON)"
+    f"scrapers-lib/{__version__} (personal research; unauthenticated JSON)"
 )
 
 _REDDIT_HOSTS = ("reddit.com", "www.reddit.com", "old.reddit.com")
