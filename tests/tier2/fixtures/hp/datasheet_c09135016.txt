@@ -1,0 +1,225 @@
+Datasheet
+OMEN MAX Gaming Laptop 16-
+ah0015ne
+Built to break limits
+The OMEN 16 MAX gaming laptop provides unparalleled performance both at-home or on-the-go. With next-
+gen NVIDIA® GPUs and Intel® Core™ Ultra CPUs1, a new Unleashed Mode for manual overclocking, and a
+thermal architecture built to cut down on both throttling and long term wear, dedicated gamers can achieve
+their best for years to come.
+*Product image may differ from actual product
+Performance you control Put your throttling on ice Instant pair with HyperX
+Throttle less and carry more with the latest Self-cleaning fans, a vapor chamber, and liquid Seamlessly connect up to three compatible
+Intel® Core™ Ultra CPUs1 and next-gen NVIDIA® metal ensure your laptop stays cool and HyperX devices to your laptop at once with
+RTX™ graphics. reduces maintenance. Instant Pair.
+Sustainabilityinaction
+Light the way you play
+Customize your lattice-less RGB keyboard and other lighting options in OGH to represent your unique style.
+with
+
+Datasheet
+OMEN MAX Gaming Laptop 16-ah0015ne
+Featuring
+Get a fresh perspective Keyboard contains post-consumer recycled plastic
+From a rejuvenated Start menu, to new ways to connect to your We're bringing a more thoughtful design to our keyboards by using
+favorite people, news, games, and content—Windows 11 is the place to post-consumer recycled plastic in the design.10
+think, express, and create in a natural way.2 HP Fast Charge
+Desktop-level performance anywhere
+When your laptop is low on power, no one has time to wait hours to
+Level up your PC with advanced performance, enhanced AI, and a CPU recharge. Power down your device and go from 0 to 50% charge in
+designed to defy expectations3 approximately 30 minutes.11
+NVIDIA® G-SYNC™ Enjoy a smooth wireless experience with a Wi-Fi 7 (2x2) and
+By synchronizing the refresh rates of your GPU and display, NVIDIA® G-
+Bluetooth® 5.4 combo.
+SYNC™ technology delivers gameplay that’s sharp, fluid, and stutter- Enjoy a smooth wireless experience with a Wi-Fi 7 (2x2) and Bluetooth®
+free with minimal input lag. 5.4 combo.12
+Wide Quad Extended Graphics Array Display HP True Vision FHD IR camera
+Get lost in the captivating definition with 2560 × 1600 pixels.4 Log in safely through Windows Hello with the infrared sensor. With an
+Eyesafe® Certified Display 88-degree, wide-angle field of view, you can video chat with your entire
+family or group of friends in stunning detail.13
+Eyesafe® certified displays meet TÜV low blue light requirements and
+Eyesafe® standards for protecting your eyes from harmful blue light
+Thunderbolt™ 4 with USB™ Type-C®
+without distorting colors to reduce eyestrain when working for long The latest Thunderbolt™ solution lets you power your device or
+periods of time.5 connect up to two 4K displays with a single cable and blazing 40Gbps
+3ms response time signaling rate.
+How fast your display’s pixels respond is crucial for a smooth picture.
+McAfee® LiveSafe™
+With a 3-millisecond response time, your action-filled content will look Protect your operating system with a free 30-day McAfee® LiveSafe™
+crisp and fluid without motion blur.6 subscription.14
+Flicker-free 2 TB PCIe® Gen4 NVMe™ Performance M.2 SSD
+Using DC Dimming technology that controls brightness by adjusting With high-speed data transfer, the 2 TB PCIe Gen4 NVMe Performance
+direct current rather than cycling the backlight, we can eliminate M.2 SSD offers lightning fast speed and efficient storage.15
+screen flickering for more comfortable viewing.7
+HP Audio Boost
+16:10 aspect ratio
+Take your audio experience to the next level with smart amplification
+A 16:10 aspect ratio lets you see more of your content with less technology giving you loud, clear and dynamic sound.
+scrolling. Audio tuned by HyperX
+100% sRGB
+Immerse yourself in the sweet sounds of audio mixed and tuned by
+Showcase your creations in all their colors on the 100% sRGB display HyperX.
+for maximum color broadness and accuracy. DDR5 RAM
+Try PC Game Pass for free with your new HP device
+Designed to run efficiently and reliably at faster speeds, DDR5 is the
+Play hundreds of high-quality PC games with your new HP device and 3 latest RAM standard. With higher bandwidth, you get more of a boost
+free months of PC Game Pass – including EA play. With new games in performance.
+added all the time, there’s always something new to play.8 HP Imagepad with multi-touch gesture
+Incorporating ocean-bound plastics
+This true multi-touch touchpad supports four finger gestures and lets
+HP incorporates increasing amounts of recycled, renewable, and non- you scroll, zoom, and navigate with a simple touch.
+virgin raw materials. Built with the environment in mind, this product
+includes a percentage of ocean-bound plastic in the design.9
+Recommended accessoriesand services(notincluded)
+HyperX Cloud III Wireless - Gaming Headset HyperX Knight Backpack HyperX Pulsefire Haste 2 Pro - 4K Wireless Gaming 3-year return to depot
+77Z46AA 8C525AA Mouse UM931E
+A1KY5AA
+
+Datasheet
+OMEN MAX Gaming Laptop 16-ah0015ne
+Specifications
+Performance Sustainability
+Operating system Sustainable impact specifications
+Windows 11 Home Ocean-bound plastic in bezel; Keyboard keycaps and scissors contain post-
+Processor consumer recycled plastic; Recycled metal in cover, base and hinge
+Intel® Core™ Ultra 9 275HX (up to 5.4 GHz with Intel® Turbo Boost Technology, cap(s)39,40,41
+36 MB L3 cache, 24 cores, 24 threads)6,7
+Design
+Processor family: Intel® Core™ Ultra 9 processor
+Neural Processing Unit (NPU): Intel® AI Boost (13 NPU TOPS)
+Chipset
+Product color
+Shadow black aluminum in cover and base, light bar, RGB in keyboard frame,
+Intel® HM870
+Memory black chrome logo
+Sandblasted and paint finish
+64 GB DDR5-5600 MT/s (2 x 32 GB)
+Transfer rates up to 5600 MT/s. Software
+Number of User-accessible Memory Slots: 2
+Storage HP apps
+2 TB PCIe® Gen4 NVMe™ Performance M.2 SSD HP Support Assistant; HP Connection Optimizer; OMEN Gaming Hub
+25 GB Dropbox storage for 12 months1 Software
+Graphics
+McAfee Online Protection 1-year subscription2;
+Discrete: NVIDIA® GeForce RTX™ 5090 Laptop GPU (24 GB GDDR7 dedicated) ; 1 month trial for new Microsoft 365 customers24
+Advanced Optimus Service & support
+Audio
+1-month Adobe free trial offer; PC Game Pass 3-month trial 25
+DTS:X® Ultra; Dual speakers; HP Audio Boost; HyperX McAfee Online Protection 1-year subscription2
+Display
+Additionalinformation
+40.6 cm (16") diagonal, WQXGA (2560 x 1600), 60-240 Hz, 3 ms response time,
+IPS, micro-edge, anti-glare, Low Blue Light, 500 nits, 100% sRGB17,21,28
+Screen-to-body ratio Part Number
+88.81%18 P/N: BF7F5EA #ABV
+Power UPC/EAN code: 199251042720
+Weight
+330 W AC power adapter;
+Battery type 2.68 kg;
+6-cell, 83 Wh Li-ion polymer23 Packed: 4.74 kg
+Battery and Power Dimensions
+Supports battery fast charge: approximately 50% in 30 minutes5 35.65 x 26.9 x 2.29 cm (front); 35.65 x 26.9 x 2.48 cm (rear);
+Packed: 9.4 x 42.8 x 33.2 cm
+Connectivity Manufacturer Warranty
+1 year (1/1/0) limited warranty includes 1 year of parts and labor. No on-site
+Network interface
+repair. Terms and conditions vary by country. Certain restrictions and
+Integrated 10/100/1000/2500 GbE LAN exclusions apply.
+Wireless connectivity Keyboard
+Intel® Wi-Fi 7 BE200 (2x2) and Bluetooth® 5.4 wireless card 12,46 Full-size, per key RGB backlit, shadow black keyboard with numeric keypad
+HP Extended Range Wireless LAN and NKRO Anti-Ghosting Key technology
+Ports
+HP Imagepad
+2 USB Type-A 10Gbps signaling rate; 1 AC smart pin; 1 HDMI 2.1; 1 Features
+headphone/microphone combo; 1 RJ-45; 2 Thunderbolt™ 4 with USB Type-C® NVIDIA® G-SYNC® support
+40Gbps signaling rate (USB Power Delivery 3.1, DisplayPort™ 2.1, HP Sleep and Security management
+Charge)19,42
+Camera privacy shutter; Trusted Platform Module (Firmware TPM) support
+Expansion slots Sensors
+2 M.2 (SSD) IR thermal sensor
+Webcam
+HP True Vision 1080p FHD IR camera with temporal noise reduction and
+integrated dual array digital microphones
+
+Datasheet
+OMEN MAX Gaming Laptop 16-ah0015ne
+Footnotes
+Messaging Footnotes
+1 Multi-core is designed to improve performance of certain software products. Not all customers or software applications will necessarily benefit from use of this technology. Performance and clock frequency will
+vary depending on application workload and your hardware and software configurations. Intel’s numbering, branding and/or naming is not a measurement of higher performance.
+2 Not all features are available in all editions or versions of Windows. Systems may require upgraded and/or separately purchased hardware, drivers, software or BIOS update to take full advantage of Windows
+functionality. Windows is automatically updated and enabled. High speed internet and Microsoft account required. ISP fees may apply and additional requirements may apply over time for updates. See
+http://www.windows.com.
+3 Multi-core is designed to improve performance of certain software products. Not all customers or software applications will necessarily benefit from use of this technology. Performance and clock frequency will
+vary depending on application workload and your hardware and software configurations. Intel’s numbering, branding and/or naming is not a measurement of higher performance. Intel® Turbo Boost performance
+varies depending on hardware, software and overall system configuration. See http://www.intel.com/technology/turboboost/ for more information. Features and software that require a NPU may require software
+purchase, subscription or enablement by a software or platform provider, and third-party software may have specific configuration or compatibility requirements. Potential NPU inferencing performance varies by
+use, configuration, software and other factors.
+4 WQXGA content is required to view WQXGA images.
+5 All performance specifications represent the typical specifications provided by HP's component manufacturers; actual performance may vary either higher or lower. Eyesafe® Display for Low Blue Light is the
+Display Compliance Test Specification quality. See https://eyesafe.com for more details. Display measured diagonally
+6 All performance specifications represent the typical specifications provided by HP's component manufacturers; actual performance may vary, either higher or lower.
+7 The flicker-free capability eliminates screen flickering through integrating DC-dimming LED backlights.
+8 PC Game Pass: Subscription continues automatically at regular monthly price unless cancelled. Subject to xbox.com/subscriptionterms. Terms and exclusions apply. Game catalog varies over time, by region, and
+by device. All rights reserved. Xbox.com/pcgamepass, ea.com/ea-play/terms.Three month trial for devices purchased after October 2024. Microsoft account required. Offers available in select regions only. Credit
+card required. After promotional period, subscription automatically continues at the then-current regular price (subject to change), unless cancelled, plus applicable taxes. For cancellation details,
+see xbox.com/cancel. For complete details see terms and conditions https://www.xbox.com/en-US/xbox-game-pass?msockid=3f8c879b624a6bb10ac4924e63d86a01
+9 Percentage of ocean-bound plastic contained in each component varies by product.
+10 Keyboard components contain post-consumer recycled plastic. Percentage of post consumer recycled contained in each component varies by product.
+11 Recharges your battery up to 50% within 30 minutes when the system is off using “shut down” command, using HP adapter provided with the notebook or recommended power adapter disclosed in specifications
+(see http://store.hp.com). After charging has reached 50% capacity, charging speed will return to normal speed. Charging time may vary +/- 10% due to System tolerance. Available on select HP products.
+12 Wireless access point and internet service required and sold separately. Availability of public wireless access points limited. Wi-Fi 6 is backwards compatible with prior 802.11 specs. Wi-Fi 7 is designed to support
+gigabit data rate when transferring files between two devices connected to the same router. Requires a wireless router, sold separately, that supports 80MHz and higher channels. Wi-Fi 7 (802.11ax) is not supported
+in Belarus where Wi-Fi settings will be optimized to local regulatory requirements (802.11ac).
+13 Features may require software or other 3rd party applications to provide the described functionality.
+14 Internet service required and not included. Subscription required after 30 days.
+15 For hard drives, GB = 1 billion bytes. TB = 1 trillion bytes. Actual formatted capacity is less. Up to 35GB of system disk is reserved for system recovery software.
+TechnicalSpecificationsFootnotes
+1 25 GB of free Dropbox storage for 12 months from date of registration. For complete details and terms of use, including cancellation policies, visit the Dropbox website at https://www.dropbox.com/help/space/hp-
+promotion. Internet service required and not included.
+2 Internet access required and not included. McAfee is pre-installed on your PC and an account is required for activation. Subscription renewal required after trial period. VPN feature is not available in India, China,
+Syria or North Korea. McAfee is not compatible with Windows 11 in S mode. You'll need to permanently switch out of S mode. There's no charge to switch out of S mode, but you won't be able to turn it back on.
+5 Recharges your battery up to 50% within 30 minutes when the system is off using “shut down” command, using HP adapter provided with the notebook or recommended power adapter disclosed in specifications
+(see http://store.hp.com). After charging has reached 50% capacity, charging speed will return to normal speed. Charging time may vary +/-10% due to System tolerance. Available on select HP products.
+6 Multi-core is designed to improve performance of certain software products. Not all customers or software applications will necessarily benefit from use of this technology. Performance and clock frequency will
+vary depending on application workload and your hardware and software configurations. Intel’s numbering, branding and/or naming is not a measurement of higher performance.
+7 Intel® Turbo Boost performance varies depending on hardware, software and overall system configuration. See http://www.intel.com/technology/turboboost/ for more information.
+12 Wireless access point and Internet service required and sold separately. Availability of public wireless access points limited. Wi-Fi 7 (802.11BE) functionality requires Windows 11 2024, select Intel® Core™ or Intel®
+Core™ Ultra processor, and a Wi-Fi 7 router, sold separately. Wi-Fi 7 is backwards compatible with prior 802.11 specs. Available in countries where Wi-Fi 7 is supported. The specification for 802.11BE is a draft
+specification and is not final. If the final specification differs from the draft specification, it may affect the ability of the device to communicate with other 802.11BE devices.
+17 All performance specifications represent the typical specifications provided by HP's component manufacturers; actual performance may vary either higher or lower.
+18 Percent of active plus nonactive viewing area to active viewing area plus border. Measure with lid vertical to the desk.
+19 For best results with HP Sleep and Charge, use a USB charging protocol standard cable or cable adapter with an external device.
+21 TUV Low Blue Light is the Display Compliance Test Specification quality. See https://www.certipedia.com/?locale=en#search for more details.
+23 Actual battery Watt-hours (Wh) will vary from design capacity. Battery capacity will naturally decrease with shelf life, time, usage, environment, temperature, system configuration, loaded apps, features, power
+management settings and other factors.
+24 Must activate within 180 days of Windows activation.
+25 Offer available worldwide (excluding China and embargoed countries or other countries identified as restricted by applicable law or regulation) to new and existing subscribers who are 18+. Click on the Adobe icon
+in the start menu to redeem a 1-month free trial membership for select Adobe software. The software is tied to the device and is not transferrable. If you would like to sign up for an auto-renewing subscription, you
+can provide your payment method at sign-up. By adding a payment method, your subscription will automatically renew at the then current rate on your renewal date until you cancel. If you cancel before the end of the
+one-month free trial, you won’t be charged. You can cancel your subscription anytime via your Adobe Account page or by contacting Customer Support. Please see current prices for Adobe products available in this
+offer. Offer not available to Education, OEM, or volume licensing customers. Subject to availability where the recipient resides. Additional terms and conditions may apply. VOID WHERE PROHIBITED OR RESTRICTED
+BY LAW.
+27 Based on U.S. EPEAT® registration according to IEEE 1680.1-2018 EPEAT®. EPEAT® status varies by country. Visit www.epeat.net for more information.
+28 Eyesafe® Display for Low Blue Light is the Display Compliance Test Specification quality. See https://eyesafe.com for more details.
+37 Weight and system dimensions may fluctuate due to configuration and manufacturing variances.
+39 Percentage of ocean-bound plastic contained in each component varies by product.
+40 Laptops manufactured with recycled metal material in product cover. Percentage of recycled metal varies by product.
+41 Keyboard components contain post-consumer recycled plastic. Percentage of post consumer recycled contained in each component varies by product.
+42 For optimal performance and battery chargeability while gaming and rendering, use the power adapter that ships with the PC. You can use the 100W/20V Type-C adapter or power bank when running light loading
+tasks. System-off charging is only supported on 20V Type-C adapter or power bank.
+45 The Flicker-free capability is eliminating screen flickering through integrating DC-dimming LED backlights or LED emissions. OLED panel is functional with DC-DIMMING when above 100nits.
+46 Bluetooth® 5.4 operation requires Microsoft OS/Chrome OS support. Until Microsoft OS/Chrome OS support is available, Bluetooth® 5.4 will function as Bluetooth® 5.3 or lower.
+50 Copilot in Excel requires AutoSave to be enabled, meaning the file must be saved to OneDrive; it doesn't function with unsaved files. Copilot features in Outlook apply to accounts with @outlook.com,
+@hotmail.com, @live.com, or @msn.com email addresses and are available in Outlook.com, Outlook built into Windows, Outlook on Mac, and iOS and Android apps. AI features only available to Microsoft 365 Family
+subscription owner and cannot be shared; usage limits apply. Learn more Learn more Understanding AI credits - Microsoft Support . Microsoft Copilot features in Microsoft 365 are not available in China or Macao
+SAR.
+© Copyright 2025 HP Development Company, L.P. The information contained herein is subject to change without notice. The only warranties for HP products and services are set forth in the express warranty statements accompanying such products and
+services. Nothing herein should be construed as constituting an additional warranty. HP shall not be liable for technical or editorial errors or omissions contained herein. Intel, Core, Optane, Celeron, Pentium, Iris, XMM, and Thunderbolt are trademarks or
+registered trademarks of Intel Corporation or its subsidiaries in the United States and other countries. AMD, Ryzen, Athlon, and Radeon are trademarks of Advanced Micro Devices, Inc. Bluetooth is a trademark owned by its proprietor and used by HP Inc. under
+license. NVIDIA and GeForce are trademarks and/or registered trademarks of NVIDIA Corporation in the U.S. and other countries. USB Type-C® and USB-C® are registered trademarks of USB Implementers Forum. DisplayPort™ and the DisplayPort™ logo are
+trademarks owned by the Video Electronics Standards Association (VESA®) in the United States and other countries. McAfee and McAfee LiveSafe are trademarks or registered trademarks of McAfee LLC in the United States and other countries. ENERGY STAR is
+a registered trademark of the U.S. Environmental Protection Agency. All other trademarks are the property of their respective owners. Not all features are available in all editions or versions of Windows. Systems may require upgraded and/or separately
+purchased hardware, drivers, software or BIOS update to take full advantage of Windows functionality. Windows is automatically updated and enabled. High speed internet and Microsoft account required. ISP fees may apply and additional requirements may
+apply over time for updates. See http://www.windows.com.
+September 2025
+DOC-M

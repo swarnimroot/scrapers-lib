@@ -5,6 +5,34 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 ## [Unreleased]
 
 ### Added
+- `scrapers_lib.tier2.hp`: `fetch_hp_product` — plain-httpx fetcher for HP
+  shop PDPs (`www.hp.com/us-en/shop/pdp/<slug>`). Extracts the full page
+  state from a hidden `<div id="data"><!-- {JSON} --></div>` block (a
+  regex + `json.loads` away), walks
+  `slugInfo.components.pdpCTOConfiguration.configurations` to emit one
+  `ProductSnapshot` per pre-built "Recommended Configuration" tile
+  (typically 3, per-tile `source_id`/`variant_key` = HP's
+  `configCatentryId`, per-tile `price`/`list_price`/`image_url`). Each
+  tile's ~12 config-picker categories (Processor and graphics, Memory,
+  Storage, Display, etc.) serialize with current value on line 0 and
+  alternatives on subsequent lines; HTML entities decoded. `brand`,
+  `rating`, `review_count` enriched from JSON-LD. Parser walks
+  categories by position so differing per-product-line naming (Pavilion
+  merges Processor/Graphics/Memory into one category; Omen splits them)
+  does not require code changes. Known limitation documented in
+  `ARCHITECTURE.md` §11 + `ADDING_A_SOURCE.md` §4: the full "Tech Specs"
+  section (Dimensions, Ports, Weight, Warranty, etc. — ~20 more
+  categories) is client-side hydrated behind an aggressive Akamai bot
+  gate that rejects both vanilla and stealth Playwright on `/shop/pdp/`
+  URLs; HP QuickSpecs PDFs at `h20195.www2.hp.com` are a viable
+  future-wave upgrade path. 54 unit tests (Omen Max + Pavilion 16z
+  fixtures), 1 gated live integration test.
+- `scripts/hp/` — two reconnaissance probes + README: `probe_hp_pdp.py`
+  (plain-httpx baseline + §3.2 attribute scan that exposed the hidden
+  `div#data` container after initial heuristics misfired) and
+  `probe_hp_pdp_scroll.py` (stealth Playwright + scroll + XHR trace,
+  kept as insurance even though static inspection of probe 1's output
+  obviated the need for it).
 - `scrapers_lib.tier2.lenovo`: `fetch_lenovo_product` — plain-httpx fetcher
   that extracts the PSREF `ProductKey` from a product URL and calls Lenovo's
   own `/api/product/Compare/LoadSpecData` endpoint. Returns one

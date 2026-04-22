@@ -1,0 +1,222 @@
+"""HP shop PDP reconnaissance — step 1 of the ``ADDING_A_SOURCE.md`` §5 decision tree.
+
+Plain ``httpx.get`` against one known HP Omen shop PDP with a current Chrome
+UA. No stealth, no Playwright — we discover what HP looks like at the
+lowest level before assuming any pattern.
+
+Goals (mapped to ``docs/ADDING_A_SOURCE.md``):
+
+- §3.8 — Does HP's shop respond with real HTML to a minimally-configured
+  browser request, or does it challenge us? HP has historically used Akamai
+  on its shop, so this is the biggest variable. Outcome here decides
+  whether we follow Dell's stealth-browser pattern (likely) or Lenovo's
+  plain-httpx pattern (if we're lucky).
+- §3.3 / §3.4 / §3.5 — If the response is real HTML, is the spec data
+  SSR'd (tables, ``<dl>`` pairs, JSON-LD, or a framework state blob)?
+- Baseline observation for the §5 decision tree. Escalate only on evidence.
+
+Output (under ``tests/tier2/fixtures/hp/``):
+
+- ``omen_16_a58a5av_1.html`` — raw response body on 200 OK.
+- ``omen_16_a58a5av_1_status{N}.html`` — non-200 body for post-mortem.
+
+Run from the repo root::
+
+    .venv/Scripts/python.exe scripts/hp/probe_hp_pdp.py
+
+See ``docs/ADDING_A_SOURCE.md`` §3 (techniques) and §5 (decision tree).
+"""
+
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+import httpx
+
+from scrapers_lib.tier2._base import parse_inline_json, parse_product_jsonld
+
+REPO = Path(__file__).resolve().parents[2]
+FIX = REPO / "tests" / "tier2" / "fixtures" / "hp"
+
+# Keep in sync with scrapers_lib.core.playwright_base.DEFAULT_USER_AGENT.
+UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+)
+
+URL = "https://www.hp.com/us-en/shop/pdp/omen-16-inch-gaming-laptop-pc-a58a5av-1"
+LABEL = "omen_16_a58a5av_1"
+
+BLOCK_MARKERS = [
+    ("access denied", re.compile(r"<title>[^<]*access denied", re.I)),
+    ("pardon interrupt", re.compile(r"pardon our interruption", re.I)),
+    ("akamai edge", re.compile(r"errors\.edgesuite", re.I)),
+    ("akamai reference", re.compile(r"reference\s*#[0-9a-f.]+", re.I)),
+    ("cf verify", re.compile(r"cf-browser-verification", re.I)),
+    ("cf challenge", re.compile(r"cf-chl-", re.I)),
+    ("checking browser", re.compile(r"checking your browser", re.I)),
+    ("imperva", re.compile(r"imperva|incapsula", re.I)),
+]
+
+STATE_VARS = (
+    "__INITIAL_STATE__",
+    "__PRELOADED_STATE__",
+    "__APOLLO_STATE__",
+    "__NUXT__",
+    "dataLayer",
+    "digitalData",  # Adobe Analytics pattern, seen on some enterprise sites.
+)
+
+
+def block_hits(html: str) -> list[str]:
+    return [name for name, pat in BLOCK_MARKERS if pat.search(html)]
+
+
+def analyze(html: str) -> None:
+    print(f"\nsize: {len(html):,} chars")
+    blocks = block_hits(html)
+    print(f"block markers: {blocks or 'none'}")
+
+    m = re.search(r"<title>([^<]+)</title>", html)
+    print(f"<title>: {m.group(1).strip() if m else '(none)'}")
+
+    # JSON-LD (§3.3)
+    products = parse_product_jsonld(html)
+    print(f"\n[json-ld] Product objects: {len(products)}")
+    for i, p in enumerate(products):
+        keys = list(p.keys())
+        name = p.get("name") or ""
+        if isinstance(name, str):
+            name = name[:80]
+        print(f"  [{i}] @type={p.get('@type')} name={name}")
+        print(f"       keys={keys}")
+
+    # Framework state blobs (§3.5)
+    nd = parse_inline_json(html, script_id="__NEXT_DATA__")
+    print(f"\n[__NEXT_DATA__]: {'present' if nd else 'absent'}")
+    if nd:
+        print(f"  top-level keys: {list(nd.keys())}")
+
+    for var in STATE_VARS:
+        blob = parse_inline_json(html, window_var=var)
+        print(f"[window.{var}]: {'present' if blob else 'absent'}")
+
+    # HP-specific state hints
+    vendor_vars = re.findall(
+        r'window\.(hp[A-Za-z_]*|_hp[A-Za-z_]*|omen[A-Za-z_]*)\s*=',
+        html,
+        re.I,
+    )
+    if vendor_vars:
+        print(f"HP-specific window vars: {sorted(set(vendor_vars))[:20]}")
+
+    # DOM signals (§3.4)
+    dom = {
+        "<table count": html.count("<table"),
+        "<dl count": html.count("<dl "),
+        "<tr count": html.count("<tr"),
+        "<th count": html.count("<th"),
+        "'specification' text (any case)": len(re.findall(r"specification", html, re.I)),
+        "'Processor' occurrences": len(re.findall(r"\bprocessor\b", html, re.I)),
+        "'Memory' occurrences": len(re.findall(r"\bmemory\b", html, re.I)),
+        "'Graphics' occurrences": len(re.findall(r"\bgraphics\b", html, re.I)),
+        "'Display' occurrences": len(re.findall(r"\bdisplay\b", html, re.I)),
+    }
+    print("\n[DOM signals]")
+    for k, v in dom.items():
+        print(f"  {k}: {v}")
+
+    # §3.2 technique — attribute values mentioning 'spec'
+    spec_attrs = re.findall(r'([a-z_-]+="[^"]*spec[^"]*")', html, re.I)
+    distinct = sorted(set(spec_attrs))
+    print(
+        f"\n[attribute values mentioning 'spec']: {len(distinct)} distinct "
+        "(showing up to 15)"
+    )
+    for s in distinct[:15]:
+        print(f"  {s[:160]}")
+
+    # Heading outline
+    headings = re.findall(r"<h([1-3])[^>]*>([^<]{1,120})</h\1>", html, re.I)
+    print(f"\n[headings h1-h3]: {len(headings)} total (showing first 20)")
+    for lvl, text in headings[:20]:
+        print(f"  h{lvl}  {text.strip()}")
+
+    # Verdict
+    print("\n=== verdict ===")
+    has_state_blob = bool(nd) or any(
+        parse_inline_json(html, window_var=v) for v in STATE_VARS
+    )
+    if blocks:
+        print(
+            "BLOCKED — httpx response looks like a bot challenge. "
+            "Next: Playwright + stealth probe (mirror Dell's pattern)."
+        )
+    elif dom["<table count"] >= 3 and dom["'Processor' occurrences"] >= 1:
+        print(
+            "LIKELY SSR (tables) — spec content appears to live in the HTML. "
+            "Next: write a pure-parse function on top of _base.parse_spec_table "
+            "and verify against a second HP product URL."
+        )
+    elif has_state_blob and dom["'Processor' occurrences"] >= 1:
+        print(
+            "LIKELY SSR (state blob) — product model appears serialized into a "
+            "<script> tag. Next: inspect the blob path to spec data."
+        )
+    elif dom["<table count"] == 0 and not has_state_blob:
+        print(
+            "LIKELY SPA — small/structureless response, no tables, no state blob. "
+            "Specs are probably XHR-hydrated. Next: Playwright probe with Network "
+            "tracing to find the data endpoint."
+        )
+    else:
+        print(
+            "UNCLEAR — mixed signals. Inspect the saved fixture manually before "
+            "committing to a parser strategy."
+        )
+
+
+def main() -> int:
+    print(f"[GET] {URL}")
+    try:
+        resp = httpx.get(
+            URL,
+            headers={"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"},
+            follow_redirects=True,
+            timeout=30.0,
+        )
+    except httpx.HTTPError as exc:
+        print(f"ERROR: {type(exc).__name__}: {exc}")
+        return 2
+
+    print(f"status: {resp.status_code}")
+    print(f"final URL: {resp.url}")
+    print(f"content-type: {resp.headers.get('content-type', '(unset)')}")
+    print(f"length: {len(resp.content):,} bytes")
+
+    FIX.mkdir(parents=True, exist_ok=True)
+
+    if resp.status_code != 200:
+        out = FIX / f"{LABEL}_status{resp.status_code}.html"
+        out.write_bytes(resp.content)
+        print(f"saved non-200 body: {out.relative_to(REPO)}")
+        try:
+            html = resp.text
+        except Exception:
+            return 1
+        analyze(html)
+        return 1
+
+    html = resp.text
+    out = FIX / f"{LABEL}.html"
+    out.write_text(html, encoding="utf-8")
+    print(f"saved fixture: {out.relative_to(REPO)}")
+
+    analyze(html)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

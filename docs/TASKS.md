@@ -10,9 +10,9 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-21
 
-- **Last session:** **Wave 2b Lenovo COMPLETE.** `tier2/lenovo.py` — plain-httpx fetcher that extracts the PSREF `ProductKey` from the URL, calls `/api/product/Compare/LoadSpecData` directly, and flattens the nested `L1 > L2 > Features > FVs > FVGs > FVGItem` tree into one `ProductSnapshot` per URL (50+ feature keys; multi-option Features serialized as newline-joined alternatives). No Playwright, no stealth, no new deps — PSREF has no bot gating. 47 unit tests (Legion Pro 7 16AFR10H + LOQ 15IRX10 fixtures) + 1 gated live integration test. Three reconnaissance probes committed at `scripts/lenovo/` (plain-httpx baseline, Playwright XHR trace, PDF datasheet coverage witness). Wave 2a Dell remains the first Tier 2 source — still green.
+- **Last session:** **Wave 2b Lenovo + HP COMPLETE.** `tier2/hp.py` — plain-httpx fetcher that extracts HP's shop-PDP state from a hidden `<div id="data"><!-- {JSON} --></div>` block and walks `slugInfo.components.pdpCTOConfiguration.configurations` to emit one `ProductSnapshot` per "Recommended Configuration" tile (typically 3) with 11–12 config-picker spec categories per tile, current value first + alternatives joined with `\n`. Verified on Omen Max 16t-ah000 + Pavilion 16z-ag000 (54 unit tests + 1 gated live integration). Known coverage caveat documented in ARCHITECTURE.md §11: the "Tech Specs" section (~20 more categories — Dimensions, Ports, Weight, Warranty) is client-side hydrated behind an aggressive bot gate that rejects even stealth Playwright with homepage warming. HP QuickSpecs PDFs at `h20195.www2.hp.com` are the upgrade path; not built yet. `tier2/lenovo.py` (earlier this wave) remains green — 47 tests + live integration, plain httpx against PSREF's `LoadSpecData` JSON API. Three source-specific recon probes at `scripts/hp/`, three at `scripts/lenovo/`, four at `scripts/dell/`. Wave 2a Dell still green.
 - **In progress:** none (pause point).
-- **Next:** Wave 2b continues — HP / ASUS / Acer / MSI. Each requires its own reconnaissance per the golden rule in `docs/ADDING_A_SOURCE.md` §2 (do **not** assume Lenovo's pattern hoists). §5 decision tree is the starting framework; `scripts/lenovo/probe_psref.py` is the lightest-weight probe template.
+- **Next:** Wave 2b continues — ASUS / Acer / MSI. Each requires its own reconnaissance per the golden rule in `docs/ADDING_A_SOURCE.md` §2 (three sites in and still zero shared helpers — don't assume anything hoists). §5 decision tree is the starting framework; `scripts/lenovo/probe_psref.py` and `scripts/hp/probe_hp_pdp.py` are the lightest-weight probe templates.
 - **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4`, `playwright`, `playwright-stealth`, and Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking.
 
@@ -86,13 +86,13 @@ Driver: **Demo 2**. Scope narrowed to `_base` + Dell only so the shared helpers 
 
 Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition pattern than Dell (Dell → internal `csbapi` endpoint; Lenovo → PSREF `LoadSpecData` JSON API; HP/ASUS/Acer/MSI to be determined by per-site recon). Don't assume one pattern hoists into `_base` until a second site confirms it.
 
-- [ ] `tier2/hp.py` — reconnaissance then fetcher
+- [x] `tier2/hp.py` — shop-PDP state-JSON extraction (hidden `<div id="data"><!-- {JSON} --></div>`); per-tile `ProductSnapshot` with 12 config-picker categories; plain httpx (HP doesn't bot-gate httpx but blocks browsers); verified on Omen Max 16t-ah000 + Pavilion 16z-ag000 (54 unit tests + 1 gated live integration). **Known limitation**: "Tech Specs" section (Dimensions/Ports/Weight/Warranty — 20+ more categories) is client-side hydrated behind an aggressive bot gate; HP QuickSpecs PDFs at `h20195.www2.hp.com` are the upgrade path for full coverage.
 - [x] `tier2/lenovo.py` — PSREF `LoadSpecData` JSON endpoint, plain httpx (no stealth); verified on Legion Pro 7 16AFR10H + LOQ 15IRX10 (47 unit tests + 1 gated live integration)
 - [ ] `tier2/asus.py`
 - [ ] `tier2/acer.py`
 - [ ] `tier2/msi.py`
-- [ ] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo
-- [ ] Hoist any patterns that recur across two or more sites into `tier2/_base.py` (so far Dell's HTML-fragment parsing and Lenovo's nested-JSON flattening share no helpers — no hoisting yet)
+- [ ] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo, [x] HP
+- [ ] Hoist any patterns that recur across two or more sites into `tier2/_base.py` (so far Dell's HTML-fragment parsing, Lenovo's nested-JSON flattening, and HP's comment-wrapped-state-JSON extraction all share **zero** helpers — no hoisting yet)
 - [ ] Tag `v0.3.0` on Wave 2b completion
 
 ## Wave 2c — BestBuy + Amazon
