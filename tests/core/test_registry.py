@@ -2,21 +2,30 @@
 
 import pytest
 
+from scrapers_lib.core import registry as _registry_mod
 from scrapers_lib.core.registry import (
     FetcherFn,
     get_fetcher,
     list_fetchers,
     register,
     register_fetcher,
-    _reset_for_tests,
 )
 
 
 @pytest.fixture(autouse=True)
-def _reset():
-    _reset_for_tests()
+def _isolate_registry():
+    """Snapshot-and-restore the registry around each test.
+
+    Tests in this file need a clean slate to verify register/get semantics,
+    but other test modules (and production code) may have registered real
+    fetchers at import time. Snapshotting preserves those while isolating
+    this file's mutations.
+    """
+    snapshot = dict(_registry_mod._registry)
+    _registry_mod._registry.clear()
     yield
-    _reset_for_tests()
+    _registry_mod._registry.clear()
+    _registry_mod._registry.update(snapshot)
 
 
 def _stub(url, anchors=None, **opts):

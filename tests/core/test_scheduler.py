@@ -6,8 +6,9 @@ from typing import Any
 
 import pytest
 
+from scrapers_lib.core import registry as _registry_mod
 from scrapers_lib.core.rate_limiter import RateLimiter
-from scrapers_lib.core.registry import register_fetcher, _reset_for_tests
+from scrapers_lib.core.registry import register_fetcher
 from scrapers_lib.core.robots import RobotsChecker
 from scrapers_lib.core.scheduler import BlockedError, Scheduler, _domain_of
 from scrapers_lib.core.schemas import Anchor, AttributionRegex
@@ -27,10 +28,18 @@ class FakeClock:
 
 
 @pytest.fixture(autouse=True)
-def _reset_registry():
-    _reset_for_tests()
+def _isolate_registry():
+    """Snapshot-and-restore the registry so tests here don't leak or stomp.
+
+    Scheduler tests register fake fetchers as needed; snapshotting preserves
+    any real fetchers (``tier2.dell``, etc.) that were registered at
+    import time elsewhere in the run.
+    """
+    snapshot = dict(_registry_mod._registry)
+    _registry_mod._registry.clear()
     yield
-    _reset_for_tests()
+    _registry_mod._registry.clear()
+    _registry_mod._registry.update(snapshot)
 
 
 @pytest.fixture
