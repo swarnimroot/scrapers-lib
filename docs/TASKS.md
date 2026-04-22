@@ -10,10 +10,10 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-21
 
-- **Last session:** Wave 0 scaffold complete and Wave 1 partial — `core/schemas.py` and `core/attribution.py` implemented with 55 passing unit tests. Top-level re-exports in place at `scrapers_lib`. Commits: `2dfbe2a` scaffold, `798ef6d` core schemas + attribution, `fb2e95e` tasks housekeeping.
-- **In progress:** Wave 1 continues.
-- **Next:** `core/logging_config.py`, then `core/cache.py`, `core/rate_limiter.py`, `core/http_client.py`, `core/robots.py`, `core/playwright_base.py`, `core/registry.py`, `core/scheduler.py`.
-- **Dev env:** `.venv/` in place with `pydantic>=2.0` and `pytest>=8.0`; extend with additional deps as later modules need them (`httpx`, `diskcache`, `playwright`, etc.).
+- **Last session:** **Wave 1 COMPLETE.** All 10 core modules implemented with 165 passing unit tests. Top-level `scrapers_lib` re-exports schemas + Scheduler + BlockedError. Tagged `v0.1.0`.
+- **In progress:** none (pause point).
+- **Next:** Wave 2a — Demo 2 manufacturer scrapers, starting with `tier2/_base.py` + `tier2/dell.py` (BTO configurator is the hardest case; forces the base right).
+- **Dev env:** `.venv/` with `pydantic>=2.0`, `pytest>=8.0`, `diskcache>=5.6`, `httpx>=0.28`. Wave 2a will add `playwright` (and `playwright install chromium` for browsers).
 - **Open questions:** none blocking.
 
 ### How to resume in a new session
@@ -48,26 +48,26 @@ Say "wrap this session" (or similar). Claude will commit any in-flight work (or 
 
 Build order within Wave 1 — later items depend on earlier ones:
 
-- [ ] `core/logging_config.py` — stdlib logging, per-module loggers
+- [x] `core/logging_config.py` — stdlib logging, per-module loggers
 - [x] `core/schemas.py` — Anchor, ProductSnapshot, RawMention (Pydantic v2) + enums
   - [x] Unit tests: schema validation happy path + failure cases
 - [x] `core/attribution.py` — regex gate, URL-map gate, deterministic mention-ID helpers
   - [x] Unit tests: primary-only, primary+corroboration, exclusion, ambiguous-match routing
-- [ ] `core/cache.py` — diskcache wrapper with per-source TTL, URL-default keys
-  - [ ] Unit tests: cache hit/miss, TTL expiry
-- [ ] `core/rate_limiter.py` — per-domain token buckets
-  - [ ] Unit tests: under budget, at budget, budget reset
-- [ ] `core/robots.py` — robots.txt fetch + cache; per-call `ignore_robots` override
-  - [ ] Unit tests: allowed path, disallowed path, missing robots.txt, override
-- [ ] `core/http_client.py` — httpx wrapper with retry/backoff, UA rotation, `Retry-After` respect
-  - [ ] Unit tests: 429 backoff, 503 backoff, bounded retry count
-- [ ] `core/playwright_base.py` — stealth settings, persistent browser profile per domain
-  - [ ] No unit tests (integration-only; gated)
-- [ ] `core/registry.py` — internal fetcher registry keyed by source-name
-  - [ ] Unit tests: register, lookup, duplicate-name protection
-- [ ] `core/scheduler.py` — SQLite-backed job queue, worker loop, per-domain budgets, adaptive backoff, callback sink, stats
-  - [ ] Unit tests: enqueue, dequeue, budget exhaustion, failure retry, state persistence
-- [ ] Commit per module; tag `v0.1.0` on Wave 1 completion
+- [x] `core/cache.py` — diskcache wrapper with per-source TTL, URL-default keys
+  - [x] Unit tests: cache hit/miss, TTL expiry
+- [x] `core/rate_limiter.py` — per-domain token buckets
+  - [x] Unit tests: under budget, at budget, budget reset
+- [x] `core/robots.py` — robots.txt fetch + cache; per-call `ignore_robots` override
+  - [x] Unit tests: allowed path, disallowed path, missing robots.txt, override
+- [x] `core/http_client.py` — httpx wrapper with retry/backoff, UA rotation, `Retry-After` respect
+  - [x] Unit tests: 429 backoff, 503 backoff, bounded retry count
+- [x] `core/playwright_base.py` — stealth settings, persistent browser profile per domain
+  - [x] Unit tests for `BrowserProfile` / `_safe_domain` (pure-Python parts). `stealth_context` itself is integration-only and will be exercised in Wave 2a.
+- [x] `core/registry.py` — internal fetcher registry keyed by source-name
+  - [x] Unit tests: register, lookup, duplicate-name protection
+- [x] `core/scheduler.py` — SQLite-backed job queue, worker loop, per-domain budgets, adaptive backoff, callback sink, stats
+  - [x] Unit tests: enqueue, dequeue, budget exhaustion, failure retry, state persistence
+- [x] Commit per module; tag `v0.1.0` on Wave 1 completion
 
 ## Wave 2a — Demo 2 sources (manufacturer spec scraping)
 
