@@ -4,7 +4,34 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-22
+
 ### Added
+- `scrapers_lib.tier2.asus`: `fetch_asus_product` — plain-httpx fetcher for
+  ASUS ROG marketing/spec pages (`rog.asus.com/laptops/<line>/<model>/spec/`).
+  Walks every SSR'd `<h2>` with class prefix
+  `ProductSpec__productSpecItemTitle__` (CSS-module hash suffix matched via
+  startswith to survive ASUS rebuilds), takes its next-sibling `<div>`'s
+  per-SKU `ProductSpec__rowItem__*` children as variants, dedupes in
+  first-occurrence order, and emits **one `ProductSnapshot` per URL with
+  20+ spec categories** — richest Tier 2 coverage so far, including
+  Dimensions (cm + inches), Weight (kg + lbs), I/O Ports (Thunderbolt /
+  HDMI / USB-C / USB-A specifics), Power Supply (wattage + voltage),
+  Expansion Slots, Security (TPM), Wireless (Wi-Fi 7 / BT 5.4 version),
+  AURA SYNC, Device Lighting, Microsoft Office / Xbox Game Pass bundle
+  offers, Included in the Box. Multi-SKU variant rows are newline-joined
+  with duplicates collapsed; `®`/`™` whitespace tightened (BS4 pulls
+  those sub-elements out of their words with a stray space);
+  `brand="ASUS"` normalized to the parent manufacturer for cross-vendor
+  grouping (JSON-LD declares the sub-brand "ROG", preserved in
+  `raw.jsonld_brand`). No prices — the ROG spec surface is marketing,
+  and `shop.asus.com` is DataDome-gated (professional anti-bot; no free
+  bypass). 50 unit tests (Strix G16 2025 + Zephyrus G16 2026 fixtures), 1
+  gated live integration test. Total suite: 414 passed, 4 skipped.
+- `scripts/asus/probe_asus_rog.py` — single reconnaissance probe: confirms
+  shop.asus.com DataDome negative result, then fetches both committed ROG
+  fixtures and prints the h2-based spec-section header outline. Plus
+  `scripts/asus/README.md`.
 - `scrapers_lib.tier2.hp`: `fetch_hp_product` — plain-httpx fetcher for HP
   shop PDPs (`www.hp.com/us-en/shop/pdp/<slug>`). Extracts the full page
   state from a hidden `<div id="data"><!-- {JSON} --></div>` block (a

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scrapers-lib"
-version = "0.2.0"
+version = "0.3.0"
 description = "Reusable multi-source scraping library with normalized schemas, attribution, and a persistent scheduler."
 readme = "README.md"
 requires-python = ">=3.12"

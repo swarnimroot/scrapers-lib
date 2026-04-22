@@ -10,9 +10,9 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 **Last updated:** 2026-04-21
 
-- **Last session:** **Wave 2b Lenovo + HP COMPLETE.** `tier2/hp.py` — plain-httpx fetcher that extracts HP's shop-PDP state from a hidden `<div id="data"><!-- {JSON} --></div>` block and walks `slugInfo.components.pdpCTOConfiguration.configurations` to emit one `ProductSnapshot` per "Recommended Configuration" tile (typically 3) with 11–12 config-picker spec categories per tile, current value first + alternatives joined with `\n`. Verified on Omen Max 16t-ah000 + Pavilion 16z-ag000 (54 unit tests + 1 gated live integration). Known coverage caveat documented in ARCHITECTURE.md §11: the "Tech Specs" section (~20 more categories — Dimensions, Ports, Weight, Warranty) is client-side hydrated behind an aggressive bot gate that rejects even stealth Playwright with homepage warming. HP QuickSpecs PDFs at `h20195.www2.hp.com` are the upgrade path; not built yet. `tier2/lenovo.py` (earlier this wave) remains green — 47 tests + live integration, plain httpx against PSREF's `LoadSpecData` JSON API. Three source-specific recon probes at `scripts/hp/`, three at `scripts/lenovo/`, four at `scripts/dell/`. Wave 2a Dell still green.
+- **Last session:** **Wave 2b COMPLETE (narrowed scope: Acer + MSI deferred post-demo).** Four Tier 2 manufacturer sources shipped — Dell (Wave 2a), Lenovo, HP, and ASUS. ASUS fetcher at `tier2/asus.py` targets `rog.asus.com/laptops/<line>/<model>/spec/` (plain httpx, no stealth), parses SSR'd `<h2>` spec sections via CSS-module class-prefix matching, dedupes per-SKU variant rows, and emits one `ProductSnapshot` per URL with **20+ spec categories** (richest Tier 2 coverage, including Dimensions/Ports/Weight/Power Supply/Security/Wireless-version axes that HP can't deliver). Verified on ROG Strix G16 2025 + ROG Zephyrus G16 2026 (50 unit tests + 1 gated live integration). `shop.asus.com` is DataDome-gated so the ROG marketing surface is the target — that means no prices, same as Lenovo PSREF. Acer and MSI deferred with clear rationale in `ARCHITECTURE §11` / `ADDING_A_SOURCE §4` / this file. **Full suite: 414 passed, 4 skipped** (one live integration per Tier 2 source).
 - **In progress:** none (pause point).
-- **Next:** Wave 2b continues — ASUS / Acer / MSI. Each requires its own reconnaissance per the golden rule in `docs/ADDING_A_SOURCE.md` §2 (three sites in and still zero shared helpers — don't assume anything hoists). §5 decision tree is the starting framework; `scripts/lenovo/probe_psref.py` and `scripts/hp/probe_hp_pdp.py` are the lightest-weight probe templates.
+- **Next:** **Wave 2c** (BestBuy API + Amazon + BestBuy reviews) and **Wave 3** (RSS / article / Reddit / YouTube). User to begin the BestBuy Developer API registration at [bestbuyapis.github.io](https://bestbuyapis.github.io/) immediately (approval lead-time ~1 week) so the key is ready when Wave 2c's `tier1/bestbuy_api.py` is the blocking item. Reddit PRAW registration (instant, at `reddit.com/prefs/apps`) can wait until `tier1/reddit.py` in Wave 3. All four Wave 3 fetchers add one dep each (`feedparser`, `trafilatura`, `praw`, `youtube-transcript-api`) — flagged for approval per `CLAUDE.md` "Get explicit approval before new dependencies".
 - **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4`, `playwright`, `playwright-stealth`, and Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking.
 
@@ -88,12 +88,12 @@ Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition p
 
 - [x] `tier2/hp.py` — shop-PDP state-JSON extraction (hidden `<div id="data"><!-- {JSON} --></div>`); per-tile `ProductSnapshot` with 12 config-picker categories; plain httpx (HP doesn't bot-gate httpx but blocks browsers); verified on Omen Max 16t-ah000 + Pavilion 16z-ag000 (54 unit tests + 1 gated live integration). **Known limitation**: "Tech Specs" section (Dimensions/Ports/Weight/Warranty — 20+ more categories) is client-side hydrated behind an aggressive bot gate; HP QuickSpecs PDFs at `h20195.www2.hp.com` are the upgrade path for full coverage.
 - [x] `tier2/lenovo.py` — PSREF `LoadSpecData` JSON endpoint, plain httpx (no stealth); verified on Legion Pro 7 16AFR10H + LOQ 15IRX10 (47 unit tests + 1 gated live integration)
-- [ ] `tier2/asus.py`
-- [ ] `tier2/acer.py`
-- [ ] `tier2/msi.py`
-- [ ] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo, [x] HP
-- [ ] Hoist any patterns that recur across two or more sites into `tier2/_base.py` (so far Dell's HTML-fragment parsing, Lenovo's nested-JSON flattening, and HP's comment-wrapped-state-JSON extraction all share **zero** helpers — no hoisting yet)
-- [ ] Tag `v0.3.0` on Wave 2b completion
+- [x] `tier2/asus.py` — ROG marketing/spec page at `rog.asus.com/laptops/<line>/<model>/spec/`, SSR'd `<h2>` sections parsed by CSS-module class-prefix matching; one `ProductSnapshot` per URL with **20+ spec categories** including the Dimensions/Ports/Weight axes HP cannot deliver; plain httpx; verified on ROG Strix G16 2025 + ROG Zephyrus G16 2026 (50 unit tests + 1 gated live integration). `shop.asus.com` is DataDome-gated so the fetcher targets the ROG marketing surface which carries no prices.
+- [ ] ~~`tier2/acer.py`~~ — **Deferred (post-demo)**. Not required for Demo 2 max-spec comparison; Dell/HP/Lenovo/ASUS cover the four major gaming-laptop manufacturers. Revisit after demo ships if broader coverage becomes necessary.
+- [ ] ~~`tier2/msi.py`~~ — **Deferred (post-demo)**, same rationale as Acer.
+- [x] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo, [x] HP, [x] ASUS (Acer/MSI documented as deferred)
+- [ ] Hoist any patterns that recur across two or more sites into `tier2/_base.py` (**four** Tier 2 sources in — Dell HTML-fragment parsing + Lenovo nested-JSON API + HP comment-wrapped-state-JSON + ASUS h2-headed DOM sections — and still zero shared helpers; every site so far is bespoke)
+- [x] Tag `v0.3.0` on Wave 2b completion (handled as part of ASUS commit; Acer/MSI deferred)
 
 ## Wave 2c — BestBuy + Amazon
 
