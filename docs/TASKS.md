@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.0.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.1.0
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -8,13 +8,15 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 ## Current state
 
-**Last updated:** 2026-04-22 (session-end wrap)
+**Last updated:** 2026-04-22 (post-v1.1.0 + post-wrap alignment audit)
 
-- **Last session:** **Wave 3 COMPLETE.** Four new Tier 1 fetchers shipped: `tier1/rss.py` (feedparser, dual-mode discovery/anchor-driven — 41 unit tests + 2 gated live against IGN), `tier1/article.py` (trafilatura with `with_metadata=True`, partial-success on paywalls — 38 unit tests + 2 gated live against IGN/Polygon), `tier1/reddit.py` (**unauthenticated** `.json` endpoints — PRAW OAuth is closed per Reddit's Nov-2025 policy, empirically confirmed by a rejected formal application; two registered fetchers: `reddit` listings + `reddit_comments` post-plus-tree bundles — 53 unit tests + 3 gated live against r/Games), `tier1/youtube.py` (`youtube-transcript-api`, 60s default time-windowed chunking with `?t=<s>s` deep-linked `source_url` — 46 unit tests + 2 gated live). **Two library-level additions**: `RawMention.attribution` widened to `Attribution | None` (unlocks discovery mode: pass `anchors=None` → emit everything unfiltered, downstream consumer filters), and `attribute_regex_all(text, anchors) -> list[Attribution]` (multi-anchor matching helper — "Microsoft buys Activision" article fans out to both Microsoft and Activision anchors instead of being dropped on ambiguity). `praw` dropped from `pyproject.toml` since OAuth path is closed. 12-site RSS feed catalog discovered via `scripts/rss/probe_feeds.py` + documented in `scripts/rss/README.md` (IGN / GameSpot / Polygon / PCGamer / Kotaku / Eurogamer / GameInformer / GamesIndustry / GameDeveloper / RockPaperShotgun / VG247 / TheGamer) plus VentureBeat's mixed-content site-wide feed per user decision to let non-gaming content flow through. **Full suite: 762 passed, 16 skipped** (one gated live integration per active fetcher across all three tiers).
+- **Latest tag:** **v1.1.0** (commit 22c7e85). Post-tag polish landed at cf6e58f: `docs/CONSUMER_GUIDE.md` (recipe-oriented guide for consumer-project authors) + `tests/scenario/test_demo_shape.py` (gated scenario test for Scheduler orchestration). No API changes in the polish commit; no version bump.
+- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0).
 - **In progress:** none (pause point).
-- **Current:** **v1.1.0 shipped 2026-04-22.** Wave 4 closed the public API freeze (v1.0.0); Wave 2d added BestBuy review pagination via a new `paginate=True` kwarg on `fetch_bestbuy_reviews` — unlocks `published_at` and long-tail reviews behind the same curl_cffi + HTTP/1.1 primitive. Amazon `/product-reviews/<ASIN>/` deep pagination remains out of reach without credentials (sign-in wall); accept the PDP-inlined top-10 as the reachable subset. **Next:** user-driven — no committed next wave. Candidate directions when the user decides: Acer/MSI Tier 2 fetchers (deferred post-demo), BestBuy Developer API activation (dormant until credential arrives), or a Demo 1 consumer built on the frozen v1.x library.
-- **Dev env:** `.venv/` with Wave 1 deps + `beautifulsoup4` + `playwright` + `playwright-stealth` + `curl_cffi` + `feedparser` + `trafilatura` + `youtube-transcript-api` (no `praw`). Chromium installed via `playwright install chromium`.
-- **Open questions:** none blocking.
+- **Next direction:** user-driven — no committed next wave on the library itself. Library is **frozen at v1.x** public API; any breaking change would require a major bump. Forward activity is **consumer-side** — the next session is Pilot 1 brainstorming (the pivoted Demo 1, see memory `project_demo1_pulse_check`), with Pilot 1 intended as a PC-manufacturer-POV tool for reading consumer sentiment from the library's sources. Library-side candidates remain open for later: Acer/MSI Tier 2 fetchers (deferred post-demo), BestBuy Developer API activation (dormant until credential arrives per `project_bestbuy_api_dormant`).
+- **Test state:** unit 809 passed / 19 skipped (2 scenario tests gated by `SCRAPERSLIB_SCENARIO_TESTS=1` + 16 live integration tests gated by `SCRAPERSLIB_LIVE_TESTS=1` + 1 BestBuy API test skipped pending credential). Full live run most recently 825 passed / 1 skipped.
+- **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv). Chromium installed via `playwright install chromium`.
+- **Open questions:** none blocking library work.
 
 ### How to resume in a new session
 
@@ -26,11 +28,11 @@ Say "wrap this session" (or similar). Claude will commit any in-flight work (or 
 
 ---
 
-## Current demo drivers
+## Current consumer drivers
 
-- **Demo 1 — Alienware Competitive Response Drafter.** Standalone, already built. **Not a constraint on the library.** Will port onto scrapers-lib later if and when the user chooses. Not scheduled.
-- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS / Acer / MSI pages for maximum spec detail per product. Driver for Wave 2a.
-- **Demo 3 — Gaming news radar.** Aggregates ~20 gaming news / reviewer sites + Reddit gaming subs for trend and sentiment. Driver for Wave 3.
+- **Pilot 1 — product sentiment & reviews (pivoted 2026-04-22 from Demo 1).** PC-manufacturer-POV tool that reads consumer sentiment across the library's sources to inform product / pricing / positioning / warranty decisions. Currently in brainstorm phase; scope not locked. Uses hybrid LLM routing (local for classification volume; Anthropic for synthesis quality). See memory `project_demo1_pulse_check.md` for the full framing. **Note:** the pre-scrapers-lib standalone "Pulse Check" 9-script pipeline was the previous attempt; treated as data-shape witness only, not a template (see memory `project_demo1_not_a_scraping_reference.md`).
+- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS pages for maximum spec detail per product. Drove Wave 2a/2b. Library side is ready; consumer not started.
+- **Demo 3 — Gaming news radar.** Aggregates ~20 gaming news / reviewer sites + Reddit gaming subs for trend and sentiment. Drove Wave 3. Library side is ready; consumer not started.
 
 ---
 
@@ -92,7 +94,7 @@ Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition p
 - [ ] ~~`tier2/acer.py`~~ — **Deferred (post-demo)**. Not required for Demo 2 max-spec comparison; Dell/HP/Lenovo/ASUS cover the four major gaming-laptop manufacturers. Revisit after demo ships if broader coverage becomes necessary.
 - [ ] ~~`tier2/msi.py`~~ — **Deferred (post-demo)**, same rationale as Acer.
 - [x] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo, [x] HP, [x] ASUS (Acer/MSI documented as deferred)
-- [ ] Hoist any patterns that recur across two or more sites into `tier2/base.py` (**four** Tier 2 sources in — Dell HTML-fragment parsing + Lenovo nested-JSON API + HP comment-wrapped-state-JSON + ASUS h2-headed DOM sections — and still zero shared helpers; every site so far is bespoke)
+- [x] ~~Hoist any patterns that recur across two or more sites into `tier2/base.py`~~ — **closed as intentional non-hoist.** Four Tier 2 sources in (Dell HTML-fragment parsing + Lenovo nested-JSON API + HP comment-wrapped-state-JSON + ASUS h2-headed DOM sections); every site's acquisition pattern is bespoke. No recurring shape found to hoist. `tier2/base.py` remains the shared helper module but its contents (jsonld + inline-json + spec-table + rendered-html) date from Wave 2a and none of the Wave 2b fetchers needed to extend it. Decision: leave as-is; revisit only if a fifth Tier 2 source repeats an existing site's pattern.
 - [x] Tag `v0.3.0` on Wave 2b completion (handled as part of ASUS commit; Acer/MSI deferred)
 
 ## Wave 2c — BestBuy + Amazon
@@ -150,19 +152,41 @@ Driver: **Demo 3**. Order — RSS first (simplest), then article body, then Redd
 - [x] Per-source coverage rows updated in `docs/ARCHITECTURE.md` §11.
 - [x] Tag `v0.5.0` on Wave 3 completion
 
-## Wave 4 — v1.0 readiness
+## Wave 4 — v1.0 readiness *(shipped v1.0.0, 2026-04-22)*
 
-- [ ] Review all public APIs for stability; document any still-unstable areas
-- [ ] Flip all doc status headers to "stable"
-- [ ] Remove remaining `draft` or *(subject to revision)* qualifications
-- [ ] Ensure integration tests cover every fetcher
-- [ ] Final per-source coverage table
-- [ ] Tag `v1.0.0`
+**Closed 2026-04-22 at v1.0.0** (commit 49a1318). Public API frozen.
+Pure stability sweep — no new fetchers. See `CHANGELOG.md` v1.0.0
+entry for full details.
 
-## Deferred (not blocking any current demo)
+- [x] Reviewed all public APIs for stability; breaking-change candidates surfaced for user approval before touching (per session-held findings doc)
+- [x] Flipped all doc status headers (README / PRD / ARCHITECTURE / TASKS) from "draft" to "stable"
+- [x] Removed `draft` callouts + *(subject to revision)* qualifications
+- [x] Verified every registered fetcher has a gated live integration test (1 per fetcher across all three tiers)
+- [x] Final per-source coverage table populated at ARCHITECTURE.md §11 (14 registered fetchers)
+- [x] Tag `v1.0.0` (annotated, 49a1318)
 
-- Consumer project scaffolds (`demo-2-hot-response/`, `demo-3-gaming-radar/`) — created when Wave 2a and Wave 3 are ready to be consumed.
-- Demo 1 port onto scrapers-lib — user discretion, not scheduled.
+**Additional breaking changes shipped in the same commit** (all flagged + approved):
+- [x] `scrapers_lib.tier2._base` renamed to `scrapers_lib.tier2.base` — the module was the documented Tier-2 extension surface but underscore-prefix contradicted that; renamed at the v1.0 boundary so the underscore doesn't get frozen into the public API
+- [x] `scrapers_lib/tier2/acer.py` and `msi.py` removed (both were 1-line empty scaffolds with stale docstrings; corresponding entries removed from `cache.DEFAULT_TTLS`)
+- [x] Library version single-sourced from new `scrapers_lib/_version.py`; `pyproject.toml` reads via hatchling dynamic version; 5 User-Agent call sites derive their version suffix via f-string
+- [x] `pyproject.toml` `Development Status` classifier flipped `2 - Pre-Alpha` → `5 - Production/Stable`
+- [x] README drive-by fixes: broken `rss.fetch_feed()` Quickstart corrected to `fetch_rss_feed`; stale Reddit PRAW credentials row rewritten for unauthenticated posture
+- [x] Added README "Public API" section between "Repository layout" and "Documentation"
+
+## Post-v1.1.0 polish *(commit cf6e58f, 2026-04-22; no version bump)*
+
+Non-versioned, non-tagged commit preparing the library for consumer-project use. No API changes.
+
+- [x] `docs/CONSUMER_GUIDE.md` — recipe-oriented guide for consumer authors: anchor authoring, SQLite sink pattern, Scheduler wiring, monitoring, error handling, refresh cadences, per-source data-shape quick reference, FAQ
+- [x] `tests/scenario/test_demo_shape.py` — end-to-end scenario test gated by `SCRAPERSLIB_SCENARIO_TESTS=1`; validates Scheduler orchestration across real Tier 1 fetchers (rss / reddit / youtube). Tier 2/3 intentionally excluded from scenario scope (their Akamai gates flake under back-to-back hits; isolated integration tests cover them instead)
+- [x] README Documentation section updated to list CONSUMER_GUIDE.md as the "start here" doc for consumer authors
+
+## Deferred (not blocking any current work)
+
+- Demo 2 (Hot Response) consumer project — library side is shipped (Wave 2a/2b); consumer scaffold deferred until user chooses to build it.
+- Demo 3 (Gaming Radar) consumer project — library side is shipped (Wave 3); consumer scaffold deferred until user chooses to build it.
+- Acer / MSI Tier 2 fetchers — scaffolds were removed at v1.0.0; recreate when real fetchers are built. Ships as a minor after v1.1.0 (v1.2.0 or later).
+- BestBuy Developer API activation — fetcher is shipped and unit-tested but dormant until a credential lands (see `project_bestbuy_api_dormant`).
 - Additional Tier 1 sources: Walmart affiliate API, YouTube Data API (channel monitoring).
 - Additional Tier 2 sources: forums, more manufacturers.
 - Additional Tier 3 sources: Newegg, Target, Costco.

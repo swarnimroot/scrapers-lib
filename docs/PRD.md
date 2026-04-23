@@ -1,6 +1,6 @@
 # scrapers-lib — Product Requirements Document
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.0.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.1.0
 
 ---
 
