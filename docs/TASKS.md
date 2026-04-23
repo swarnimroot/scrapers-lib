@@ -162,7 +162,7 @@ entry for full details.
 - [x] Flipped all doc status headers (README / PRD / ARCHITECTURE / TASKS) from "draft" to "stable"
 - [x] Removed `draft` callouts + *(subject to revision)* qualifications
 - [x] Verified every registered fetcher has a gated live integration test (1 per fetcher across all three tiers)
-- [x] Final per-source coverage table populated at ARCHITECTURE.md §11 (14 registered fetchers)
+- [x] Final per-source coverage table populated at ARCHITECTURE.md §11 (13 registered fetchers)
 - [x] Tag `v1.0.0` (annotated, 49a1318)
 
 **Additional breaking changes shipped in the same commit** (all flagged + approved):
