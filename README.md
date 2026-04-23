@@ -194,13 +194,14 @@ fetch_fn(url: str, anchors: list[Anchor] | None = None, *, <source-specific kwar
 |---|---|
 | 1 (APIs / feeds) | `rss`, `article`, `reddit`, `reddit_comments`, `youtube`, `bestbuy_api` |
 | 2 (manufacturer pages) | `dell`, `hp`, `lenovo`, `asus` |
-| 3 (retailer scraping) | `amazon`, `amazon_reviews`, `bestbuy`, `bestbuy_reviews` |
+| 3 (retailer scraping) | `amazon`, `amazon_reviews`, `bestbuy_reviews` |
 
 Shared Tier 2 parsing helpers live in `scrapers_lib.tier2.base` (`parse_product_jsonld`, `parse_inline_json`, `parse_spec_table`, `normalize_spec_value`, `fetch_rendered_html`) — use these when building a new Tier 2 fetcher; see [`docs/ADDING_A_SOURCE.md`](docs/ADDING_A_SOURCE.md).
 
 ## Documentation
 
 - [`docs/CONSUMER_GUIDE.md`](docs/CONSUMER_GUIDE.md) — **start here if you're building a consumer project.** Recipes for anchors, Scheduler wiring, SQLite sinks, error handling, refresh cadences, and per-source data-shape quick reference.
+- [`docs/SOURCE_ATLAS.md`](docs/SOURCE_ATLAS.md) — **start here for how each source is scraped and why.** A 2-minute visual map with one section per source: primitive, plain-language rationale, returned fields, and one realistic example.
 - [`docs/PRD.md`](docs/PRD.md) — what this library is, what it's for, what it's not
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — design details: schemas, Scheduler, per-source coverage
 - [`docs/TASKS.md`](docs/TASKS.md) — roadmap grouped by implementation wave

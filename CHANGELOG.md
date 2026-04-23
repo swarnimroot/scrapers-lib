@@ -4,6 +4,25 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+### Added
+- **`docs/SOURCE_ATLAS.md`** — 2-minute visual map of how each source
+  is scraped, why that method, what it returns, and one realistic
+  example per source. Complements `CONSUMER_GUIDE.md` (recipes),
+  `ARCHITECTURE.md` §11 (dense field tables), and `ADDING_A_SOURCE.md`
+  (recon methodology). Linked from README Documentation section.
+
+### Fixed
+- **Registered-fetcher count corrected from 14 to 13** across
+  `README.md`, `CONSUMER_GUIDE.md` (§1 intro + §9 data-shape table),
+  `PRD.md` §4, and prior `[1.0.0]` changelog entries. Runtime
+  `list_fetchers()` enumerates exactly 13 names. The "14th" was a
+  phantom `bestbuy` alias documented in `CONSUMER_GUIDE.md` §9 and
+  the README Tier 3 key list — `tier3/bestbuy.py` defines the
+  `SOURCE = "bestbuy"` constant but never calls `@register(SOURCE)`
+  on it, so no such fetcher was ever reachable via the registry.
+  Docs now match code; the `SOURCE` constant is left in place as
+  dead (harmless) code for future cleanup.
+
 ## [1.1.0] — 2026-04-22
 
 **First additive release on the frozen v1.0 public API.** Wave 2d
@@ -107,7 +126,7 @@ contract.
 - **README**: new "Public API" section between "Repository layout" and
   "Documentation" — documents the top-level re-exports, per-module
   deep-import cheat sheet, and the fetcher signature + registry-key
-  table (14 registered fetchers across the three tiers).
+  table (13 registered fetchers across the three tiers).
 
 ### Fixed
 - **README Quickstart example** called `rss.fetch_feed(...)`; the real
@@ -130,7 +149,7 @@ contract.
 - **Unit suite: 762 passed, 16 skipped** — unchanged from v0.5.0
   (no regressions from the API-stability sweep).
 - Integration suite (`SCRAPERSLIB_LIVE_TESTS=1 pytest`) run live
-  pre-tag against all 14 registered fetchers. The BestBuy Developer
+  pre-tag against all 13 registered fetchers. The BestBuy Developer
   API integration is the one expected skip until `BESTBUY_API_KEY`
   lands in `.env` (~2026-04-29 per registration date); all other
   gated-live tests verified green at the v1.0.0 boundary.

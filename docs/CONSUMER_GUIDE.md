@@ -19,7 +19,7 @@ This guide is the middle lane: how to consume what's already there.
 
 `scrapers-lib` is **infrastructure, not an application.** It knows
 how to fetch, rate-limit, retry, attribute, and normalize data from
-14 registered sources into three stable schemas (`RawMention`,
+13 registered sources into three stable schemas (`RawMention`,
 `ProductSnapshot`, `Anchor`). It knows nothing about what *you*
 track, where you persist, or what you do with the data downstream.
 
@@ -33,7 +33,7 @@ Your consumer project owns:
 `scrapers-lib` gives you:
 
 - A `Scheduler` that runs 24x7 and walks through URLs patiently, respecting per-domain rate limits and robots.txt.
-- Registered fetchers for 14 sources — you pass a URL + source name + anchors; you get back typed `RawMention` or `ProductSnapshot` rows.
+- Registered fetchers for 13 sources — you pass a URL + source name + anchors; you get back typed `RawMention` or `ProductSnapshot` rows.
 - Attribution helpers that tie fetched content to your anchors.
 - A deterministic mention-ID scheme so re-fetches collide rather than duplicate.
 
@@ -660,7 +660,6 @@ see [`ARCHITECTURE.md`](ARCHITECTURE.md) §11.
 |---|---|---|
 | `amazon` | `list[ProductSnapshot]` | PDP scrape. Price, rating, specs from product detail tables. |
 | `amazon_reviews` | `list[RawMention]` | Up to ~10 reviews from PDP inline. Full reviews page blocked (sign-in wall). |
-| `bestbuy` | `list[RawMention]` | Alias for `bestbuy_reviews`. |
 | `bestbuy_reviews` | `list[RawMention]` | Default: 5 reviews from PDP inline. `paginate=True`: walks all pages with `published_at`, `verified_purchase`, `helpful_count`, `ownership_duration`. |
 
 ---
