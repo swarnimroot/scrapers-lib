@@ -273,6 +273,58 @@ class TestSourceIdFromUrl:
                 "https://rog.asus.com/laptops/rog-strix-series/"
             )
 
+    # Region/locale prefix support — every canonical asus.com URL carries
+    # one (``/us/``, ``/me-en/``, etc.). The region-less form was the only
+    # shape accepted before; now both work.
+
+    def test_region_prefix_us_spec(self):
+        assert (
+            _source_id_from_url(
+                "https://rog.asus.com/us/laptops/rog-strix/rog-strix-g16-2025/spec/"
+            )
+            == "rog-strix-g16-2025"
+        )
+
+    def test_region_prefix_us_product_root(self):
+        assert (
+            _source_id_from_url(
+                "https://rog.asus.com/us/laptops/rog-strix/rog-strix-g16-2025/"
+            )
+            == "rog-strix-g16-2025"
+        )
+
+    def test_region_with_language_me_en_spec(self):
+        # Region + language hyphenated locale (Middle East English).
+        assert (
+            _source_id_from_url(
+                "https://rog.asus.com/me-en/laptops/rog-strix/rog-strix-g16-2025/spec/"
+            )
+            == "rog-strix-g16-2025"
+        )
+
+    def test_region_with_language_sa_en_no_trailing_slash(self):
+        # Region + language locale, no trailing slash.
+        assert (
+            _source_id_from_url(
+                "https://rog.asus.com/sa-en/laptops/rog-zephyrus/rog-zephyrus-g16-2026"
+            )
+            == "rog-zephyrus-g16-2026"
+        )
+
+    def test_region_prefix_with_wrong_path_still_rejected(self):
+        # Region prefix doesn't smuggle non-laptops paths past the validator.
+        with pytest.raises(ValueError, match="does not match"):
+            _source_id_from_url(
+                "https://rog.asus.com/us/motherboards/x870-e"
+            )
+
+    def test_region_prefix_with_series_only_still_rejected(self):
+        # Region + series index (no model segment) still fails the shape check.
+        with pytest.raises(ValueError, match="does not match"):
+            _source_id_from_url(
+                "https://rog.asus.com/us/laptops/rog-strix-series/"
+            )
+
 
 # ---------------------------------------------------------------------------
 # Attribution

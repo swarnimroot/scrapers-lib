@@ -2,7 +2,10 @@
 
 ASUS publishes authoritative spec sheets at
 ``rog.asus.com/laptops/<line>/<model>/spec/`` (and returns the same content
-without the trailing ``/spec/``). The page is ~1 MB of SSR'd HTML with a
+without the trailing ``/spec/``). Canonical asus.com URLs always carry a
+region/locale prefix (``/us/``, ``/me-en/``, ``/sa-en/``, ``/uk/``, ...) —
+the fetcher accepts any of those as well as the region-less form (which
+asus.com 302-redirects to a regional URL). The page is ~1 MB of SSR'd HTML with a
 rich section of ``<h2>`` headings — typically 20+ — each followed by a
 sibling ``<div>`` containing one child per ship-able SKU variant. ASUS's
 internal CSS-module naming (``ProductSpec__productSpecItemTitle__<hash>``
@@ -52,9 +55,13 @@ SOURCE = "asus"
 _SPEC_TITLE_CLASS_PREFIX = "ProductSpec__productSpecItemTitle__"
 _SPEC_ROW_ITEM_CLASS_PREFIX = "ProductSpec__rowItem__"
 
-# ROG product page URL shape: /laptops/<line>/<model>/ (optionally + spec/).
+# ROG product page URL shape: [/<region>]/laptops/<line>/<model>/ (optionally
+# + spec/). The region segment is asus.com's locale prefix — 2-3 letter
+# country (``us``, ``uk``, ``in``) optionally followed by a hyphen + 2-4
+# letter language (``me-en``, ``sa-en``). The whole region group is optional
+# because asus.com still serves the region-less URL via redirect.
 _PRODUCT_PATH_RE = re.compile(
-    r"^/laptops/[a-z0-9-]+/[a-z0-9-]+(?:/spec)?/?$"
+    r"^(?:/[a-z]{2,3}(?:-[a-z]{2,4})?)?/laptops/[a-z0-9-]+/[a-z0-9-]+(?:/spec)?/?$"
 )
 
 _DEFAULT_USER_AGENT = (
@@ -174,7 +181,12 @@ def parse_asus_product_page(
 
 
 def _source_id_from_url(url: str) -> str:
-    """Model slug from ``/laptops/<line>/<model>[/spec]/`` URL."""
+    """Model slug from ``[/<region>]/laptops/<line>/<model>[/spec]/`` URL.
+
+    Region prefix (``/us/``, ``/me-en/``, etc.) is optional; when present
+    the slug is still the second-to-last segment (or last, when ``/spec``
+    is absent), so the right-anchored split below works for both forms.
+    """
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     if host and "asus.com" not in host:

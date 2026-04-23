@@ -12,6 +12,19 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
   (recon methodology). Linked from README Documentation section.
 
 ### Fixed
+- **`tier2/asus` URL regex accepts region/locale prefixes.**
+  `_PRODUCT_PATH_RE` previously required `/laptops/` as the very first
+  path segment, rejecting every canonical asus.com URL — ASUS always
+  serves through region-prefixed paths (`/us/laptops/...`,
+  `/me-en/laptops/...`, `/sa-en/laptops/...`, `/uk/laptops/...`, ...).
+  The regex now accepts an optional locale segment (2-3 letter country
+  optionally followed by a hyphen + 2-4 letter language) before
+  `/laptops/`, and continues to accept the region-less form (which
+  asus.com 302-redirects to a regional URL). `_source_id_from_url`
+  needed no change because it splits from the right. 6 new unit tests
+  in `TestSourceIdFromUrl` cover both region-prefixed valid forms and
+  region-prefixed negative cases (motherboards path / series-only
+  index still rejected).
 - **Registered-fetcher count corrected from 14 to 13** across
   `README.md`, `CONSUMER_GUIDE.md` (§1 intro + §9 data-shape table),
   `PRD.md` §4, and prior `[1.0.0]` changelog entries. Runtime
