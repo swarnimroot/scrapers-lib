@@ -181,11 +181,39 @@ Non-versioned, non-tagged commit preparing the library for consumer-project use.
 - [x] `tests/scenario/test_demo_shape.py` — end-to-end scenario test gated by `SCRAPERSLIB_SCENARIO_TESTS=1`; validates Scheduler orchestration across real Tier 1 fetchers (rss / reddit / youtube). Tier 2/3 intentionally excluded from scenario scope (their Akamai gates flake under back-to-back hits; isolated integration tests cover them instead)
 - [x] README Documentation section updated to list CONSUMER_GUIDE.md as the "start here" doc for consumer authors
 
+## Wave 2e — Tier 2 expansion: HP fix + ASUS www + Acer + MSI
+
+Driver: closing the Tier 2 manufacturer-coverage gaps left after Wave 2b. Recommended order: **HP fix → ASUS www → Acer + MSI in parallel after recon**. HP first because path #1 (curl_cffi + HTTP/1.1) is empirically validated on BestBuy's identical Akamai gate (per memory `project_hp_coverage_gap`), needs no new deps, and closes a documented gap on an already-shipped fetcher. ASUS www second because recon is already complete (2026-05-04) and the build is well-scoped. Acer and MSI are greenfield — both require recon per `docs/ADDING_A_SOURCE.md` before a build estimate can be given, and once recon is done they can run in parallel since they share no surface.
+
+- [ ] **HP coverage gap fix** — `scrapers_lib/tier2/hp.py` returns 12 of ~32 visible specs per tile (config-picker categories only; the ~20 "Tech Specs" categories — Dimensions / Ports / Weight / Warranty / Audio / Sensors / Security hardware / Power supply — are client-side hydrated behind HP's browser bot gate). Two upgrade paths:
+  - **Path #1 (lead):** `curl_cffi` with Chrome impersonation forced onto HTTP/1.1. Empirically validated on BestBuy's identical Akamai gate in Wave 2c (see `scrapers_lib/tier3/bestbuy.py` for reference implementation). Dep already installed (`curl_cffi>=0.7`). No new deps required. Borrow `_fetch_pdp`-style session pattern from `tier3/bestbuy.py`; add homepage warming.
+  - **Path #2 (only if more depth needed later):** HP QuickSpecs PDFs at `h20195.www2.hp.com` — already mentioned in `hp.py` docstring as feasible-but-unimplemented. Gold standard, deeper data than the PDP itself, but ~1 day more work and requires a fuzzy SKU→docID bridge plus `certifi`-based SSL trust fix for the host.
+  - Recommendation: ship path #1 first; revisit path #2 only if a future demo flags insufficient HP coverage.
+
+- [ ] **ASUS www.asus.com expansion** — extend ASUS coverage from ROG-only (Wave 2b shipped `rog.asus.com` parsing) to non-ROG product lines (Zenbook, Vivobook, TUF Gaming) on `www.asus.com`. **Recon DONE 2026-05-04.** Findings:
+  - **URL shape:** `www.asus.com/<region>/laptops/for-{home,gaming}/<line>/<model>/techspec/`
+  - **Anti-bot:** open (no DataDome), same posture as `rog.asus.com`
+  - **Render:** Nuxt SSR — specs live in a `window.__NUXT__=(function(...){...}(...))` IIFE (~204 KB inner). httpx-only viable, no Playwright needed.
+  - **Class family:** `TechSpec__*` (e.g. `TechSpec__itemName__an9aU`), distinct from ROG's `ProductSpec__*` → parallel parser, not extension of existing ROG parser.
+  - **Confirmed live URLs (3) for fixtures + integration test:**
+    - `https://www.asus.com/us/laptops/for-home/zenbook/asus-zenbook-14-ux3405/techspec/`
+    - `https://www.asus.com/us/laptops/for-home/vivobook/vivobook-16-laptop-f1605/techspec/`
+    - `https://www.asus.com/us/laptops/for-gaming/tuf-gaming/asus-tuf-gaming-a16-2025/techspec/`
+  - **Working UA:** existing `_DEFAULT_USER_AGENT` constant in `scrapers_lib/tier2/asus.py`.
+  - **New dep:** **PyMiniRacer** (V8 in-process) to evaluate the Nuxt IIFE; Node subprocess as fallback if Windows wheel unavailable.
+  - **Architectural call:** new module `scrapers_lib/tier2/asus_www.py`; existing `asus.py` (ROG) untouched; dispatcher in registry routes by host (`rog.asus.com` → existing parser, `www.asus.com` → new parser).
+  - **Public API impact:** none. Same `fetch_asus_product` entry point, same `SOURCE = "asus"`, same `ProductSnapshot` output.
+  - **Build scope:** ~1.5 days.
+
+- [ ] **Acer Tier 2 fetcher** — greenfield. Scaffold was removed at v1.0.0 (per Wave 4 closure notes). Recon required first per `docs/ADDING_A_SOURCE.md`: identify spec-acquisition pattern (HTML scrape vs internal API vs hydrated state-JSON), bot-gate posture, and class-family / selector strategy. Build estimate after recon.
+
+- [ ] **MSI Tier 2 fetcher** — greenfield. Scaffold was removed at v1.0.0 (per Wave 4 closure notes). Recon required first per `docs/ADDING_A_SOURCE.md`. Build estimate after recon. Can run in parallel with Acer post-recon (different surfaces, no shared state).
+
 ## Deferred (not blocking any current work)
 
 - Demo 2 (Hot Response) consumer project — library side is shipped (Wave 2a/2b); consumer scaffold deferred until user chooses to build it.
 - Demo 3 (Gaming Radar) consumer project — library side is shipped (Wave 3); consumer scaffold deferred until user chooses to build it.
-- Acer / MSI Tier 2 fetchers — scaffolds were removed at v1.0.0; recreate when real fetchers are built. Ships as a minor after v1.1.0 (v1.2.0 or later).
+- Acer / MSI Tier 2 fetchers — scaffolds were removed at v1.0.0; now scheduled in Wave 2e (greenfield, recon needed).
 - BestBuy Developer API activation — fetcher is shipped and unit-tested but dormant until a credential lands (see `project_bestbuy_api_dormant`).
 - Additional Tier 1 sources: Walmart affiliate API, YouTube Data API (channel monitoring).
 - Additional Tier 2 sources: forums, more manufacturers.
