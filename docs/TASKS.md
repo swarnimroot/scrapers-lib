@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-05 &nbsp;·&nbsp; **Library version:** 1.1.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-05 (Wave 2e step-1 recon outcome) &nbsp;·&nbsp; **Library version:** 1.1.0
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -8,15 +8,55 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 ## Current state
 
-**Last updated:** 2026-05-05 (Wave 2e rescoped + Wave 2f added; commitment date for Wave 2e)
+**Last updated:** 2026-05-05 (Wave 2e step-1 recon outcome captured; build pending)
 
 - **Latest tag:** **v1.1.0** (commit 22c7e85). Post-tag polish landed at cf6e58f: `docs/CONSUMER_GUIDE.md` (recipe-oriented guide for consumer-project authors) + `tests/scenario/test_demo_shape.py` (gated scenario test for Scheduler orchestration). No API changes in the polish commit; no version bump.
 - **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0).
-- **In progress:** none (pause point).
+- **In progress:** **Wave 2e step 1 (HP fix) — recon DONE 2026-05-05, build pending.** See "Wave 2e step-1 recon — resolved 2026-05-05" sub-section below for the resolved approach + saved fixtures + uncommitted artifact list. Next session picks up by reviewing those artifacts and proceeding to the build.
 - **Next direction (committed 2026-05-05):** **Wave 2e — Tier 2 expansion (HP fix + ASUS www + Lenovo URL acceptance recon)**. Wave 2f follows with Acer + MSI greenfield fetchers. Driver: Demo 2's consumer-side data-model target — the **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design) — needs ~80–90% raw coverage across all six manufacturer brands so a separate user-owned downstream project can clean and present the data. Library remains **frozen at v1.x** public API; Wave 2e/2f changes are additive (new fetcher modules + behind-fetcher acquisition rewrite). Pilot 1 brainstorming (pivoted Demo 1 per `project_demo1_pulse_check`) and BestBuy Developer API activation (per `project_bestbuy_api_dormant`) remain on hold.
 - **Test state:** unit 809 passed / 19 skipped (2 scenario tests gated by `SCRAPERSLIB_SCENARIO_TESTS=1` + 16 live integration tests gated by `SCRAPERSLIB_LIVE_TESTS=1` + 1 BestBuy API test skipped pending credential). Full live run most recently 825 passed / 1 skipped.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking library work.
+
+### Wave 2e step-1 recon — resolved 2026-05-05
+
+**Outcome (b1):** HP's Tech Specs section is hydrated from a slug-keyed GraphQL endpoint, not blocked by an HTTP-layer gate. Path #1 as originally framed ("just swap httpx → curl_cffi") was wrong — plain httpx and curl_cffi+chrome+HTTP/1.1 return identical PDP HTML with the same 36-key state JSON and zero `Dimension`/`I/O`/`Weight`/`Power supply`/`Audio`/`Sensors` mentions in either. **Path #1 (revised) is two-request curl_cffi: PDP for the config picker + the `/async` endpoint for Tech Specs.** Path #2 (QuickSpecs PDF bridge) is now deprioritized.
+
+**Hydration endpoint pattern** (discovered via `<link rel="prefetch">` near top of PDP body):
+
+```
+PDP URL:    https://www.hp.com/us-en/shop/pdp/<slug>
+Async URL:  https://www.hp.com/us-en/shop/app/api/web/graphql/page/pdp%2F<slug>/async
+```
+
+Slug is the basename of the PDP URL path. The `pdp/` separator is URL-encoded as `%2F`. GET it with the **same warmed curl_cffi+chrome+HTTP/1.1 session** that fetched the PDP, plus headers `Referer: <PDP URL>` + `X-Requested-With: XMLHttpRequest` + `Accept: application/json, text/plain, */*`. Returns 200 OK, `application/json`, ~1.5 MB.
+
+**Async JSON shape:**
+
+```
+data.page.pageComponents.pdpTechSpecs.technical_specifications  →  list of 23 items
+                                       .datasheets / .highlights / .translations
+```
+
+The `technical_specifications` array uses the **exact same `{name, tooltip, value: [{value, subheading}]}` row shape** the existing config-picker `fullSpecs.technical_specifications` array already uses — same per-row "Included in Current Configuration" / "Alternate Options" subheading split. Eleven new categories on the Omen Max test SKU: `Expansion slots`, `Screen-To-Body Ratio`, `Audio Features`, `External I/O Ports`, `Network interface`, `Battery Recharge Time`, `Security management`, `Sustainable Impact Specifications`, `Dimensions (W X D X H)`, `Weight`, `Package weight`. Total ~23 vs current ~12. **Notably absent on this SKU:** `Power supply`, `Sensors`, `Warranty` — may be product-family-specific (verify on Pavilion/Omnibook fixture during build), or live in the carePack tab.
+
+**Build shape (pending; see `project_hp_coverage_gap` memory for full detail):**
+
+1. Switch `tier2/hp.py` HTTP primitive from `httpx.get` to a `_fetch_pdp`-style curl_cffi session borrowed from `scrapers_lib/tier3/bestbuy.py`.
+2. Add slug-derivation + `_fetch_async_techspecs(url, session)` that hits the `/async` URL.
+3. Extend `parse_hp_product_page` to accept the async JSON and merge `pdpTechSpecs.technical_specifications` into each tile's specs — config-picker (per-tile) values win for any overlapping category; async (product-wide) fills gaps.
+4. Re-capture fixtures for Omen Max + Pavilion/Omnibook (PDP HTML + async JSON each); verify the 23-item shape across product families.
+5. Async-fetch failure → log + continue with config-picker-only data (graceful degradation, mirrors today's "12 categories" ship). Don't raise.
+6. Public API unchanged. `ProductSnapshot.specs` carries more keys per tile.
+
+**No new deps required.** `curl_cffi>=0.7` already installed.
+
+**Recon artifacts (uncommitted at session-end 2026-05-05):**
+
+- `scripts/hp/probe_hp_pdp_curlcffi.py` — step 1: HTTP-layer recon. Compared curl_cffi vs plain-httpx baseline; verdict was outcome (b1).
+- `scripts/hp/probe_hp_pdp_async.py` — step 1b: async endpoint recon. Replicated the prefetch URL + reported tech-spec needle counts in the response.
+- `tests/tier2/fixtures/hp/omen_16_a58a5av_1_curlcffi.html` (~770 KB) — proof of HTTP-layer no-op vs `omen_16_a58a5av_1.html`.
+- `tests/tier2/fixtures/hp/omen_16_a58a5av_1_async.json` (~1.5 MB) — reference fixture for the build's parser tests.
 
 ### How to resume in a new session
 
@@ -187,14 +227,7 @@ Driver: closing the highest-leverage Tier 2 manufacturer-coverage gaps so the li
 
 Recommended order: **HP fix → ASUS www → Lenovo URL acceptance recon (folded in)**. HP first because path #1 (curl_cffi + HTTP/1.1) is empirically validated on BestBuy's identical Akamai gate (per memory `project_hp_coverage_gap`), needs no new deps, and closes a documented gap on an already-shipped fetcher. ASUS www second because recon is already complete (2026-05-04) and the build is well-scoped. Lenovo URL acceptance is a small recon sub-task that ships alongside.
 
-- [ ] **HP coverage gap fix** — `scrapers_lib/tier2/hp.py` returns 12 of ~32 visible specs per tile (config-picker categories only; the ~20 "Tech Specs" categories — Dimensions / Ports / Weight / Warranty / Audio / Sensors / Security hardware / Power supply — are client-side hydrated behind HP's browser bot gate). Two upgrade paths:
-  - **Recon prerequisite (first action of the HP fix):** Path #1 was validated on BestBuy's Akamai gate, not HP's. Before committing to it as the solution, run a probe (curl_cffi + HTTP/1.1 + homepage warming against a current HP `/shop/pdp/` URL) and inspect whether the **Tech Specs** section (Dimensions / Ports / Weight / Audio / Sensors / Power supply) actually appears in the response body — those specs are documented as client-side hydrated, so clearing the HTTP-level bot gate does NOT automatically deliver them. Three possible recon outcomes:
-    - **(a)** Tech Specs present in initial HTML → Path #1 alone is sufficient; proceed to implementation.
-    - **(b)** Path #1 clears the gate but Tech Specs are loaded via separate XHR → identify the hydration endpoint, replicate the call via the same curl_cffi session.
-    - **(c)** Path #1 fails to clear HP's gate (less likely given Akamai class match) → pivot to Path #2 below.
-  - **Path #1 (lead):** `curl_cffi` with Chrome impersonation forced onto HTTP/1.1. Empirically validated on BestBuy's identical Akamai gate in Wave 2c (see `scrapers_lib/tier3/bestbuy.py` for reference implementation). Dep already installed (`curl_cffi>=0.7`). No new deps required. Borrow `_fetch_pdp`-style session pattern from `tier3/bestbuy.py`; add homepage warming.
-  - **Path #2 (fallback if recon outcome (c), or if more depth needed later):** HP QuickSpecs PDFs at `h20195.www2.hp.com` — already mentioned in `hp.py` docstring as feasible-but-unimplemented. Gold standard, deeper data than the PDP itself, but ~1 day more work and requires a fuzzy SKU→docID bridge plus `certifi`-based SSL trust fix for the host.
-  - Recommendation: recon first; ship Path #1 (alone or with XHR-replication per outcome (b)) if it works; revisit Path #2 only if recon outcome (c) or if a future demo flags insufficient HP coverage.
+- [ ] **HP coverage gap fix** — `scrapers_lib/tier2/hp.py` returns 12 of ~32 visible specs per tile (config-picker categories only; the ~20 "Tech Specs" categories — Dimensions / Ports / Weight / Warranty / Audio / Sensors / Security hardware / Power supply — are client-side hydrated). **Recon DONE 2026-05-05** — outcome (b1): Tech Specs are served by a slug-keyed GraphQL endpoint at `/us-en/shop/app/api/web/graphql/page/pdp%2F<slug>/async`, reachable via the same warmed curl_cffi+chrome+HTTP/1.1 session that fetched the PDP. The async JSON's `data.page.pageComponents.pdpTechSpecs.technical_specifications` is a 23-item list using the EXACT same `{name, tooltip, value: [{value, subheading}]}` shape as the existing config-picker array. Full recon-resolution detail and saved-fixture references are in the "Wave 2e step-1 recon — resolved 2026-05-05" sub-section under Current state above; full path/header/body specifics in the `project_hp_coverage_gap` memory file. **Path #1 (revised) is two-request curl_cffi (PDP + async).** Path #2 (QuickSpecs PDF bridge) is deprioritized — held in reserve only if a future demo needs deeper coverage than ~23 categories or if Power supply / Sensors turn out to be product-family-locked.
 
 - [ ] **ASUS www.asus.com expansion** — extend ASUS coverage from ROG-only (Wave 2b shipped `rog.asus.com` parsing) to non-ROG product lines (Zenbook, Vivobook, TUF Gaming) on `www.asus.com`. **Recon DONE 2026-05-04.** Findings:
   - **URL shape:** `www.asus.com/<region>/laptops/for-{home,gaming}/<line>/<model>/techspec/`
