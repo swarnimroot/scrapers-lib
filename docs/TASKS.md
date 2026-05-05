@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.1.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-05 &nbsp;·&nbsp; **Library version:** 1.1.0
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -8,12 +8,12 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 ## Current state
 
-**Last updated:** 2026-04-22 (post-v1.1.0 + post-wrap alignment audit)
+**Last updated:** 2026-05-05 (Wave 2e rescoped + Wave 2f added; commitment date for Wave 2e)
 
 - **Latest tag:** **v1.1.0** (commit 22c7e85). Post-tag polish landed at cf6e58f: `docs/CONSUMER_GUIDE.md` (recipe-oriented guide for consumer-project authors) + `tests/scenario/test_demo_shape.py` (gated scenario test for Scheduler orchestration). No API changes in the polish commit; no version bump.
 - **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0).
 - **In progress:** none (pause point).
-- **Next direction:** user-driven — no committed next wave on the library itself. Library is **frozen at v1.x** public API; any breaking change would require a major bump. Forward activity is **consumer-side** — the next session is Pilot 1 brainstorming (the pivoted Demo 1, see memory `project_demo1_pulse_check`), with Pilot 1 intended as a PC-manufacturer-POV tool for reading consumer sentiment from the library's sources. Library-side candidates remain open for later: Acer/MSI Tier 2 fetchers (deferred post-demo), BestBuy Developer API activation (dormant until credential arrives per `project_bestbuy_api_dormant`).
+- **Next direction (committed 2026-05-05):** **Wave 2e — Tier 2 expansion (HP fix + ASUS www + Lenovo URL acceptance recon)**. Wave 2f follows with Acer + MSI greenfield fetchers. Driver: Demo 2's consumer-side data-model target — the **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design) — needs ~80–90% raw coverage across all six manufacturer brands so a separate user-owned downstream project can clean and present the data. Library remains **frozen at v1.x** public API; Wave 2e/2f changes are additive (new fetcher modules + behind-fetcher acquisition rewrite). Pilot 1 brainstorming (pivoted Demo 1 per `project_demo1_pulse_check`) and BestBuy Developer API activation (per `project_bestbuy_api_dormant`) remain on hold.
 - **Test state:** unit 809 passed / 19 skipped (2 scenario tests gated by `SCRAPERSLIB_SCENARIO_TESTS=1` + 16 live integration tests gated by `SCRAPERSLIB_LIVE_TESTS=1` + 1 BestBuy API test skipped pending credential). Full live run most recently 825 passed / 1 skipped.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking library work.
@@ -31,7 +31,7 @@ Say "wrap this session" (or similar). Claude will commit any in-flight work (or 
 ## Current consumer drivers
 
 - **Pilot 1 — product sentiment & reviews (pivoted 2026-04-22 from Demo 1).** PC-manufacturer-POV tool that reads consumer sentiment across the library's sources to inform product / pricing / positioning / warranty decisions. Currently in brainstorm phase; scope not locked. Uses hybrid LLM routing (local for classification volume; Anthropic for synthesis quality). See memory `project_demo1_pulse_check.md` for the full framing. **Note:** the pre-scrapers-lib standalone "Pulse Check" 9-script pipeline was the previous attempt; treated as data-shape witness only, not a template (see memory `project_demo1_not_a_scraping_reference.md`).
-- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS pages for maximum spec detail per product. Drove Wave 2a/2b. Library side is ready; consumer not started.
+- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS / Acer / MSI manufacturer pages for maximum spec detail per product, targeting the consumer-side **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design). Drove Wave 2a/2b; Wave 2e + 2f close remaining coverage gaps. Today's per-brand raw coverage estimate: Lenovo PSREF ~95%, ASUS ROG ~85–90%, Dell ~75–80%, HP ~37% (blocked on browser bot gate — Wave 2e fix), ASUS non-ROG / Acer / MSI 0% (fetchers not yet built). Wave 2e/2f bring all six to ~80–90%+. Library scope ends at raw acquisition; downstream parsing / normalization / spreadsheet population is a separate user-owned project. Status / Segment / Year / Sub Brand columns are editorial (not on PDPs) and remain manual.
 - **Demo 3 — Gaming news radar.** Aggregates ~20 gaming news / reviewer sites + Reddit gaming subs for trend and sentiment. Drove Wave 3. Library side is ready; consumer not started.
 
 ---
@@ -181,9 +181,11 @@ Non-versioned, non-tagged commit preparing the library for consumer-project use.
 - [x] `tests/scenario/test_demo_shape.py` — end-to-end scenario test gated by `SCRAPERSLIB_SCENARIO_TESTS=1`; validates Scheduler orchestration across real Tier 1 fetchers (rss / reddit / youtube). Tier 2/3 intentionally excluded from scenario scope (their Akamai gates flake under back-to-back hits; isolated integration tests cover them instead)
 - [x] README Documentation section updated to list CONSUMER_GUIDE.md as the "start here" doc for consumer authors
 
-## Wave 2e — Tier 2 expansion: HP fix + ASUS www + Acer + MSI
+## Wave 2e — Tier 2 expansion: HP fix + ASUS www + Lenovo URL acceptance
 
-Driver: closing the Tier 2 manufacturer-coverage gaps left after Wave 2b. Recommended order: **HP fix → ASUS www → Acer + MSI in parallel after recon**. HP first because path #1 (curl_cffi + HTTP/1.1) is empirically validated on BestBuy's identical Akamai gate (per memory `project_hp_coverage_gap`), needs no new deps, and closes a documented gap on an already-shipped fetcher. ASUS www second because recon is already complete (2026-05-04) and the build is well-scoped. Acer and MSI are greenfield — both require recon per `docs/ADDING_A_SOURCE.md` before a build estimate can be given, and once recon is done they can run in parallel since they share no surface.
+Driver: closing the highest-leverage Tier 2 manufacturer-coverage gaps so the library can fill the **`Competitor Columns` 83-row spec schema** for Demo 2 at ~80–90% raw coverage per brand. **Rescoped 2026-05-05** from the prior "HP + ASUS www + Acer + MSI" plan — Acer + MSI moved to Wave 2f because they're both greenfield and gate the wave on recon. Wave 2e is now a focused two-fetcher wave with one small recon sub-task.
+
+Recommended order: **HP fix → ASUS www → Lenovo URL acceptance recon (folded in)**. HP first because path #1 (curl_cffi + HTTP/1.1) is empirically validated on BestBuy's identical Akamai gate (per memory `project_hp_coverage_gap`), needs no new deps, and closes a documented gap on an already-shipped fetcher. ASUS www second because recon is already complete (2026-05-04) and the build is well-scoped. Lenovo URL acceptance is a small recon sub-task that ships alongside.
 
 - [ ] **HP coverage gap fix** — `scrapers_lib/tier2/hp.py` returns 12 of ~32 visible specs per tile (config-picker categories only; the ~20 "Tech Specs" categories — Dimensions / Ports / Weight / Warranty / Audio / Sensors / Security hardware / Power supply — are client-side hydrated behind HP's browser bot gate). Two upgrade paths:
   - **Path #1 (lead):** `curl_cffi` with Chrome impersonation forced onto HTTP/1.1. Empirically validated on BestBuy's identical Akamai gate in Wave 2c (see `scrapers_lib/tier3/bestbuy.py` for reference implementation). Dep already installed (`curl_cffi>=0.7`). No new deps required. Borrow `_fetch_pdp`-style session pattern from `tier3/bestbuy.py`; add homepage warming.
@@ -205,15 +207,22 @@ Driver: closing the Tier 2 manufacturer-coverage gaps left after Wave 2b. Recomm
   - **Public API impact:** none. Same `fetch_asus_product` entry point, same `SOURCE = "asus"`, same `ProductSnapshot` output.
   - **Build scope:** ~1.5 days.
 
-- [ ] **Acer Tier 2 fetcher** — greenfield. Scaffold was removed at v1.0.0 (per Wave 4 closure notes). Recon required first per `docs/ADDING_A_SOURCE.md`: identify spec-acquisition pattern (HTML scrape vs internal API vs hydrated state-JSON), bot-gate posture, and class-family / selector strategy. Build estimate after recon.
+- [ ] **Lenovo URL acceptance recon** — `scrapers_lib/tier2/lenovo.py` currently rejects non-PSREF URLs (`_extract_product_key` raises `ValueError` if host is not `psref.lenovo.com`; line ~197). Demo 2's consumer workflow expects callers to feed the natural consumer PDP URL (`lenovo.com/p/...`), which would fail today. **Recon scope:** does the consumer PDP carry a discoverable PSREF link (page metadata, footer, JSON-LD `mainEntity`, etc.)? If yes, extend the fetcher to auto-resolve `lenovo.com/p/...` → PSREF `ProductKey` before calling `LoadSpecData`. If no, document the constraint (consumers must pass PSREF URLs) and ship a separate `resolve_lenovo_url` helper for future search-bridge work. Build estimate after recon — likely small if PDP carries a link, larger if a search bridge is needed. Public API impact: none (extending `fetch_lenovo_product` to accept both URL types is additive).
 
-- [ ] **MSI Tier 2 fetcher** — greenfield. Scaffold was removed at v1.0.0 (per Wave 4 closure notes). Recon required first per `docs/ADDING_A_SOURCE.md`. Build estimate after recon. Can run in parallel with Acer post-recon (different surfaces, no shared state).
+## Wave 2f — Tier 2 expansion: Acer + MSI (greenfield)
+
+Driver: completing the six-brand Tier 2 manufacturer set so Demo 2's `Competitor Columns` schema can be filled for Acer and MSI products. Both are **greenfield** — scaffolds were removed at v1.0.0 (per Wave 4 closure notes) and recon is a hard prerequisite per `docs/ADDING_A_SOURCE.md`. Wave 2f kicks off after Wave 2e closes.
+
+Recommended order: **Recon both → build in parallel post-recon**. Acer and MSI share no surface (different hosts, different stacks), so once each one's spec-acquisition pattern is known they can be built independently and tested independently.
+
+- [ ] **Acer Tier 2 fetcher** — recon required first. Identify spec-acquisition pattern (HTML scrape vs internal API vs hydrated state-JSON), bot-gate posture, and class-family / selector strategy. Build estimate after recon.
+
+- [ ] **MSI Tier 2 fetcher** — recon required first per `docs/ADDING_A_SOURCE.md`. Build estimate after recon.
 
 ## Deferred (not blocking any current work)
 
-- Demo 2 (Hot Response) consumer project — library side is shipped (Wave 2a/2b); consumer scaffold deferred until user chooses to build it.
+- Demo 2 (Hot Response) consumer project — library side is partial today (Dell / HP / Lenovo / ASUS-ROG shipped; HP coverage thin); Wave 2e + Wave 2f close the remaining gaps. Consumer scaffold deferred until library reaches ~80–90% coverage across all six brands and the user chooses to build it.
 - Demo 3 (Gaming Radar) consumer project — library side is shipped (Wave 3); consumer scaffold deferred until user chooses to build it.
-- Acer / MSI Tier 2 fetchers — scaffolds were removed at v1.0.0; now scheduled in Wave 2e (greenfield, recon needed).
 - BestBuy Developer API activation — fetcher is shipped and unit-tested but dormant until a credential lands (see `project_bestbuy_api_dormant`).
 - Additional Tier 1 sources: Walmart affiliate API, YouTube Data API (channel monitoring).
 - Additional Tier 2 sources: forums, more manufacturers.
