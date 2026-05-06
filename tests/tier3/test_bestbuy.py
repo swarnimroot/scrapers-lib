@@ -254,6 +254,59 @@ class TestExtractSku:
         with pytest.raises(ValueError, match="does not carry a SKU"):
             _extract_sku("https://www.bestbuy.com/site/foo/bar")
 
+    @pytest.mark.parametrize(
+        "url,expected",
+        [
+            (
+                "https://www.bestbuy.com/product/foo-bar/J3K4L6J65W/sku/6630640",
+                "6630640",
+            ),
+            (
+                "https://www.bestbuy.com/product/foo-bar/J3K4L6J65W/sku/6630640/",
+                "6630640",
+            ),
+            (
+                "https://www.bestbuy.com/product/foo/J3K4L6J65W/sku/6630640?ref=top",
+                "6630640",
+            ),
+        ],
+    )
+    def test_modern_path_form_parses(self, url, expected):
+        assert _extract_sku(url) == expected
+
+    def test_html_fallback_extracts_skuId_from_meta_unescaped(self):
+        html = '<script>{"skuId":"6628371","bsin":"JJGGLHJLTS"}</script>'
+        url = "https://www.bestbuy.com/product/foo/JJGGLHJLTS"
+        assert _extract_sku(url, html=html) == "6628371"
+
+    def test_html_fallback_extracts_skuId_from_meta_escaped(self):
+        # The actual analytics-metadata meta tag stores the JSON in an
+        # HTML attribute, so quotes are escaped as ``&quot;``.
+        html = (
+            '<meta name="analytics-metadata" '
+            'content="{&quot;skuId&quot;:&quot;6628371&quot;}"/>'
+        )
+        url = "https://www.bestbuy.com/product/foo/JJGGLHJLTS"
+        assert _extract_sku(url, html=html) == "6628371"
+
+    def test_url_sku_takes_precedence_over_html(self):
+        html = '{"skuId":"9999999"}'
+        url = "https://www.bestbuy.com/site/foo/6628371.p"
+        assert _extract_sku(url, html=html) == "6628371"
+
+    def test_no_sku_in_url_or_html_raises(self):
+        url = "https://www.bestbuy.com/product/foo/JJGGLHJLTS"
+        html = "<html>no analytics metadata here</html>"
+        with pytest.raises(ValueError, match="does not carry a SKU"):
+            _extract_sku(url, html=html)
+
+    def test_html_fallback_uses_real_pdp_fixture(self):
+        # The fixture HTML contains the ``"skuId":"6628371"`` analytics
+        # metadata tag; URL has only a synthetic model id, no SKU.
+        html = _load(f"pdp_{AREA51_SKU}.html")
+        url = "https://www.bestbuy.com/product/foo/J3K4L6QTGK"
+        assert _extract_sku(url, html=html) == AREA51_SKU
+
 
 # ---------------------------------------------------------------------------
 # Block detection — positives and negatives

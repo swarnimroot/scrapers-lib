@@ -46,6 +46,7 @@ import logging
 import re
 import time
 from datetime import datetime, timezone
+from html import unescape as _html_unescape
 from typing import Any
 from urllib.parse import urlparse
 
@@ -69,9 +70,19 @@ REVIEWS_URL_TEMPLATE = "https://www.bestbuy.com/site/reviews/name/{sku}?page={pa
 # downstream processing free of mixed naive/aware datetimes.
 _BESTBUY_DATE_FORMAT = "%b %d, %Y %I:%M %p"
 
-# Same 7-digit SKU shape as tier1/bestbuy_api — path ``/<SKU>.p`` or
-# query ``?skuId=<SKU>``.
-_SKU_PATH_RE = re.compile(r"/(\d{7})\.p(?:[/?#]|$)")
+# 7-digit SKU shapes. Two URL forms are served by bestbuy.com today:
+#   - legacy ``/site/<slug>/<SKU>.p`` (matched by the first pattern)
+#   - modern ``/product/<slug>/<MODEL_ID>/sku/<SKU>`` (matched by the second)
+# Some modern URLs are model-id-only (``/product/<slug>/<MODEL_ID>``) and
+# carry no SKU at all; for those, callers pass the PDP HTML and we read
+# the SKU from the always-present ``analytics-metadata`` meta tag, whose
+# JSON payload contains ``"skuId":"<SKU>"`` (HTML-escaped in the
+# ``content`` attribute, unescaped if the same JSON appears in a script).
+_SKU_PATH_RES: tuple[re.Pattern[str], ...] = (
+    re.compile(r"/(\d{7})\.p(?:[/?#]|$)"),
+    re.compile(r"/sku/(\d{7})(?:[/?#]|$)"),
+)
+_SKU_META_RE = re.compile(r'"skuId"\s*:\s*"(\d{7})"')
 
 # Block markers anchored against Akamai's public block-page shape.
 _BLOCK_PATTERNS: tuple[re.Pattern[str], ...] = (
@@ -129,7 +140,12 @@ def fetch_bestbuy_reviews(
         return parse_bestbuy_pdp_reviews(html, url, anchors=anchors)
 
     # Paginate mode: walk the reviews-page surface.
-    sku = _extract_sku(url)
+    try:
+        sku = _extract_sku(url)
+    except ValueError:
+        # URL has no SKU in path/query — fetch the PDP and extract from HTML.
+        html = _fetch_pdp(url, timeout=timeout, warm=warm, impersonate=impersonate)
+        sku = _extract_sku(url, html=html)
     attribution = attribute_url(url, SOURCE, anchors or [])
     if attribution is None:
         raise ValueError(
@@ -240,7 +256,7 @@ def parse_bestbuy_pdp_reviews(
             f"provide one that matches the fetched URL exactly"
         )
 
-    sku = _extract_sku(url)
+    sku = _extract_sku(url, html=html)
 
     products = parse_product_jsonld(html)
     if not products:
@@ -361,8 +377,15 @@ def _looks_blocked(html: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def _extract_sku(url: str) -> str:
-    """Return the 7-digit SKU from a BestBuy PDP URL."""
+def _extract_sku(url: str, html: str | None = None) -> str:
+    """Return the 7-digit SKU from a BestBuy PDP URL.
+
+    Tries URL path forms (``/<SKU>.p`` legacy, ``/sku/<SKU>`` modern),
+    then ``?skuId=<SKU>`` query, then — if ``html`` is supplied — the
+    PDP's ``"skuId":"<SKU>"`` analytics-metadata meta tag. The HTML
+    fallback is needed for modern model-id-only URLs of the form
+    ``/product/<slug>/<MODEL_ID>`` that carry no SKU in the URL.
+    """
     parsed = urlparse(url)
     host = (parsed.hostname or "").lower()
     if host and "bestbuy.com" not in host:
@@ -370,18 +393,29 @@ def _extract_sku(url: str) -> str:
             f"bestbuy: URL host {host!r} is not bestbuy.com; "
             f"pass a bestbuy.com PDP URL"
         )
-    m = _SKU_PATH_RE.search(parsed.path + "/")
-    if m is not None:
-        return m.group(1)
+    path_with_slash = parsed.path + "/"
+    for pattern in _SKU_PATH_RES:
+        m = pattern.search(path_with_slash)
+        if m is not None:
+            return m.group(1)
     # Fall back to ?skuId=<SKU>.
     for part in parsed.query.split("&"):
         if part.startswith("skuId="):
             cand = part[len("skuId=") :]
             if cand.isdigit():
                 return cand
+    # Last resort: extract from PDP HTML's analytics-metadata meta tag.
+    # The meta tag's ``content`` attribute holds JSON HTML-escaped as
+    # ``&quot;skuId&quot;:&quot;...&quot;``; unescape so a single regex
+    # works against either escaped or unescaped occurrences.
+    if html is not None:
+        m = _SKU_META_RE.search(_html_unescape(html))
+        if m is not None:
+            return m.group(1)
     raise ValueError(
-        f"bestbuy: URL {url!r} does not carry a SKU in /<SKU>.p "
-        f"or ?skuId=<SKU> form"
+        f"bestbuy: URL {url!r} does not carry a SKU in /<SKU>.p, "
+        f"/sku/<SKU>, or ?skuId=<SKU> form, and no PDP HTML was "
+        f"available for fallback"
     )
 
 
