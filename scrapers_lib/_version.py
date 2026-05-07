@@ -8,4 +8,4 @@ scrapers_lib._version import __version__`` without circular-import risk.
 Keep in sync with the ``version`` field in ``pyproject.toml``.
 """
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"

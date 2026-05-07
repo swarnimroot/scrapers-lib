@@ -170,6 +170,7 @@ def fetch_reddit_comments(
     limit: int | None = None,
     timeout: float = 30.0,
     user_agent: str = _DEFAULT_USER_AGENT,
+    emit_all_comments: bool = False,
     **_: Any,
 ) -> list[RawMention]:
     """Fetch comments for a Reddit post; emit :class:`RawMention` objects.
@@ -190,6 +191,16 @@ def fetch_reddit_comments(
     / ``"old"`` / ``"qa"``). ``limit`` caps top-level comment count if
     the caller wants a quick skim.
 
+    ``emit_all_comments`` (default ``False``) controls comment fan-out
+    when ``anchors`` is provided. By default each comment runs through
+    the same per-text regex match as listings, so off-topic comments
+    are dropped at fetch time. When ``True``, **comments** bypass the
+    regex match and emit unfiltered with ``attribution=None`` (the
+    parent post's emission still fans out per anchor as usual). The
+    caller takes ownership of attribution downstream — typical use is
+    to inherit attribution from the parent post via ``RawMention.parent_id``
+    (Reddit ``link_id`` = ``"t3_<post_id>"``).
+
     Raises :class:`httpx.HTTPStatusError` on non-2xx.
     """
     subreddit, post_id = _extract_post_location(url)
@@ -200,7 +211,12 @@ def fetch_reddit_comments(
         params["limit"] = max(1, int(limit))
 
     body = _fetch_json(api_url, params=params, timeout=timeout, user_agent=user_agent)
-    return parse_reddit_comments(body, subreddit=subreddit, anchors=anchors)
+    return parse_reddit_comments(
+        body,
+        subreddit=subreddit,
+        anchors=anchors,
+        emit_all_comments=emit_all_comments,
+    )
 
 
 def parse_reddit_comments(
@@ -208,6 +224,7 @@ def parse_reddit_comments(
     *,
     subreddit: str | None,
     anchors: list[Anchor] | None = None,
+    emit_all_comments: bool = False,
 ) -> list[RawMention]:
     """Pure parse: comments endpoint response → mentions for post + comments.
 
@@ -217,6 +234,8 @@ def parse_reddit_comments(
     Deleted / removed comments are skipped. ``kind="more"`` stubs (more-
     comments placeholders) are counted but not followed; the count is
     stored in each post's ``raw.more_count`` for downstream awareness.
+
+    See :func:`fetch_reddit_comments` for ``emit_all_comments`` semantics.
     """
     if not isinstance(body, list) or len(body) < 2:
         logger.info(
@@ -243,7 +262,12 @@ def parse_reddit_comments(
 
     for raw_comment in _walk_comments(comment_listing):
         mentions.extend(
-            _comment_to_mentions(raw_comment, subreddit=sub, anchors=anchors)
+            _comment_to_mentions(
+                raw_comment,
+                subreddit=sub,
+                anchors=anchors,
+                emit_all_comments=emit_all_comments,
+            )
         )
 
     return mentions
@@ -447,6 +471,7 @@ def _comment_to_mentions(
     *,
     subreddit: str,
     anchors: list[Anchor] | None,
+    emit_all_comments: bool = False,
 ) -> list[RawMention]:
     body = (comment.get("body") or "").strip()
     if not body or body in _DELETED_BODY_TOKENS:
@@ -487,6 +512,10 @@ def _comment_to_mentions(
     }
 
     base_mention_id = reddit_comment_id(comment_id)
+    if emit_all_comments and anchors is not None:
+        # Bypass per-comment anchor regex; emit one unattributed mention so
+        # the caller can inherit attribution from the parent post downstream.
+        return [RawMention(mention_id=base_mention_id, attribution=None, **base)]
     return list(_fan_out(base, base_mention_id, body, anchors))
 
 

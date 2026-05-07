@@ -275,6 +275,69 @@ class TestNestedAnchorMode:
         assert c002_hits == {"microsoft", "sony"}
 
 
+class TestEmitAllComments:
+    """``emit_all_comments=True`` short-circuits the per-comment regex
+    filter so callers can inherit attribution from the parent post via
+    ``RawMention.parent_id`` (Reddit ``link_id``)."""
+
+    def test_emits_every_comment_unattributed_when_true(self):
+        mentions = parse_reddit_comments(
+            _load("nested_comments.json"),
+            subreddit="TestSub",
+            anchors=[_alan_wake_2(), _microsoft(), _sony()],
+            emit_all_comments=True,
+        )
+        # All four real comments survive (c001, c002, c003, c011); c010 still
+        # skipped because it's deleted text. None carry an attribution — the
+        # per-comment regex match is bypassed.
+        comments = [m for m in mentions if m.source_type == "comment"]
+        comment_ids = sorted(c.raw["comment_id"] for c in comments)
+        assert comment_ids == ["c001", "c002", "c003", "c011"]
+        assert all(c.attribution is None for c in comments)
+        # mention_id has no anchor suffix when attribution is None.
+        assert all("_" not in c.mention_id.removeprefix("reddit_comment_") for c in comments)
+
+    def test_post_emission_still_fans_out_per_anchor(self):
+        mentions = parse_reddit_comments(
+            _load("nested_comments.json"),
+            subreddit="TestSub",
+            anchors=[_alan_wake_2(), _microsoft(), _sony()],
+            emit_all_comments=True,
+        )
+        post_mentions = [m for m in mentions if m.source_type == "post"]
+        assert len(post_mentions) == 1
+        assert post_mentions[0].attribution is not None
+        assert post_mentions[0].attribution.anchor_id == "alan_wake_2"
+
+    def test_default_false_preserves_filter_behavior(self):
+        # Sanity: default behavior unchanged. Same fixture, anchors-mode,
+        # default flag → c003 + c011 dropped exactly like TestNestedAnchorMode.
+        mentions = parse_reddit_comments(
+            _load("nested_comments.json"),
+            subreddit="TestSub",
+            anchors=[_alan_wake_2(), _microsoft(), _sony()],
+        )
+        comment_ids = {m.raw["comment_id"] for m in mentions if m.source_type == "comment"}
+        assert "c003" not in comment_ids
+        assert "c011" not in comment_ids
+
+    def test_no_op_when_anchors_is_none(self):
+        # When anchors=None, _fan_out already emits unattributed mentions;
+        # emit_all_comments=True is a no-op (and must not double-emit).
+        with_flag = parse_reddit_comments(
+            _load("nested_comments.json"),
+            subreddit="TestSub",
+            anchors=None,
+            emit_all_comments=True,
+        )
+        without_flag = parse_reddit_comments(
+            _load("nested_comments.json"),
+            subreddit="TestSub",
+            anchors=None,
+        )
+        assert [m.mention_id for m in with_flag] == [m.mention_id for m in without_flag]
+
+
 # ---------------------------------------------------------------------------
 # URL / shorthand parsers
 # ---------------------------------------------------------------------------

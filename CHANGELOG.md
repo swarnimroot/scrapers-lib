@@ -4,6 +4,8 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-05-07
+
 ### Added
 - **`tier1/reddit.py` `fetch_reddit_comments` gained an `emit_all_comments`
   kwarg.** Default `False` (existing behavior: per-comment regex match
@@ -13,7 +15,8 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
   `RawMention.parent_id` (Reddit `link_id`). The post emission still
   fans out per matched anchor as before. Useful when downstream has a
   stronger attribution signal than per-comment text matching (e.g. a
-  primary-attributed parent post in a corpus DB).
+  primary-attributed parent post in a corpus DB) — Demo 3 (Reddit
+  sentiment) needs full thread carryover. Additive, non-breaking.
 
 ## [1.2.0] — 2026-05-07
 
