@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Library version:** 1.1.0
+**Status:** stable &nbsp;·&nbsp; **Library version:** 1.3.0
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -193,7 +193,7 @@ fetch_fn(url: str, anchors: list[Anchor] | None = None, *, <source-specific kwar
 | Tier | Source names (registry keys) |
 |---|---|
 | 1 (APIs / feeds) | `rss`, `article`, `reddit`, `reddit_comments`, `youtube`, `bestbuy_api` |
-| 2 (manufacturer pages) | `dell`, `hp`, `lenovo`, `asus` |
+| 2 (manufacturer pages) | `dell`, `hp`, `lenovo`, `asus`, `acer`, `msi` |
 | 3 (retailer scraping) | `amazon`, `amazon_reviews`, `bestbuy_reviews` |
 
 Shared Tier 2 parsing helpers live in `scrapers_lib.tier2.base` (`parse_product_jsonld`, `parse_inline_json`, `parse_spec_table`, `normalize_spec_value`, `fetch_rendered_html`) — use these when building a new Tier 2 fetcher; see [`docs/ADDING_A_SOURCE.md`](docs/ADDING_A_SOURCE.md).

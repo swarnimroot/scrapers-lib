@@ -19,7 +19,7 @@ This guide is the middle lane: how to consume what's already there.
 
 `scrapers-lib` is **infrastructure, not an application.** It knows
 how to fetch, rate-limit, retry, attribute, and normalize data from
-13 registered sources into three stable schemas (`RawMention`,
+15 registered sources into three stable schemas (`RawMention`,
 `ProductSnapshot`, `Anchor`). It knows nothing about what *you*
 track, where you persist, or what you do with the data downstream.
 
@@ -33,7 +33,7 @@ Your consumer project owns:
 `scrapers-lib` gives you:
 
 - A `Scheduler` that runs 24x7 and walks through URLs patiently, respecting per-domain rate limits and robots.txt.
-- Registered fetchers for 13 sources — you pass a URL + source name + anchors; you get back typed `RawMention` or `ProductSnapshot` rows.
+- Registered fetchers for 15 sources — you pass a URL + source name + anchors; you get back typed `RawMention` or `ProductSnapshot` rows.
 - Attribution helpers that tie fetched content to your anchors.
 - A deterministic mention-ID scheme so re-fetches collide rather than duplicate.
 
@@ -650,9 +650,11 @@ see [`ARCHITECTURE.md`](ARCHITECTURE.md) §11.
 | Source | Notes |
 |---|---|
 | `dell` | Alienware + XPS. Playwright + stealth + warming. ~20 spec categories per tile. |
-| `hp` | Shop PDPs. 11-12 config-picker spec categories (does NOT include Dimensions/Ports/etc — those are hydrated client-side). |
+| `hp` | Shop PDPs. curl_cffi + warmed session → ~23-26 categories per tile (config-picker + async GraphQL Tech Specs, Wave 2e). Async fetch is best-effort with fallback to ~12-category config-picker-only data. |
 | `lenovo` | PSREF spec reference. No prices. ~50 features across 8 categories. |
-| `asus` | ROG marketing site. 20+ spec categories including Dimensions/Ports/Weight that HP can't deliver. No prices. |
+| `asus` | Host-dispatched. `rog.asus.com` → ROG SSR spec sections (20+ categories). `www.asus.com` → Zenbook / Vivobook / TUF Gaming via Nuxt JS state (22-28 categories). Both share `SOURCE = "asus"`. No prices. |
+| `acer` | `acer.com` PDP. Plain httpx + 13 SSR `<table>` blocks. ~60+ spec keys per `/pdp/<SKU>` URL. Per-SKU granularity. JSON-LD enrichment for title/brand/image/price/availability. |
+| `msi` | `us.msi.com` (Akamai-gated). curl_cffi + warmed session. `/Specification` is universal (gaming + AI/Stealth lines), 27-31 spec rows column-per-SKU; main-page JSON-LD `ItemList` fallback (~11 fields). One snapshot per `<thead>` SKU column. No prices. |
 
 ### Tier 3 — retailer scraping (fragile by design)
 

@@ -1,6 +1,6 @@
 # scrapers-lib — Architecture
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.1.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.0
 
 ---
 
@@ -244,7 +244,7 @@ Respected by default. Per-call `ignore_robots=True` override exists for sites wh
 
 ## 11. Per-source coverage
 
-Actual coverage per source as of v1.0.0. Rows evolve as fetchers are revised in later minor versions; breaking changes to a row's schema or column semantics would require a major bump.
+Actual coverage per source as of v1.3.0. Rows evolve as fetchers are revised in later minor versions; breaking changes to a row's schema or column semantics would require a major bump.
 
 | Source | Tier | Schema | Fields reliably populated | Known limitations |
 |---|---|---|---|---|

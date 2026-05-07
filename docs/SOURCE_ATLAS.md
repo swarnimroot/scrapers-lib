@@ -1,6 +1,6 @@
 # Source Atlas — how each source is scraped
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Library version:** 1.1.0
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.0
 
 > A 2-minute map of every source the library can read — or drill into one row for the full story. For dense field-by-field shape, see [`ARCHITECTURE.md §11`](ARCHITECTURE.md#11-per-source-coverage) and [`CONSUMER_GUIDE.md §9`](CONSUMER_GUIDE.md#9-data-shape-quick-reference).
 
@@ -17,7 +17,7 @@ Sources are grouped by **how likely they are to break**, not by subject matter.
 | Tier | Access method | Expect | Sources |
 |---|---|---|---|
 | 1 | Official APIs & feeds | Reliable | RSS, Article, Reddit (×2), YouTube, BestBuy API |
-| 2 | Manufacturer spec pages | May need parser updates after site redesigns | Dell, HP, Lenovo, ASUS |
+| 2 | Manufacturer spec pages | May need parser updates after site redesigns | Dell, HP, Lenovo, ASUS, Acer, MSI |
 | 3 | Retail pages behind bot gates | Partial failures are normal | BestBuy reviews, Amazon (×2) |
 
 ## 3. Method at a glance
@@ -30,9 +30,11 @@ Sources are grouped by **how likely they are to break**, not by subject matter.
 | `youtube` | Caption-track API | youtube-transcript-api |
 | `bestbuy_api` | Official product API | httpx + API key |
 | `dell` | Stealth browser → internal API | Playwright + playwright-stealth |
-| `hp` | Plain fetch → parse embedded JSON | httpx |
+| `hp` | Chrome-impersonated fetch + warmed session → parse embedded JSON + async GraphQL | curl_cffi |
 | `lenovo` | Public JSON endpoint | httpx |
-| `asus` | Plain fetch → parse HTML | httpx |
+| `asus` | Plain fetch → parse HTML (ROG) or Nuxt JS state (www) | httpx + py_mini_racer |
+| `acer` | Plain fetch → parse SSR spec-table blocks | httpx |
+| `msi` | Chrome-impersonated fetch + warmed session → parse /Specification table | curl_cffi |
 | `bestbuy_reviews` | Chrome-impersonated fetch on HTTP/1.1 | curl_cffi |
 | `amazon`, `amazon_reviews` | Plain fetch with Chrome UA | httpx |
 
@@ -114,11 +116,11 @@ sequenceDiagram
 
 ## 6.2 HP (`hp`)
 
-- **How:** plain httpx → parse a JSON blob embedded in an HTML comment (`<div id="data"><!--{...}--></div>`).
-- **Why this method:** HP embeds the whole page's state as a hidden comment inside the HTML. Plain fetch works because the shop PDP itself doesn't trip the bot gate — only deeper surfaces do.
-- **Returns:** `ProductSnapshot` per tile, **12 config-picker categories** (Processor/Graphics, Memory, Storage, Display, Color, Keyboard, Wireless, Battery, OS, Office, McAfee).
-- **Coverage gap:** the additional ~20 Tech Specs categories (Dimensions, Weight, Ports, Power, Audio, Sensors, Warranty) are rendered by JavaScript and not reachable with plain httpx. Upgrade path documented in project memory.
-- **Example:** `https://www.hp.com/us-en/gaming-pc/laptops/2025-omen-16-intel.html`.
+- **How:** `curl_cffi` with Chrome impersonation + HTTP/1.1, one warmed session that fetches both the PDP HTML (config-picker tiles, embedded as a JSON-encoded HTML comment in `<div id="data"><!--{...}--></div>`) and a sibling GraphQL endpoint (`/us-en/shop/app/api/web/graphql/page/pdp%2F<slug>/async`) for product-wide Tech Specs.
+- **Why this method:** HP's config-picker categories are server-rendered into the PDP, but the broader Tech Specs section (Dimensions, Weight, External I/O Ports, Audio, Power supply, Warranty, etc.) is hydrated from a separate GraphQL endpoint. The warmed `curl_cffi` session works against both surfaces in one round-trip. Vanilla and stealth Playwright are still rejected with `ERR_HTTP2_PROTOCOL_ERROR` on `/shop/pdp/`.
+- **Returns:** `ProductSnapshot` per pre-built tile — **~23-26 categories** per laptop tile (was ~12 pre-Wave-2e), now including Dimensions, Weight, External I/O Ports, Audio Features, Network interface, Battery Recharge Time, Power supply, Webcam, Warranty (set varies by product family). Per-tile config-picker values overlay async product-wide values on overlap.
+- **Failure mode:** the async fetch is best-effort. On any failure (non-200, JSON parse error, missing envelope) the fetcher logs at INFO and falls back to config-picker-only data, mirroring the v1.1 12-category behavior.
+- **Example:** `https://www.hp.com/us-en/shop/pdp/omen-max-16-laptop-pc`.
 
 ## 6.3 Lenovo PSREF (`lenovo`)
 
@@ -128,17 +130,34 @@ sequenceDiagram
 - **Gap:** no prices, no stock, no rating — PSREF is a spec reference, not a shop.
 - **Example:** `https://psref.lenovo.com/l/Product/LOQ/LOQ_15IRX10`.
 
-## 6.4 ASUS ROG spec (`asus`)
+## 6.4 ASUS (`asus`)
 
-- **How:** plain httpx → parse server-rendered `<h2>`-headed spec sections.
-- **Why this method:** ASUS's ROG spec page renders the full spec sheet directly into the HTML. We read it.
-- **Returns:** `ProductSnapshot` — **20+ categories**, the richest Tier 2 coverage so far (includes Dimensions, Weight, I/O Ports, Power Supply, Security — everything HP hides).
-- **Gap:** no prices. `shop.asus.com` is the commerce surface but is DataDome-protected and off-limits without paid anti-bot bypass.
-- **Example:** `https://rog.asus.com/laptops/rog-strix/rog-strix-g16-2025/spec/`.
+- **How:** plain httpx with host-based dispatch in `tier2/asus.py`:
+  - `rog.asus.com` → parse server-rendered `<h2>`-headed spec sections (in-module ROG parser).
+  - `www.asus.com` → extract the Nuxt SSR state from a `window.__NUXT__=(function(...){...}(...))` IIFE (~200 KB minified JS), evaluate via `py_mini_racer` (in-process V8), then read `state.PDPage.PDTechSpecM2.SpecList` (delegated to `tier2/asus_www.py`).
+- **Why this method:** ROG spec pages render the full sheet into the HTML. `www.asus.com` techspec pages only paginate 1-2 SKU columns at a time in the rendered DOM, so the parser instead reads the full multi-SKU union from the Nuxt state object hidden in the IIFE. Both surfaces share `SOURCE = "asus"` so a single Anchor with `source_urls={"asus": <url>}` works against either.
+- **Returns:** `ProductSnapshot` — 20+ categories on ROG (Strix, Zephyrus); 22-28 categories on `www.asus.com` (28 on consumer Zenbook/Vivobook, 22 on TUF Gaming). All HP-gap axes (Dimensions, Weight, I/O Ports, Audio) consistently present on both surfaces.
+- **Gap:** no prices on either surface. `shop.asus.com` is the commerce surface but is DataDome-protected and off-limits without paid anti-bot bypass.
+- **New dep (Wave 2e):** `py_mini_racer>=0.6` for the Nuxt IIFE evaluation; lazily imported so consumers that only touch ROG don't pay the V8 startup cost.
+- **Examples:**
+  - ROG: `https://rog.asus.com/laptops/rog-strix/rog-strix-g16-2025/spec/`
+  - Zenbook: `https://www.asus.com/us/laptops/for-home/zenbook/asus-zenbook-14-ux3405/techspec/`
 
-## 6.5 Acer / MSI — deferred
+## 6.5 Acer (`acer`)
 
-Not required for Demo 2's max-spec comparison (Dell + HP + Lenovo + ASUS cover the four major gaming-laptop manufacturers). Revisit post-demo.
+- **How:** plain httpx with a Chrome User-Agent → parse 13 SSR `<table class="agw-table_techSpec">` blocks via `tier2.base.parse_spec_table()`.
+- **Why this method:** Acer's PDP renders the full spec sheet directly into the HTML across 13 category-scoped `<table>` elements (`<caption>` carries the category name; `<tr>` rows pair `<th>` label with `<td>` value). No bot gate — plain fetch returns 200 OK.
+- **Returns:** `ProductSnapshot` per SKU URL — ~60+ spec keys across Operating System, Processor, Graphics, Memory, Storage, Display, Battery, I/O, Wireless, Camera, Keyboard, Audio, Dimensions, Weight, Security, Sensors. JSON-LD Product enriches title, brand, image_url, price, currency, availability.
+- **Quirk:** the URL must include the `/pdp/<SKU>` suffix — bare model URLs return a model-overview page that lists SKUs but doesn't carry specs. Per-SKU granularity (each URL targets one SKU).
+- **Example:** `https://www.acer.com/us-en/predator/laptops/helios/helios-neo-16s-ai/pdp/NH.U0KAA.001`.
+
+## 6.6 MSI (`msi`)
+
+- **How:** `curl_cffi` with Chrome TLS impersonation + warmed session (visit `https://us.msi.com/` first, brief sleep, then PDP) → parse a column-per-SKU `<table>` on `/Specification`. Bare `/Laptop/<slug>` URLs fetch `/Specification` first; on parse failure they fall back to the main page's JSON-LD `ItemList` (~11-field highlights summary, present only on newer AI/Stealth lines).
+- **Why this method:** `us.msi.com` runs an Akamai HTTP-layer gate that drops plain httpx with 403. The same `curl_cffi` + warmed-session primitive HP and BestBuy use clears it. `/Specification` is universal across MSI's product lines (gaming Raider/Crosshair + premium Stealth-AI), making it the comprehensive surface; the main-page ItemList is supplementary, not a substitute.
+- **Returns:** `ProductSnapshot` per `<thead>` SKU column — 27-31 spec rows per page across Operating System, Processor, Graphics, Display, Memory, Storage, I/O Ports, Webcam, Audio, Keyboard, Battery, AC Adapter, Wireless LAN, Bluetooth, Security, Dimensions, Weight, Bag, Mouse.
+- **Gap:** no prices on either surface (MSI's purchasing flow is retailer-redirect, not direct e-commerce).
+- **Example:** `https://us.msi.com/Laptop/Stealth-16-AI-Plus-B3WX/Specification`.
 
 ---
 

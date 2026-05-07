@@ -28,6 +28,8 @@ DEFAULT_TTLS: dict[str, int] = {
     "hp": 7 * 24 * 60 * 60,
     "lenovo": 7 * 24 * 60 * 60,
     "asus": 7 * 24 * 60 * 60,
+    "acer": 7 * 24 * 60 * 60,
+    "msi": 7 * 24 * 60 * 60,
     "bestbuy": 7 * 24 * 60 * 60,  # reviews
     "amazon": 7 * 24 * 60 * 60,
 }
