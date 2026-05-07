@@ -1,6 +1,6 @@
 # Adding a Tier 2 source
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Applies to:** library version ≥ 0.2.0
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Applies to:** library version ≥ 0.2.0
 
 Operational guide for adding a new Tier 2 fetcher (manufacturer spec pages: HP,
 Lenovo, ASUS, Acer, MSI — and future additions). Read this *before* touching

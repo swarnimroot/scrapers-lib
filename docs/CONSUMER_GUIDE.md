@@ -1,6 +1,6 @@
 # Consumer Guide — building projects on scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-04-22 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.1.0+
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.1.0+
 
 This guide is for people building a *consumer project* that uses
 `scrapers-lib` as a data-fetching library. The library returns typed
