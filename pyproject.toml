@@ -30,6 +30,7 @@ dependencies = [
     "trafilatura>=1.12",
     "youtube-transcript-api>=0.6",
     "python-dotenv>=1.0",
+    "py_mini_racer>=0.6",
 ]
 
 [project.optional-dependencies]

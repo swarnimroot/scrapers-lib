@@ -92,12 +92,19 @@ def fetch_asus_product(
     timeout: float = 30.0,
     **_: Any,
 ) -> list[ProductSnapshot]:
-    """Fetch a ROG spec page; return a list containing one :class:`ProductSnapshot`.
+    """Fetch an ASUS spec page; return a list containing one :class:`ProductSnapshot`.
 
-    ``url`` may be either ``.../spec/`` (the direct spec surface) or the
-    product-root form ``.../<model>/`` — ASUS serves the same content at
-    both, and the fetcher does not rewrite the URL so attribution stays
-    under the caller's control.
+    Routes by host:
+
+    - ``rog.asus.com`` (this module) — ROG marketing spec pages,
+      ``<h2>``-anchored DOM extraction.
+    - ``www.asus.com`` (:mod:`scrapers_lib.tier2.asus_www`) — Zenbook /
+      Vivobook / TUF Gaming, Nuxt JS-state extraction.
+
+    For ROG, ``url`` may be either ``.../spec/`` (the direct spec surface)
+    or the product-root form ``.../<model>/`` — ASUS serves the same
+    content at both, and the fetcher does not rewrite the URL so
+    attribution stays under the caller's control.
 
     Raises :class:`ValueError` on unrecognized URL shape or when no
     anchor in ``anchors`` has ``source_urls["asus"] == url``.
@@ -107,6 +114,12 @@ def fetch_asus_product(
     Returns a list with exactly one snapshot on success. The list shape
     matches the registry contract shared with per-SKU fetchers (Dell/HP).
     """
+    host = (urlparse(url).hostname or "").lower()
+    if host == "www.asus.com":
+        # Lazy import keeps the module pair acyclic at load time.
+        from scrapers_lib.tier2.asus_www import fetch_asus_www_product
+
+        return fetch_asus_www_product(url, anchors=anchors, timeout=timeout)
     body = _fetch_spec_page(url, timeout=timeout)
     return parse_asus_product_page(body, url, anchors=anchors)
 

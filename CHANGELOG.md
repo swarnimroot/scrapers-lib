@@ -5,11 +5,116 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 ## [Unreleased]
 
 ### Added
+- **`tier1/reddit.py` `fetch_reddit_comments` gained an `emit_all_comments`
+  kwarg.** Default `False` (existing behavior: per-comment regex match
+  filters off-topic comments at fetch time). When `True`, **comments**
+  bypass the regex match and emit unfiltered with `attribution=None`,
+  letting the caller inherit attribution from the parent post via
+  `RawMention.parent_id` (Reddit `link_id`). The post emission still
+  fans out per matched anchor as before. Useful when downstream has a
+  stronger attribution signal than per-comment text matching (e.g. a
+  primary-attributed parent post in a corpus DB).
+
+## [1.2.0] — 2026-05-07
+
+**Wave 2e — Tier 2 expansion: HP coverage fix + ASUS www non-ROG
+fetcher.** HP's `tier2/hp.py` now hydrates Tech Specs from a sibling
+GraphQL endpoint on the same warmed `curl_cffi` session that fetches
+the PDP, doubling per-tile coverage from ~12 to ~23-26 categories
+including Dimensions / Weight / I/O Ports / Audio Features / Power
+supply / Warranty (set varies by product family). ASUS gained a
+sibling parser at `tier2/asus_www.py` for `www.asus.com` Zenbook /
+Vivobook / TUF Gaming product lines via Nuxt JS-state evaluation
+(`py_mini_racer` in-process V8) — the same HP-gap axes are present
+on every product family. Lenovo URL-acceptance recon resolved as NO
+(consumer `lenovo.com/p/...` PDPs carry no PSREF link); the existing
+PSREF-only constraint stays as-is, search-bridge resolver deferred.
+Public API frozen — every change additive on top of v1.1.0. Tests:
+904 pass / 20 skipped (v1.1.0 was 832 / 19 — 72 new unit tests
+across HP +17, ASUS www +60, asus URL regex +6, ASUS host dispatch
++4, and a few small ones; +1 gated live integration test). One new
+dep: `py_mini_racer>=0.6` (free, open-source, in-process V8 ~5 MB
+win_amd64 wheel) — only the ASUS www parser uses it; lazily imported
+so consumers that never touch ASUS don't pay the V8 startup cost.
+
+### Added
+- **ASUS fetcher extended to `www.asus.com` non-ROG product lines** (Wave
+  2e step 4). New module `tier2/asus_www.py` covers Zenbook, Vivobook,
+  and TUF Gaming spec pages at
+  `www.asus.com/<region>/laptops/for-{home,gaming}/<line>/<model>/techspec/`.
+  The rendered DOM only paginates 1-2 SKU columns at a time, so the
+  parser instead extracts the Nuxt SSR state from a
+  `window.__NUXT__=(function(...){...}(...))` IIFE: locate via
+  `(?:window\.)?__NUXT__\s*=\s*\(function\(`, paren-balance to extract
+  the full ~200 KB expression, evaluate via `py_mini_racer` (in-process
+  V8), then read `state.PDPage.PDTechSpecM2.SpecList` — typically
+  22-28 categories per page (28 on Zenbook/Vivobook, 22 on TUF). Each
+  Content cell HTML-decodes and br-splits to multi-SKU rows
+  (handles `<br>`, `<BR>`, and `</br>` sic on Vivobook), then dedupes
+  in first-occurrence order. **All HP-gap axes (Dimensions / Weight /
+  I/O Ports / Audio) consistently present across all three product
+  lines** — closes the second of two Wave 2e coverage targets after
+  the HP step. Plain `httpx` is sufficient (no DataDome on
+  `www.asus.com`, unlike `shop.asus.com`). **Public API unchanged**:
+  the existing `fetch_asus_product` registered fetcher routes
+  `www.asus.com` URLs to the new module via host dispatch in
+  `tier2/asus.py`; same `SOURCE = "asus"` so a single Anchor with
+  `source_urls={"asus": <url>}` works against either surface.
+  `raw.spec_source` = `"www_asus_pd_techspec_m2"` marks www-sourced
+  snapshots (vs `"rog_spec_page"` for ROG). 60 new unit tests +
+  1 gated live integration test added.
+
+  **New dep:** `py_mini_racer>=0.6` (free, open-source, in-process V8 ~5
+  MB win_amd64 wheel; no Node subprocess, no startup overhead beyond
+  the V8 isolate creation per fetch).
+
+- **`tier3/bestbuy.py` accepts modern PDP URL forms.** BestBuy migrated
+  away from the legacy ``/site/<slug>/<7-digit-SKU>.p`` form to two new
+  shapes: ``/product/<slug>/<MODEL_ID>/sku/<7-digit-SKU>`` (SKU still
+  in path) and ``/product/<slug>/<MODEL_ID>`` (model-id-only, no SKU
+  anywhere in the URL). `_extract_sku` now tries both legacy + modern
+  path regexes, then `?skuId=<SKU>` query, then — as a last resort —
+  reads `"skuId":"<SKU>"` from the PDP's always-present
+  ``<meta name="analytics-metadata">`` block (works against both the
+  HTML-escaped attribute form and any unescaped occurrence). The
+  default `paginate=False` path already had the PDP HTML in hand and
+  passes it through; the `paginate=True` path tries the URL first
+  and only fetches the PDP for the HTML fallback when the URL has no
+  SKU. `_extract_sku` gained an optional `html: str | None = None`
+  kwarg; signature change is backward-compatible.
+
 - **`docs/SOURCE_ATLAS.md`** — 2-minute visual map of how each source
   is scraped, why that method, what it returns, and one realistic
   example per source. Complements `CONSUMER_GUIDE.md` (recipes),
   `ARCHITECTURE.md` §11 (dense field tables), and `ADDING_A_SOURCE.md`
   (recon methodology). Linked from README Documentation section.
+
+### Changed
+- **HP fetcher coverage expanded from ~12 to ~23-26 spec categories per
+  tile** (Wave 2e step 2). `tier2/hp.py` now makes two HTTP calls on a
+  single warmed `curl_cffi` + Chrome + HTTP/1.1 session: the existing
+  PDP HTML for the config-picker tiles, plus a sibling slug-keyed
+  GraphQL endpoint at
+  `/us-en/shop/app/api/web/graphql/page/pdp%2F<slug>/async` for the
+  product-wide Tech Specs section (Dimensions, Weight, External I/O
+  Ports, Audio Features, Network interface, Battery Recharge Time,
+  Power supply, Webcam, Warranty, etc. — set varies by product family).
+  Both arrays use the same row shape and are flattened uniformly;
+  per-tile (config-picker) values overlay async (product-wide) values
+  on overlap. The async fetch is best-effort — on any failure (non-200,
+  JSON parse error, missing envelope) the fetcher logs at INFO and
+  falls back to config-picker-only data, exactly mirroring the v1.1
+  12-category behavior. **Public API unchanged** — same
+  `fetch_hp_product` entry point, same `ProductSnapshot` output shape;
+  consumers see more keys in `specs` and a richer `config_summary`.
+  New optional `warm` and `impersonate` kwargs on `fetch_hp_product`.
+  New optional `async_techspecs` kwarg on `parse_hp_product_page` for
+  testability. New `raw.spec_source` value
+  `"pdpCTOConfiguration+pdpTechSpecs"` (vs `"pdpCTOConfiguration"`)
+  marks merged snapshots. The `httpx` import was dropped from the HP
+  module (`curl_cffi` is now the sole HTTP primitive there); `httpx`
+  remains a library dep for other fetchers. No new deps —
+  `curl_cffi>=0.7` already shipped in Wave 2c.
 
 ### Fixed
 - **`tier2/asus` URL regex accepts region/locale prefixes.**

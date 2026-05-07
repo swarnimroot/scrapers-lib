@@ -6,8 +6,10 @@ Wave 2b reconnaissance. No network.
 
 from __future__ import annotations
 
+import json
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -16,6 +18,8 @@ from scrapers_lib.core.schemas import Anchor, AttributionRegex
 from scrapers_lib.tier2 import hp
 from scrapers_lib.tier2.hp import (
     _config_summary,
+    _derive_async_url,
+    _extract_async_specs,
     _extract_state_json,
     _flatten_technical_specs,
     _jsonld_shared,
@@ -35,6 +39,9 @@ FIX = Path(__file__).parent / "fixtures" / "hp"
 OMEN_MAX_URL = (
     "https://www.hp.com/us-en/shop/pdp/omen-max-gaming-laptop-16t-ah000-16-a4nq6av-1"
 )
+OMEN_16_URL = (
+    "https://www.hp.com/us-en/shop/pdp/omen-16-inch-gaming-laptop-pc-a58a5av-1"
+)
 PAVILION_URL = (
     "https://www.hp.com/us-en/shop/pdp/hp-pavilion-laptop-16z-ag000-16-94g92av-1"
 )
@@ -53,6 +60,18 @@ PAVILION_TILE_IDS = (
 
 def _load(name: str) -> str:
     return (FIX / name).read_text(encoding="utf-8")
+
+
+def _load_async_techspecs(name: str) -> dict[str, Any]:
+    """Load a saved /async response and return the pdpTechSpecs sub-tree.
+
+    Mirrors what :func:`scrapers_lib.tier2.hp._fetch_async_techspecs`
+    would have returned, so unit tests can drive
+    :func:`parse_hp_product_page` and :func:`_extract_async_specs` with
+    the same shape the live fetcher produces.
+    """
+    data = json.loads(_load(name))
+    return data["data"]["page"]["pageComponents"]["pdpTechSpecs"]
 
 
 def _anchor(anchor_id: str, url: str) -> Anchor:
@@ -544,3 +563,209 @@ class TestRegistered:
         from scrapers_lib.core.registry import get_fetcher
 
         assert get_fetcher("hp") is hp.fetch_hp_product
+
+
+# ---------------------------------------------------------------------------
+# Async hydration endpoint (Wave 2e)
+# ---------------------------------------------------------------------------
+
+
+class TestDeriveAsyncUrl:
+    def test_omen_url(self):
+        derived = _derive_async_url(OMEN_16_URL)
+        assert derived == (
+            "https://www.hp.com/us-en/shop/app/api/web/graphql/page/"
+            "pdp%2Fomen-16-inch-gaming-laptop-pc-a58a5av-1/async"
+        )
+
+    def test_pavilion_url(self):
+        derived = _derive_async_url(PAVILION_URL)
+        assert derived.endswith(
+            "pdp%2Fhp-pavilion-laptop-16z-ag000-16-94g92av-1/async"
+        )
+        assert derived.startswith("https://www.hp.com/us-en/shop/app/api/web/graphql/page/")
+
+    def test_trailing_slash_ok(self):
+        derived = _derive_async_url(OMEN_16_URL + "/")
+        assert derived.endswith("a58a5av-1/async")
+
+    def test_unexpected_path_raises(self):
+        with pytest.raises(ValueError, match="PDP path shape unexpected"):
+            _derive_async_url("https://www.hp.com/us-en/some/random/path")
+
+
+class TestExtractAsyncSpecs:
+    def test_omen_returns_async_only_categories(self):
+        techspecs = _load_async_techspecs("omen_16_a58a5av_1_async.json")
+        specs = _extract_async_specs(techspecs)
+        # Categories the config-picker does NOT carry — these prove the
+        # async endpoint is closing the v1.1 coverage gap.
+        assert "Dimensions (W X D X H)" in specs
+        assert "External I/O Ports" in specs
+        assert "Weight" in specs
+        assert "Audio Features" in specs
+        # Sanity: each spec is a non-empty string (same shape as the
+        # config-picker flattener produces).
+        for k, v in specs.items():
+            assert isinstance(v, str) and v, f"empty spec for {k!r}"
+
+    def test_omen_async_count_at_least_20(self):
+        techspecs = _load_async_techspecs("omen_16_a58a5av_1_async.json")
+        specs = _extract_async_specs(techspecs)
+        # Recon observed 23 categories on Omen; tolerate ≥20 to absorb
+        # minor merchandising / shape changes without flapping.
+        assert len(specs) >= 20
+
+    def test_pavilion_returns_consumer_specific_categories(self):
+        techspecs = _load_async_techspecs("pavilion_16z_94g92av_1_async.json")
+        specs = _extract_async_specs(techspecs)
+        # Categories that appear on the consumer-grade async response
+        # but were ABSENT on the Omen gaming response — proves
+        # product-family-conditional categories surface when present.
+        assert "Power supply" in specs
+        assert "Warranty" in specs
+        assert "Webcam" in specs
+
+    def test_none_returns_empty(self):
+        assert _extract_async_specs(None) == {}
+
+    def test_empty_dict_returns_empty(self):
+        assert _extract_async_specs({}) == {}
+
+    def test_missing_array_returns_empty(self):
+        # A future shape change that drops technical_specifications must
+        # not crash — the rest of the pipeline keeps working with
+        # config-picker-only data.
+        assert _extract_async_specs({"datasheets": [], "highlights": []}) == {}
+
+    def test_array_wrong_type_returns_empty(self):
+        # Defensive against pydantic-style shape regressions.
+        assert _extract_async_specs({"technical_specifications": "oops"}) == {}
+
+
+class TestParseHpProductPageWithAsync:
+    @pytest.fixture
+    def omen16_html(self):
+        return _load("omen_16_a58a5av_1.html")
+
+    @pytest.fixture
+    def omen16_async(self):
+        return _load_async_techspecs("omen_16_a58a5av_1_async.json")
+
+    @pytest.fixture
+    def pavilion_html(self):
+        return _load("pavilion_16z_94g92av_1.html")
+
+    @pytest.fixture
+    def pavilion_async(self):
+        return _load_async_techspecs("pavilion_16z_94g92av_1_async.json")
+
+    def test_async_omen16_specs_present_in_each_tile(
+        self, omen16_html, omen16_async
+    ):
+        snaps = parse_hp_product_page(
+            omen16_html,
+            OMEN_16_URL,
+            anchors=[_anchor("hp_omen_16", OMEN_16_URL)],
+            async_techspecs=omen16_async,
+        )
+        assert snaps
+        for snap in snaps:
+            assert "Dimensions (W X D X H)" in snap.specs
+            assert "External I/O Ports" in snap.specs
+            assert "Weight" in snap.specs
+            # And the v1.1 config-picker categories still ride along.
+            assert any("processor" in k.lower() for k in snap.specs)
+
+    def test_async_pavilion_consumer_categories_present(
+        self, pavilion_html, pavilion_async
+    ):
+        snaps = parse_hp_product_page(
+            pavilion_html,
+            PAVILION_URL,
+            anchors=[_anchor("hp_pavilion_16z", PAVILION_URL)],
+            async_techspecs=pavilion_async,
+        )
+        assert snaps
+        for snap in snaps:
+            assert "Power supply" in snap.specs
+            assert "Warranty" in snap.specs
+            assert "Webcam" in snap.specs
+
+    def test_async_none_yields_v1_1_baseline(self, omen16_html):
+        # Default async_techspecs=None reproduces the v1.1 12-category
+        # ship — async-only categories must NOT appear.
+        snaps = parse_hp_product_page(
+            omen16_html,
+            OMEN_16_URL,
+            anchors=[_anchor("hp_omen_16", OMEN_16_URL)],
+        )
+        assert snaps
+        for snap in snaps:
+            assert "Dimensions (W X D X H)" not in snap.specs
+            assert "External I/O Ports" not in snap.specs
+            # Config-picker categories still present.
+            assert any("processor" in k.lower() for k in snap.specs)
+
+    def test_spec_source_marker_includes_async(
+        self, omen16_html, omen16_async
+    ):
+        snaps = parse_hp_product_page(
+            omen16_html,
+            OMEN_16_URL,
+            anchors=[_anchor("hp_omen_16", OMEN_16_URL)],
+            async_techspecs=omen16_async,
+        )
+        for snap in snaps:
+            assert snap.raw["spec_source"] == "pdpCTOConfiguration+pdpTechSpecs"
+
+    def test_spec_source_marker_async_only(self, omen16_html):
+        snaps = parse_hp_product_page(
+            omen16_html,
+            OMEN_16_URL,
+            anchors=[_anchor("hp_omen_16", OMEN_16_URL)],
+        )
+        for snap in snaps:
+            assert snap.raw["spec_source"] == "pdpCTOConfiguration"
+
+    def test_per_tile_specs_win_on_overlap(self, omen16_html):
+        # Synthetic async sub-tree with one category named identically
+        # to a config-picker category and one not. Per-tile values must
+        # win on overlap; async-only categories must fill gaps.
+        synthetic = {
+            "technical_specifications": [
+                {
+                    "name": "Operating system",
+                    "tooltip": "",
+                    "value": [
+                        {
+                            "value": "ASYNC SHOULD LOSE",
+                            "subheading": "Included in Current Configuration",
+                        }
+                    ],
+                },
+                {
+                    "name": "Async-Only Category",
+                    "tooltip": "",
+                    "value": [
+                        {
+                            "value": "ASYNC FILLS GAP",
+                            "subheading": "Included in Current Configuration",
+                        }
+                    ],
+                },
+            ]
+        }
+        snaps = parse_hp_product_page(
+            omen16_html,
+            OMEN_16_URL,
+            anchors=[_anchor("hp_omen_16", OMEN_16_URL)],
+            async_techspecs=synthetic,
+        )
+        assert snaps
+        for snap in snaps:
+            os_value = snap.specs.get("Operating system", "")
+            assert "ASYNC SHOULD LOSE" not in os_value, (
+                f"async value bled through on Operating system in tile {snap.source_id}"
+            )
+            assert snap.specs.get("Async-Only Category") == "ASYNC FILLS GAP"

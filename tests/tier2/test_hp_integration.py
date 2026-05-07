@@ -48,9 +48,21 @@ def test_fetch_omen_max_live():
         assert s.title
         assert s.brand == "HP"
         assert s.specs, f"tile {s.source_id} has no specs"
-        # HP's pdpCTOConfiguration exposes ~12 config-picker categories.
-        # Tolerate 9+ as a reasonable floor for future structural changes.
-        assert len(s.specs) >= 9
+        # Wave 2e merges async (~23) + config-picker (~12) categories;
+        # tolerate 20+ as a reasonable floor for future structural
+        # changes while still detecting async-fetch regressions.
+        assert len(s.specs) >= 20, (
+            f"tile {s.source_id} only has {len(s.specs)} specs — "
+            "async hydration may have failed"
+        )
         # At least one Processor-adjacent category must be present — names
         # vary ("Processor and graphics" / "Processor, graphics & memory").
         assert any("processor" in k.lower() for k in s.specs)
+        # At least one async-only category must be present, proving the
+        # /async hydration call succeeded and merged.
+        assert any(
+            k in s.specs
+            for k in ("Dimensions (W X D X H)", "External I/O Ports", "Weight")
+        ), f"tile {s.source_id} has no async-only categories"
+        # spec_source marker reflects the merge.
+        assert s.raw.get("spec_source") == "pdpCTOConfiguration+pdpTechSpecs"
