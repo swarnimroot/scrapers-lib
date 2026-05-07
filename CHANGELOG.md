@@ -4,6 +4,93 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-05-07
+
+**Wave 2f — Tier 2 expansion: Acer + MSI greenfield fetchers.** Two
+new manufacturer modules complete the six-brand Tier 2 set that
+Demo 2's `Competitor Columns` 83-row spec schema needs (Dell + HP +
+Lenovo + ASUS-rog + ASUS-www + **Acer + MSI**). Acer's `acer.com`
+PDP is plain-httpx-reachable (13 SSR `<table class="agw-table_techSpec">`
+blocks per `/pdp/<SKU>` URL, no anti-bot, ~60+ unique label keys per
+page, per-SKU granularity). MSI's `us.msi.com` is Akamai-gated and
+uses the `curl_cffi` + Chrome impersonation + warmed-session primitive
+established by HP and BestBuy in earlier waves to fetch
+`/Laptop/<slug>/Specification` (column-per-SKU `<table>`, 27-31
+spec rows universal across gaming + premium AI/Stealth lines, one
+snapshot per `<thead>` SKU column). Both registered fetchers (`acer`,
+`msi`) are additive on top of the frozen v1.0 public API — no signature
+changes elsewhere. Tests: **1073 passed, 20 skipped** (was 909 / 20
+pre-wave — +164 new unit tests across acer +57 and msi +107). No new
+dependencies — `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
+
+### Added
+- **`tier2/acer.py` `fetch_acer_product`** (`@register("acer")` →
+  `list[ProductSnapshot]`). Fetches `acer.com/<region-locale>/<brand>/
+  laptops/<model>/pdp/<SKU>` (the `/pdp/<SKU>` suffix is required —
+  bare model URLs return a model-overview page that lists SKUs but
+  doesn't carry specs); parses 13 SSR `<table class="agw-table agw-table_techSpec">`
+  blocks via `tier2.base.parse_spec_table()` into a flat `specs` dict
+  (typically 60+ unique label keys across Operating System / Processor
+  / Graphics / Memory / Storage / Display / Battery / I/O / Wireless /
+  Camera / Keyboard / Touchpad / Audio / Dimensions / Weight / Security
+  / Sensors categories; set varies per SKU — detachables add a
+  "Tablet Mode" row absent on clamshells). JSON-LD Product enriches
+  `title` / `brand` / `image_url` / `price` / `currency` /
+  `availability_text`. Plain `httpx.get()` with Chrome UA returns 200
+  OK; no anti-bot, no warming. Per-SKU granularity (each URL targets
+  exactly one SKU). `raw.spec_source` = `"ssr_table"`. The
+  `agw-table_techSpec` class looks like a CSS-module hash but is
+  stable across all probed regions and product lines. 57 unit tests
+  in `tests/tier2/test_acer.py` against Aspire 7 Intel + Predator
+  Helios Neo 16s AI + Nitro V 16s AI fixtures.
+
+- **`tier2/msi.py` `fetch_msi_product`** (`@register("msi")` →
+  `list[ProductSnapshot]`). Fetches `us.msi.com/Laptop/<slug>` and
+  `us.msi.com/Laptop/<slug>/Specification` via `curl_cffi` with
+  Chrome TLS impersonation + warmed session (visit `https://us.msi.com/`
+  first, brief sleep, then PDP) — the Akamai HTTP-layer gate on plain
+  `httpx` returns 403; the warmed `curl_cffi` primitive (same one used
+  by HP and BestBuy) clears it. **`/Specification` is universal across
+  MSI's product lines** (gaming Raider / Crosshair + premium Stealth-AI),
+  hosting a single `<table>` with **column-per-SKU** layout: `thead`
+  row of SKU column headers + `tbody` rows pairing `<th>` label with
+  `<td>` per SKU column, 27-31 spec rows per page covering Operating
+  System / Processor / Graphics / Display / Memory / Storage / I/O
+  Ports / Webcam / Audio / Keyboard / Battery / AC Adapter / Wireless
+  LAN / Bluetooth / Security / Dimensions / Weight / Bag / Mouse (set
+  varies by line). One snapshot per `<thead>` SKU column. Bare
+  `/Laptop/<slug>` URLs fetch `/Specification` first (comprehensive);
+  on parse failure they fall back to the main page's JSON-LD `ItemList`
+  (~11-field highlights summary on newer AI/Stealth product lines only).
+  Explicit `/Specification` URLs skip the fallthrough. New optional
+  `warm: bool = True` and `impersonate: str = "chrome"` kwargs on
+  `fetch_msi_product` (mirroring HP's Wave 2e additions). `raw.spec_source`
+  = `"specification_table"` (primary) or `"jsonld_itemlist"` (fallback).
+  No new deps — `curl_cffi>=0.7` already shipped in Wave 2c. 107 unit
+  tests in `tests/tier2/test_msi.py` against Stealth 16 AI+ B3WX
+  (main + spec) + Raider 16 Max HX B2WX (main + spec) + Crosshair 16
+  HX E14WX (spec) fixtures.
+
+  **Recon revision noted for the historical record:** initial recon
+  read Stealth-AI's main page as having only the JSON-LD `ItemList`
+  surface and treated `/Specification` as gaming-only. That was wrong
+  — `/Specification` is universal; the ItemList is supplementary, not
+  a substitute. The fetcher's locked default behavior reflects the
+  corrected reading: `/Specification`-first with ItemList fallback,
+  no `prefer_specification` kwarg.
+
+- **`scripts/msi/fetch_fixtures.py`** — re-runnable MSI fixture refresh
+  probe. Warms a `curl_cffi` + Chrome + HTTP/1.1 session on the
+  `us.msi.com` homepage, then fetches both main-page and `/Specification`
+  surfaces for the three reference models above and saves them under
+  `tests/tier2/fixtures/msi/`.
+
+- **`docs/ARCHITECTURE.md` §11** — Acer + MSI per-source coverage rows
+  added (replacing the prior `Acer, MSI: Deferred (post-demo)` row).
+
+- **`docs/ADDING_A_SOURCE.md` §4** — Acer + MSI per-manufacturer
+  acquisition pattern entries added (replacing the prior deferred row).
+
 ## [1.2.1] — 2026-05-07
 
 ### Added
