@@ -19,46 +19,6 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking library work.
 
-### Wave 2e step-1 recon — resolved 2026-05-05
-
-**Outcome (b1):** HP's Tech Specs section is hydrated from a slug-keyed GraphQL endpoint, not blocked by an HTTP-layer gate. Path #1 as originally framed ("just swap httpx → curl_cffi") was wrong — plain httpx and curl_cffi+chrome+HTTP/1.1 return identical PDP HTML with the same 36-key state JSON and zero `Dimension`/`I/O`/`Weight`/`Power supply`/`Audio`/`Sensors` mentions in either. **Path #1 (revised) is two-request curl_cffi: PDP for the config picker + the `/async` endpoint for Tech Specs.** Path #2 (QuickSpecs PDF bridge) is now deprioritized.
-
-**Hydration endpoint pattern** (discovered via `<link rel="prefetch">` near top of PDP body):
-
-```
-PDP URL:    https://www.hp.com/us-en/shop/pdp/<slug>
-Async URL:  https://www.hp.com/us-en/shop/app/api/web/graphql/page/pdp%2F<slug>/async
-```
-
-Slug is the basename of the PDP URL path. The `pdp/` separator is URL-encoded as `%2F`. GET it with the **same warmed curl_cffi+chrome+HTTP/1.1 session** that fetched the PDP, plus headers `Referer: <PDP URL>` + `X-Requested-With: XMLHttpRequest` + `Accept: application/json, text/plain, */*`. Returns 200 OK, `application/json`, ~1.5 MB.
-
-**Async JSON shape:**
-
-```
-data.page.pageComponents.pdpTechSpecs.technical_specifications  →  list of 23 items
-                                       .datasheets / .highlights / .translations
-```
-
-The `technical_specifications` array uses the **exact same `{name, tooltip, value: [{value, subheading}]}` row shape** the existing config-picker `fullSpecs.technical_specifications` array already uses — same per-row "Included in Current Configuration" / "Alternate Options" subheading split. Eleven new categories on the Omen Max test SKU: `Expansion slots`, `Screen-To-Body Ratio`, `Audio Features`, `External I/O Ports`, `Network interface`, `Battery Recharge Time`, `Security management`, `Sustainable Impact Specifications`, `Dimensions (W X D X H)`, `Weight`, `Package weight`. Total ~23 vs current ~12. **Notably absent on this SKU:** `Power supply`, `Sensors`, `Warranty` — may be product-family-specific (verify on Pavilion/Omnibook fixture during build), or live in the carePack tab.
-
-**Build shape (pending; see `project_hp_coverage_gap` memory for full detail):**
-
-1. Switch `tier2/hp.py` HTTP primitive from `httpx.get` to a `_fetch_pdp`-style curl_cffi session borrowed from `scrapers_lib/tier3/bestbuy.py`.
-2. Add slug-derivation + `_fetch_async_techspecs(url, session)` that hits the `/async` URL.
-3. Extend `parse_hp_product_page` to accept the async JSON and merge `pdpTechSpecs.technical_specifications` into each tile's specs — config-picker (per-tile) values win for any overlapping category; async (product-wide) fills gaps.
-4. Re-capture fixtures for Omen Max + Pavilion/Omnibook (PDP HTML + async JSON each); verify the 23-item shape across product families.
-5. Async-fetch failure → log + continue with config-picker-only data (graceful degradation, mirrors today's "12 categories" ship). Don't raise.
-6. Public API unchanged. `ProductSnapshot.specs` carries more keys per tile.
-
-**No new deps required.** `curl_cffi>=0.7` already installed.
-
-**Recon artifacts (uncommitted at session-end 2026-05-05):**
-
-- `scripts/hp/probe_hp_pdp_curlcffi.py` — step 1: HTTP-layer recon. Compared curl_cffi vs plain-httpx baseline; verdict was outcome (b1).
-- `scripts/hp/probe_hp_pdp_async.py` — step 1b: async endpoint recon. Replicated the prefetch URL + reported tech-spec needle counts in the response.
-- `tests/tier2/fixtures/hp/omen_16_a58a5av_1_curlcffi.html` (~770 KB) — proof of HTTP-layer no-op vs `omen_16_a58a5av_1.html`.
-- `tests/tier2/fixtures/hp/omen_16_a58a5av_1_async.json` (~1.5 MB) — reference fixture for the build's parser tests.
-
 ### How to resume in a new session
 
 Say "Resume scrapers-lib" (or similar). Claude will read memory files (auto-loaded), this Current state block, and `git log --oneline -10`, then summarize and propose the next step before touching anything.
@@ -72,7 +32,7 @@ Say "wrap this session" (or similar). Claude will commit any in-flight work (or 
 ## Current consumer drivers
 
 - **Pilot 1 — product sentiment & reviews (pivoted 2026-04-22 from Demo 1).** PC-manufacturer-POV tool that reads consumer sentiment across the library's sources to inform product / pricing / positioning / warranty decisions. Currently in brainstorm phase; scope not locked. Uses hybrid LLM routing (local for classification volume; Anthropic for synthesis quality). See memory `project_demo1_pulse_check.md` for the full framing. **Note:** the pre-scrapers-lib standalone "Pulse Check" 9-script pipeline was the previous attempt; treated as data-shape witness only, not a template (see memory `project_demo1_not_a_scraping_reference.md`).
-- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS / Acer / MSI manufacturer pages for maximum spec detail per product, targeting the consumer-side **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design). Drove Wave 2a/2b; Wave 2e + 2f close remaining coverage gaps. Today's per-brand raw coverage estimate: Lenovo PSREF ~95%, ASUS ROG ~85–90%, Dell ~75–80%, HP ~37% (blocked on browser bot gate — Wave 2e fix), ASUS non-ROG / Acer / MSI 0% (fetchers not yet built). Wave 2e/2f bring all six to ~80–90%+. Library scope ends at raw acquisition; downstream parsing / normalization / spreadsheet population is a separate user-owned project. Status / Segment / Year / Sub Brand columns are editorial (not on PDPs) and remain manual.
+- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS / Acer / MSI manufacturer pages for maximum spec detail per product, targeting the consumer-side **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design). Drove Wave 2a/2b/2e/2f; six-brand Tier 2 set complete at v1.3.0. Per-brand raw coverage estimate: Lenovo PSREF ~95%, ASUS ROG ~85–90%, ASUS www non-ROG ~85–90%, Acer ~85–90%, MSI ~80–85%, HP ~70–80% (Wave 2e closed the prior browser-gate gap), Dell ~75–80% — all six brands in the ~75–95% raw-coverage band against the 83-row target. Library scope ends at raw acquisition; downstream parsing / normalization / spreadsheet population is a separate user-owned project. Status / Segment / Year / Sub Brand columns are editorial (not on PDPs) and remain manual.
 - **Demo 3 — Gaming news radar.** Aggregates ~20 gaming news / reviewer sites + Reddit gaming subs for trend and sentiment. Drove Wave 3. Library side is ready; consumer not started.
 
 ---
@@ -132,8 +92,8 @@ Driver: **Demo 2**. Each manufacturer likely uses a different spec-acquisition p
 - [x] `tier2/hp.py` — shop-PDP state-JSON extraction (hidden `<div id="data"><!-- {JSON} --></div>`); per-tile `ProductSnapshot` with 12 config-picker categories; plain httpx (HP doesn't bot-gate httpx but blocks browsers); verified on Omen Max 16t-ah000 + Pavilion 16z-ag000 (54 unit tests + 1 gated live integration). **Known limitation**: "Tech Specs" section (Dimensions/Ports/Weight/Warranty — 20+ more categories) is client-side hydrated behind an aggressive bot gate; HP QuickSpecs PDFs at `h20195.www2.hp.com` are the upgrade path for full coverage.
 - [x] `tier2/lenovo.py` — PSREF `LoadSpecData` JSON endpoint, plain httpx (no stealth); verified on Legion Pro 7 16AFR10H + LOQ 15IRX10 (47 unit tests + 1 gated live integration)
 - [x] `tier2/asus.py` — ROG marketing/spec page at `rog.asus.com/laptops/<line>/<model>/spec/`, SSR'd `<h2>` sections parsed by CSS-module class-prefix matching; one `ProductSnapshot` per URL with **20+ spec categories** including the Dimensions/Ports/Weight axes HP cannot deliver; plain httpx; verified on ROG Strix G16 2025 + ROG Zephyrus G16 2026 (50 unit tests + 1 gated live integration). `shop.asus.com` is DataDome-gated so the fetcher targets the ROG marketing surface which carries no prices.
-- [ ] ~~`tier2/acer.py`~~ — **Deferred (post-demo)**. Not required for Demo 2 max-spec comparison; Dell/HP/Lenovo/ASUS cover the four major gaming-laptop manufacturers. Revisit after demo ships if broader coverage becomes necessary.
-- [ ] ~~`tier2/msi.py`~~ — **Deferred (post-demo)**, same rationale as Acer.
+- [x] ~~`tier2/acer.py`~~ — **Deferred at this wave (post-demo).** Not required for Demo 2 max-spec comparison at the time; Dell/HP/Lenovo/ASUS covered the four major gaming-laptop manufacturers. Subsequently shipped in Wave 2f at v1.3.0 (see below).
+- [x] ~~`tier2/msi.py`~~ — **Deferred at this wave (post-demo)**, same rationale as Acer. Subsequently shipped in Wave 2f at v1.3.0 (see below).
 - [x] Per-source coverage rows added to `docs/ARCHITECTURE.md` §11 — [x] Lenovo, [x] HP, [x] ASUS (Acer/MSI documented as deferred)
 - [x] ~~Hoist any patterns that recur across two or more sites into `tier2/base.py`~~ — **closed as intentional non-hoist.** Four Tier 2 sources in (Dell HTML-fragment parsing + Lenovo nested-JSON API + HP comment-wrapped-state-JSON + ASUS h2-headed DOM sections); every site's acquisition pattern is bespoke. No recurring shape found to hoist. `tier2/base.py` remains the shared helper module but its contents (jsonld + inline-json + spec-table + rendered-html) date from Wave 2a and none of the Wave 2b fetchers needed to extend it. Decision: leave as-is; revisit only if a fifth Tier 2 source repeats an existing site's pattern.
 - [x] Tag `v0.3.0` on Wave 2b completion (handled as part of ASUS commit; Acer/MSI deferred)
@@ -313,7 +273,7 @@ homepage-warming dance. Pure refactor — public API unchanged.
 
 ## Deferred (not blocking any current work)
 
-- Demo 2 (Hot Response) consumer project — library side is partial today (Dell / HP / Lenovo / ASUS-ROG shipped; HP coverage thin); Wave 2e + Wave 2f close the remaining gaps. Consumer scaffold deferred until library reaches ~80–90% coverage across all six brands and the user chooses to build it.
+- Demo 2 (Hot Response) consumer project — library side complete (six-brand Tier 2 set shipped at v1.3.0: Dell + HP + Lenovo + ASUS-rog + ASUS-www + Acer + MSI; ~75–95% per-brand raw coverage against the 83-row Competitor Columns schema). Consumer scaffold deferred until the user chooses to build it.
 - Demo 3 (Gaming Radar) consumer project — library side is shipped (Wave 3); consumer scaffold deferred until user chooses to build it.
 - BestBuy Developer API activation — fetcher is shipped and unit-tested but dormant until a credential lands (see `project_bestbuy_api_dormant`).
 - Additional Tier 1 sources: Walmart affiliate API, YouTube Data API (channel monitoring).
