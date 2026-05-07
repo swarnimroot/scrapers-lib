@@ -47,7 +47,7 @@ scrapers-lib **does not**:
 - Own a UI. Dashboards, reports, and visualizations are consumer concerns.
 - Normalize spec vocabulary across sources. "Memory" vs "RAM" vs "System Memory" stays as the source exposes it; alignment is a consumer or future-helper concern.
 - Decide what to fetch. Consumers define Anchors, Sources, and schedules; the library executes.
-- Depend on paid scraping infrastructure. Free tiers only: residential IP, Playwright with stealth plugins, patient pacing.
+- Depend on paid scraping infrastructure. Free tiers only: residential IP, stealth Playwright (where required), `curl_cffi` browser impersonation with warmed sessions for Akamai-gated hosts, and patient pacing.
 
 ## 6. Constraints
 
@@ -60,13 +60,13 @@ scrapers-lib **does not**:
 
 ## 7. Scope and boundaries
 
-**In scope:** fetchers for each supported source, normalization into the three schemas, attribution primitives (regex and URL-map gates), caching, rate limiting, retry/backoff, robots.txt awareness, stealth Playwright, a persistent Scheduler with per-domain budgets, integration tests as site-drift canaries, versioning discipline.
+**In scope:** fetchers for each supported source, normalization into the three schemas, attribution primitives (regex and URL-map gates), caching, rate limiting, retry/backoff, robots.txt awareness, stealth Playwright and `curl_cffi` browser impersonation (with warmed sessions) for bot-gated hosts, a persistent Scheduler with per-domain budgets, integration tests as site-drift canaries, versioning discipline.
 
 **Out of scope:** everything listed under §5 (non-goals), plus any source that requires paid access to work reliably. If a source is too fragile or too ToS-hostile to serve well on free tiers, the library says so and skips it rather than pretending.
 
 ## 8. Versioning and API stability
 
 - Semantic versioning (`0.x.y` → `1.0.0` → `1.x.y`).
-- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump.
+- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump. The freeze has held through v1.3.0 — Waves 2d, 2e, and 2f added kwargs and new fetchers (BestBuy reviews pagination, HP `async_techspecs`, ASUS `www` host, Acer, MSI) without breaking any existing signature.
 - Documented deprecation path: any removed public API goes through a deprecation warning in one minor version before removal.
 - Historical: before v1.0.0 public APIs could change between minor versions; consumers pinned exact versions during the 0.x line.

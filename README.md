@@ -42,8 +42,8 @@ Not every source needs credentials. The library only reads the env vars for sour
 
 | Source | Env vars | How to get |
 |---|---|---|
-| Reddit (unauthenticated JSON) | none | Library uses `reddit.com/r/<sub>/<sort>.json` and `reddit.com/comments/<id>.json` at ~60 req/min with a descriptive User-Agent. PRAW OAuth self-service is closed per Reddit's Nov-2025 Responsible Builder Policy; the unauthenticated path is the supported way in v1.0. |
-| BestBuy Developer API | `BESTBUY_API_KEY` | Apply at [bestbuyapis.github.io](https://bestbuyapis.github.io/) — free; approval usually within a week |
+| Reddit (unauthenticated JSON) | none | Library uses `reddit.com/r/<sub>/<sort>.json` and `reddit.com/comments/<id>.json` at ~60 req/min with a descriptive User-Agent. PRAW OAuth self-service is closed per Reddit's Nov-2025 Responsible Builder Policy; the unauthenticated path is the supported way since v1.0. |
+| BestBuy Developer API | `BESTBUY_API_KEY` (dormant) | Self-service applications at [bestbuyapis.github.io](https://bestbuyapis.github.io/) are not currently being approved; the `bestbuy_api` fetcher ships and is unit-tested but is unusable without a key. Treat BestBuy product/price data as unavailable for planning. |
 | YouTube transcripts | none | `youtube-transcript-api` uses no auth |
 | RSS feeds | none | public feeds |
 | Manufacturer sites (Tier 2) | none | public pages |

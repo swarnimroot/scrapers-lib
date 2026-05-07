@@ -1,6 +1,6 @@
 # Consumer Guide — building projects on scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.1.0+
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.3.0+
 
 This guide is for people building a *consumer project* that uses
 `scrapers-lib` as a data-fetching library. The library returns typed
@@ -427,7 +427,7 @@ from scrapers_lib.core.logging_config import configure_logging
 
 # IMPORTANT: import every fetcher module you use so they register.
 from scrapers_lib.tier1 import article, reddit, rss, youtube  # noqa: F401
-from scrapers_lib.tier2 import asus, dell, hp, lenovo  # noqa: F401
+from scrapers_lib.tier2 import acer, asus, dell, hp, lenovo, msi  # noqa: F401
 from scrapers_lib.tier3 import amazon, bestbuy  # noqa: F401
 
 from sink import SqliteSink

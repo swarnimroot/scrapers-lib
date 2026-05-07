@@ -25,9 +25,10 @@ scrapers-lib/
     tier1/                  # API / feed-based, reliable
       reddit.py, rss.py, article.py, youtube.py, bestbuy_api.py
     tier2/                  # direct URL, moderate reliability
-      dell.py, hp.py, lenovo.py, asus.py, acer.py, msi.py
+      dell.py, hp.py, lenovo.py, asus.py, asus_www.py, acer.py, msi.py
     tier3/                  # scraping, fragile
       bestbuy.py, amazon.py
+    _version.py             # single-source library version
   tests/
   docs/
   pyproject.toml
@@ -45,7 +46,7 @@ Sources are categorized by **reliability**, not by subject matter.
 
 | Tier | Access method | Reliability | Examples |
 |---|---|---|---|
-| **1** | Official APIs and feeds | High — documented quotas, stable interfaces | Reddit (PRAW), RSS feeds, YouTube transcripts, BestBuy Developer API |
+| **1** | Official APIs and feeds | High — documented quotas, stable interfaces | Reddit (unauthenticated JSON), RSS feeds, YouTube transcripts, BestBuy Developer API |
 | **2** | Direct URLs, JS-heavy pages | Moderate — parsers may need updates after site redesigns | Manufacturer product pages |
 | **3** | Scraping pages behind bot detection | Low — expect partial failures, redesigns, rate limits | Retailer product and review pages |
 
@@ -112,7 +113,7 @@ Fields:
 - `published_at` — datetime (UTC). Optional where source doesn't expose it.
 - `fetched_at` — datetime (UTC). Always populated.
 - `raw_text` — verbatim text. Required, non-empty.
-- `attribution` — struct with `anchor_id`, `confidence` (0–1), `method` (`regex` | `url_map` | `manual`), `matched_tokens` (optional list).
+- `attribution` — Optional. Struct with `anchor_id`, `confidence` (0–1), `method` (`regex` | `url_map` | `manual`), `matched_tokens` (optional list). `None` in discovery-mode fetches (`anchors=None`) — see §11 RSS / Article / YouTube rows.
 - `raw` — optional dict.
 
 ## 4. Attribution
@@ -162,7 +163,7 @@ anchor = Anchor(
     attribution_regex={"primary": ["example", "Example Topic"]},
 )
 
-mentions = rss.fetch_feed(
+mentions = rss.fetch_rss_feed(
     "https://example.com/feed.xml",
     anchors=[anchor],
 )
@@ -248,7 +249,7 @@ Actual coverage per source as of v1.3.0. Rows evolve as fetchers are revised in 
 
 | Source | Tier | Schema | Fields reliably populated | Known limitations |
 |---|---|---|---|---|
-| Reddit (unauthenticated JSON) | 1 | RawMention | **Two registered fetchers.** `reddit` → one `RawMention` per post from `reddit.com/r/<sub>/<sort>.json` (supports sort=new / hot / top / rising, `time_filter` for top, Reddit's `after` pagination cursor). `reddit_comments` → post + comments bundle from `reddit.com/comments/<id>.json` with post emitted first (`source_type="post"`) and comments in pre-order DFS traversal (`source_type="comment"`, `parent_id=t3_<post_id>`). Populates `author`, `published_at` from `created_utc`, `channel` as `r/<sub>`, `raw.score` / `raw.num_comments` / `raw.depth` / `raw.more_count` (count of unfollowed "load more" stubs). Deep permalinks in `source_url`. URL normalizer accepts full URLs / `r/<sub>` shorthand / bare subreddit names / `t3_<id>` fullnames. | **PRAW OAuth self-service is closed** per Reddit's Nov-2025 Responsible Builder Policy (memory `project_reddit_api_blocked`, empirically confirmed by a rejected formal application 2026-04-22); unauthenticated JSON endpoints remain available at ~60 req/min with a descriptive User-Agent. `[deleted]` / `[removed]` content skipped to avoid empty-text mentions. Deeply nested comment threads may hit `kind="more"` stubs that are not followed in v1 (counted in `raw.more_count` so consumers know what they're missing). Public function signatures stay PRAW-compatible so OAuth can swap in later without breaking callers. |
+| Reddit (unauthenticated JSON) | 1 | RawMention | **Two registered fetchers.** `reddit` → one `RawMention` per post from `reddit.com/r/<sub>/<sort>.json` (supports sort=new / hot / top / rising, `time_filter` for top, Reddit's `after` pagination cursor). `reddit_comments` → post + comments bundle from `reddit.com/comments/<id>.json` with post emitted first (`source_type="post"`) and comments in pre-order DFS traversal (`source_type="comment"`, `parent_id=t3_<post_id>`). Populates `author`, `published_at` from `created_utc`, `channel` as `r/<sub>`, `raw.score` / `raw.num_comments` / `raw.depth` / `raw.more_count` (count of unfollowed "load more" stubs). Deep permalinks in `source_url`. URL normalizer accepts full URLs / `r/<sub>` shorthand / bare subreddit names / `t3_<id>` fullnames. | **PRAW OAuth self-service is closed** per Reddit's Nov-2025 Responsible Builder Policy (memory `project_reddit_api_blocked`, empirically confirmed by a rejected formal application 2026-04-22); unauthenticated JSON endpoints remain available at ~60 req/min with a descriptive User-Agent. `[deleted]` / `[removed]` content skipped to avoid empty-text mentions. Deeply nested comment threads may hit `kind="more"` stubs that are not followed in v1 (counted in `raw.more_count` so consumers know what they're missing). Re-enabling OAuth would require Reddit reversing the Nov-2025 policy; not on the roadmap. |
 | RSS (feedparser) | 1 | RawMention | One `RawMention` per feed entry in **dual-mode** — discovery (`anchors=None`, `attribution=None`, every entry emitted) or anchor-driven (`anchors=[...]`, one mention per matching anchor via `attribute_regex_all`, entries matching nothing dropped). Normalizes RSS 2.0 + Atom via feedparser. `raw_text` composes title + summary + Atom `content[0]` with HTML tag-stripping; `published_at` from `published_parsed` / `updated_parsed`; `author` from `author` / `author_detail.name`; `channel` from feed's own title; `source` = caller-supplied `source_slug` or hostname-derived. Deterministic `mention_id` via `rss_article_id(slug, guid)`, suffixed with anchor_id in anchor mode. | Some feeds omit `pubDate` on entries (handled → `published_at=None`). VentureBeat games-only subpath returns 403 — the catalog uses their mixed site-wide feed per user decision to let all content flow through. |
 | Article body (trafilatura) | 1 | RawMention | One `RawMention` per anchor match (or one discovery mention). Fetches via httpx + follows redirects, passes to `trafilatura.bare_extraction(with_metadata=True)`. Populates `source_title`, `author`, `published_at` (YYYY-MM-DD → UTC datetime), `channel` (prefers trafilatura's `sitename` over `hostname`), `raw_text` (full body, `min_length=200` default) plus `raw.image` / `raw.description`. Dual-mode matches `tier1.rss`. | **Partial-success first**: returns empty list when trafilatura can't extract a usable body (paywall, 404 body chrome, below `min_length`) — never raises on quality. HTTP errors still raise for Scheduler retry. Trafilatura's date extraction is best-effort — some sites have no machine-readable date and `published_at` ends up None. |
 | YouTube transcripts | 1 | RawMention | One `RawMention` per **time-windowed chunk** (default 60 s ≈ ~150 words of speech, configurable via `chunk_seconds`) via `youtube-transcript-api`'s fine-grained per-word snippets grouped into coherent segments. Populates `raw_text` (chunk text), `parent_id` (video ID), `raw.chunk_start_seconds` / `raw.chunk_end_seconds`, and a **deep-linked `source_url`** (`?t=<start>s`) that jumps to the chunk's start moment. URL normalizer accepts `watch?v=` / `youtu.be/` / `embed/` / `shorts/` / `v/` / bare 11-char ID forms. Dual-mode matches `tier1.rss`. | No video metadata (title, channel, published date) — the YouTube Data API is required for those and needs credentials we don't have; fetcher leaves `source_title` / `channel` / `author` / `published_at` all None. Consumers that need metadata should enrich separately. `NoTranscriptFound` / `TranscriptsDisabled` / `VideoUnavailable` / `AgeRestricted` → returns empty list (partial success). `RequestBlocked` / `IpBlocked` / `PoTokenRequired` → raises `BlockedError` so Scheduler can back off. ~15% of videos lack captions in requested languages. |
@@ -273,7 +274,7 @@ The internal fetcher registry (`core/registry.py`) maps source-name strings to f
 Callable[[str, list[Anchor] | None, **fetch_options], list[RawMention] | list[ProductSnapshot]]
 ```
 
-A future plugin-registration API (`register_fetcher(name, fn)`) can be added without breaking existing code. Not built in v0.1; the signature discipline is the preparation.
+`register_fetcher(name, fn)` exists today as the functional flavor of `@register(name)` (see §12.2 step 3). A third-party plugin-loading mechanism — e.g., entry-point discovery so consumer packages can register fetchers without an explicit import — is the future work; the signature discipline is what keeps that path open.
 
 ### 12.2 Adding a new source
 
@@ -323,7 +324,7 @@ The library's core (schemas, Scheduler, cache, rate limiter, attribution) does n
 
 - Semantic versioning.
 - **As of v1.0.0:** public schemas and fetcher signatures are frozen. Deprecations go through one minor-version warning before removal.
-- Git tags mark releases (`v0.1.0`, `v0.2.0`, …, `v1.0.0`) on the local repo.
+- Git tags mark releases (`v0.1.0`, `v0.2.0`, …, `v1.0.0`, `v1.1.0`, `v1.2.0`, `v1.2.1`, `v1.3.0`) on the local repo.
 - Consumers install via `pip install -e ../scrapers-lib` and note the tag they are testing against.
 - Library version is single-sourced from `scrapers_lib/_version.py`; `pyproject.toml` reads it via `[tool.hatch.version]`. Bump the one place, the rest follows.
 
@@ -340,6 +341,6 @@ The library's core (schemas, Scheduler, cache, rate limiter, attribution) does n
 - Cross-Anchor relationship modeling.
 - Distributed scheduling (multiple workers coordinated via shared state).
 - Plugin registration API (signature is ready; API is not built).
-- CI / published packages (no PyPI release in v0.x; local `pip install -e` only).
+- CI / published packages (no PyPI release; local `pip install -e` only).
 
 These may be added in future versions based on consumer demand. None block v1.0.
