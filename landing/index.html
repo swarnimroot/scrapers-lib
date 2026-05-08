@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>scrapers-lib &mdash; Swarnim Bagre</title>
+<style>
+/* =========================================================
+   scrapers-lib portfolio page
+   single-file, executive memo aesthetic
+   minimal JS only for the contact modal & form
+   ========================================================= */
+
+:root {
+  --bg:        #fafaf7;
+  --bg-alt:    #f0eee5;
+  --bg-deep:   #e6e3d6;
+  --ink:       #181816;
+  --ink-soft:  #4a4844;
+  --ink-faint: #898680;
+  --rule:      #d0cdc2;
+  --rule-soft: #e6e3d6;
+  --accent:    #1f3a5e;
+  --accent-soft: #d6dde8;
+  --bg-cool:    #ecedf0;
+  --bg-warm:    #f4f0e0;
+
+  --serif: "Iowan Old Style", "Source Serif 4", "Source Serif Pro", "Charter",
+           "Charis SIL", "Hoefler Text", Georgia, Cambria, "Times New Roman", serif;
+  --mono:  ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono",
+           Consolas, "Liberation Mono", Menlo, monospace;
+
+  --max-width: 1400px;
+  --gutter-x:  clamp(20px, 4vw, 56px);
+  --gap-section: clamp(48px, 7vw, 84px);
+  --nav-h: 52px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 16px);
+}
+
+body {
+  margin: 0;
+  font-family: var(--serif);
+  font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16.5px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+main { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--gutter-x); }
+
+p { margin: 0; }
+h1, h2, h3, h4 { margin: 0; font-weight: 700; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+code { font-family: var(--mono); font-size: 0.9em; }
+a { color: inherit; }
+
+::selection { background: var(--accent); color: var(--bg); }
+
+/* ============ BACK-TO-TOP (per section) ================== */
+
+.sec-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.back-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-decoration: none;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid var(--rule-soft);
+  background: transparent;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.back-top::before {
+  content: "\2191";
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
+.back-top:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--bg);
+}
+
+.back-top:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============ TOP NAV ==================================== */
+
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border-bottom: 1px solid var(--rule);
+  -webkit-backdrop-filter: saturate(150%);
+  backdrop-filter: saturate(150%);
+}
+
+.topnav-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: var(--nav-h);
+}
+
+.topnav-brand {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.topnav-brand .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  margin-right: 8px;
+  vertical-align: 2px;
+}
+
+.topnav-links {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+
+.topnav-links a {
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+}
+
+.topnav-links a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .topnav-inner { gap: 12px; }
+  .topnav-brand { font-size: 0.8125rem; }
+  .topnav-links { gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .topnav-links a { font-size: 0.6875rem; letter-spacing: 0.12em; }
+}
+
+/* ============ MASTHEAD =================================== */
+
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px 40px;
+  padding: 36px 0 24px;
+  border-bottom: 1px solid var(--ink);
+  margin-bottom: var(--gap-section);
+  align-items: start;
+}
+
+.masthead-id { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.masthead-id h1 {
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 3.4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.masthead-id .hook {
+  font-family: var(--serif);
+  font-size: clamp(1rem, 1.7vw, 1.125rem);
+  color: var(--ink-soft);
+  max-width: 64ch;
+  line-height: 1.5;
+}
+
+.u-stat {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--ink);
+  text-underline-offset: 4px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration-skip-ink: none;
+}
+
+.masthead-credit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  align-items: flex-end;
+  white-space: nowrap;
+}
+
+.masthead-credit .by {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.16em;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.masthead-credit .when {
+  font-family: var(--serif);
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.masthead-credit .when .ver {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.masthead-credit .when .sep { color: var(--rule); margin: 0 6px; }
+
+@media (max-width: 720px) {
+  .masthead { grid-template-columns: 1fr; padding: 28px 0 18px; }
+  .masthead-credit { text-align: left; align-items: flex-start; flex-direction: row; gap: 12px; flex-wrap: wrap; }
+  .masthead-credit .by, .masthead-credit .when { font-size: 0.75rem; }
+}
+
+/* ============ SECTION MARKERS ============================ */
+
+section, .section { margin-bottom: var(--gap-section); }
+
+.sec-mark {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 8px;
+}
+
+.sec-title {
+  font-family: var(--serif);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+}
+
+.sec-meta {
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-left: auto;
+  text-align: right;
+}
+
+.sec-meta code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  color: var(--ink-soft);
+}
+
+/* ============ HERO (intro paragraphs + 2 stats) ========= */
+
+.hero { margin-top: 0; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 40px 56px;
+  align-items: start;
+}
+
+.hero-text { display: flex; flex-direction: column; gap: 16px; max-width: 60ch; }
+
+.hero-text p {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.hero-text p + p { color: var(--ink-soft); }
+
+.hero-stats { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--ink); }
+
+@media (max-width: 880px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ---- accordion stat reveal ----------- */
+
+.stat {
+  border-bottom: 1px solid var(--rule);
+}
+
+.stat > summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 18px;
+  cursor: pointer;
+  padding: 18px 4px 18px 0;
+  list-style: none;
+  user-select: none;
+}
+
+.stat > summary::-webkit-details-marker { display: none; }
+.stat > summary::marker { display: none; }
+
+.stat .stat-num {
+  font-family: var(--serif);
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--ink);
+}
+
+.stat .stat-label {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  font-weight: 600;
+  align-self: end;
+  padding-bottom: 6px;
+}
+
+.stat .stat-toggle {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  font-weight: 400;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  align-self: center;
+  transition: transform 0.32s cubic-bezier(0.32,0.72,0.34,1.04),
+              background 0.18s ease,
+              color 0.18s ease;
+  line-height: 1;
+}
+
+.stat:hover .stat-toggle { background: var(--accent-soft); }
+
+.stat[open] .stat-toggle {
+  transform: rotate(135deg);
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.stat-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.36s cubic-bezier(0.32,0.72,0.34,1.04);
+}
+
+.stat[open] .stat-reveal { grid-template-rows: 1fr; }
+
+.stat-reveal-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.stat-reveal-pad {
+  padding: 4px 0 22px 0;
+}
+
+.stat-reveal table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.78125rem;
+  color: var(--ink-soft);
+}
+
+.stat-reveal table td {
+  padding: 4px 0;
+  vertical-align: top;
+}
+
+.stat-reveal table td:first-child {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.1em;
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+  width: 5em;
+  padding-right: 14px;
+  white-space: nowrap;
+}
+
+.stat-reveal .mod-list {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--ink);
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+
+.stat-reveal .mod-list .sep { color: var(--rule); padding: 0 6px; }
+.stat-reveal .mod-list .note { font-family: var(--serif); font-size: 0.75rem; font-style: italic; color: var(--ink-faint); margin-left: 4px; }
+
+/* ============ ARCHITECTURE =============================== */
+
+.arch-frame {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+}
+
+.arch-zone {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.arch-zone-lib {
+  background: var(--bg-cool);
+  flex: 3 1 540px;
+}
+
+.arch-zone-use {
+  background: var(--bg-warm);
+  flex: 1 1 280px;
+}
+
+.arch-zone-label {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.arch-zone-label .count {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+  letter-spacing: 0;
+  font-weight: 500;
+  font-variant-caps: normal;
+}
+
+.arch-zone-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1.15fr);
+  gap: 12px;
+  flex: 1;
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .arch-zone-grid { grid-template-columns: 1fr; }
+  .arch-flow { display: none; }
+}
+
+.arch-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.arch-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.arch-flow .farrow {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  color: var(--ink-faint);
+  line-height: 1;
+}
+
+.arch-core-wrap {
+  display: flex;
+  align-items: stretch;
+}
+
+.arch-bridge {
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.arch-bridge .barrow {
+  font-family: var(--serif);
+  font-size: 1.625rem;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+@media (max-width: 940px) {
+  .arch-zone-lib, .arch-zone-use { flex: 1 1 100%; }
+  .arch-bridge {
+    flex: 1 1 100%;
+    height: 52px;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .arch-bridge .barrow { transform: rotate(90deg); }
+}
+
+.arch-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.arch-card {
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.arch-card.core {
+  background: var(--bg-deep);
+  border-color: var(--ink);
+  padding: 18px 20px;
+  gap: 6px;
+  justify-content: center;
+  flex: 1;
+}
+
+.arch-card-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.arch-card-tag {
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin-bottom: 2px;
+}
+
+.arch-mods {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink);
+  line-height: 1.6;
+  margin-top: 4px;
+  word-spacing: 0.05em;
+}
+
+.arch-mods .sep { color: var(--rule); padding: 0 4px; }
+.arch-mods .note { font-family: var(--serif); font-size: 0.6875rem; font-style: italic; color: var(--ink-faint); margin-left: 2px; }
+
+.arch-card-desc {
+  font-family: var(--serif);
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.arch-core ul {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.arch-core li {
+  display: grid;
+  grid-template-columns: minmax(7em, max-content) 1fr;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.arch-core li .m {
+  font-family: var(--mono);
+  font-size: 0.78125rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.arch-core li .d {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.arch-core .core-foot {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--ink-faint);
+  line-height: 1.45;
+}
+
+/* ============ CHALLENGES (grouped table) ================ */
+
+.ch-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  table-layout: fixed;
+}
+
+.ch-table colgroup col:nth-child(1) { width: 160px; }
+.ch-table colgroup col:nth-child(2) { width: 28%; }
+.ch-table colgroup col:nth-child(3) { width: auto; }
+.ch-table colgroup col:nth-child(4) { width: auto; }
+
+.ch-table thead th {
+  font-family: var(--serif);
+  font-size: 0.6875rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: bottom;
+}
+
+.ch-table thead th:first-child { padding-left: 0; }
+.ch-table thead th:last-child { padding-right: 0; }
+
+.ch-table tbody td {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  color: var(--row-color, var(--ink-soft));
+  padding: 18px 20px;
+  vertical-align: top;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+/* Darkness hierarchy: BY DESIGN darkest, BLOCKED lightest */
+tr[data-status="design"]  { --row-color: #181816; --row-h3: #181816; }
+tr[data-status="solved"]  { --row-color: #2c2a25; --row-h3: #1f1d19; }
+tr[data-status="working"] { --row-color: #4a4844; --row-h3: #3a3833; }
+tr[data-status="blocked"] { --row-color: #898680; --row-h3: #6a675f; }
+
+.ch-table tbody td:last-child { padding-right: 0; }
+
+.ch-table tbody td.ch-status-cell {
+  padding-left: 0;
+  padding-right: 20px;
+  border-bottom: 1px solid var(--rule);
+  border-right: 1px solid var(--rule-soft);
+}
+
+.ch-table tbody tr.ch-group-end td:not(.ch-status-cell) { border-bottom: 1px solid var(--rule); }
+
+.ch-status {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--row-color);
+}
+
+.ch-status::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--row-color);
+  position: relative;
+  top: 1px;
+  flex: 0 0 auto;
+}
+
+/* BY DESIGN: darkest, solid square */
+tr[data-status="design"]  .ch-status::before { background: var(--row-color); }
+
+/* SOLVED: still strong, solid square */
+tr[data-status="solved"]  .ch-status::before { background: var(--row-color); }
+
+/* WORKING AROUND: medium, solid square */
+tr[data-status="working"] .ch-status::before { background: var(--row-color); }
+
+/* BLOCKED: lightest, italicized, hollow square */
+tr[data-status="blocked"] .ch-status { font-style: italic; }
+tr[data-status="blocked"] .ch-status::before { background: none; border: 1px solid var(--row-color); }
+
+.ch-table h3 {
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--row-h3, var(--ink));
+  margin: 0;
+  line-height: 1.35;
+}
+
+@media (max-width: 720px) {
+  .ch-table, .ch-table colgroup, .ch-table col,
+  .ch-table thead, .ch-table tbody, .ch-table tr, .ch-table td, .ch-table th {
+    display: block;
+    width: 100%;
+  }
+  .ch-table { border: none; }
+  .ch-table thead { display: none; }
+
+  .ch-table tbody tr {
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0;
+  }
+  .ch-table tbody tr:first-child { border-top: 1px solid var(--ink); }
+
+  .ch-table tbody td {
+    border: none;
+    padding: 4px 0;
+  }
+  .ch-table tbody td.ch-status-cell {
+    border: none;
+    padding: 0 0 8px 0;
+    width: auto;
+  }
+
+  .ch-table tbody td:not(.ch-status-cell)::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--serif);
+    font-size: 0.6875rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    font-weight: 700;
+    margin-top: 8px;
+    margin-bottom: 2px;
+  }
+
+  /* Mobile: each row needs its own status visible.
+     For continuation rows in a SOLVED group (no rowspan'd cell on mobile),
+     fall back to data-status-label injected via attr(). */
+  .ch-table tbody tr.ch-continuation::before {
+    content: attr(data-status-label);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--serif);
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+}
+
+/* ============ OUTPUT (JSON specimens) ==================== */
+
+.spec { margin: 0 0 28px 0; }
+.spec:last-child { margin-bottom: 0; }
+
+.spec figcaption {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 8px;
+}
+
+.spec-label {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.spec-desc { color: var(--ink-soft); }
+
+.spec-meta {
+  margin-left: auto;
+  font-family: var(--serif);
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.12em;
+}
+
+.spec-meta b {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--ink-soft);
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  font-size: 0.95em;
+}
+
+.spec pre {
+  background: var(--bg-alt);
+  padding: 18px 22px;
+  font-family: var(--mono);
+  font-size: 0.78125rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  border-left: 2px solid var(--ink);
+  margin: 0;
+  color: var(--ink);
+  -moz-tab-size: 2;
+  tab-size: 2;
+}
+
+.spec pre code { font-family: inherit; color: inherit; background: none; }
+.spec pre .k  { color: var(--accent); }
+.spec pre .s  { color: var(--ink); }
+.spec pre .b  { color: var(--accent); font-style: italic; }
+.spec pre .nu { color: var(--ink-faint); font-style: italic; }
+.spec pre .p  { color: var(--rule); }
+
+/* ============ COLOPHON =================================== */
+
+.colophon {
+  margin-top: var(--gap-section);
+  padding: 32px 0 56px;
+  border-top: 1px solid var(--ink);
+}
+
+.cl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  gap: 24px 48px;
+}
+
+@media (max-width: 880px) {
+  .cl-grid { grid-template-columns: 1fr; gap: 22px; }
+}
+
+.cl-block { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.cl-label {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cl-built-line1 {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.cl-built-line1 em {
+  font-style: italic;
+  color: var(--ink-faint);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.cl-built-line2 {
+  font-family: var(--serif);
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.cl-method {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  max-width: 60ch;
+}
+
+.cl-source-line {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.src-icon {
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  width: 30px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  transition: background 0.18s, color 0.18s;
+  padding: 0;
+}
+
+.src-icon:hover { background: var(--ink); color: var(--bg); }
+.src-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.src-icon svg { display: block; }
+
+/* ============ CONTACT MODAL ============================== */
+
+.src-modal {
+  width: min(92vw, 480px);
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  padding: 0;
+  margin: auto;
+  font-family: var(--serif);
+}
+
+.src-modal::backdrop {
+  background: rgba(24, 24, 22, 0.55);
+}
+
+.src-modal[open] {
+  animation: dialog-in 0.2s ease;
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.src-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px 24px;
+}
+
+.src-form-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.src-form-eyebrow {
+  display: block;
+  font-family: var(--serif);
+  font-size: 0.6875rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.src-form-head h3 {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.src-close {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.src-close:hover { color: var(--ink); border-color: var(--ink); }
+
+.src-form-intro {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.src-field { display: flex; flex-direction: column; gap: 6px; }
+
+.src-field-label {
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.src-field-label em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-faint);
+  text-transform: none;
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  margin-left: 6px;
+  font-size: 0.7em;
+}
+
+.src-field input,
+.src-field textarea {
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  padding: 9px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+
+.src-field input:focus,
+.src-field textarea:focus { border-color: var(--accent); }
+
+.src-field input:invalid:not(:placeholder-shown),
+.src-field textarea:invalid:not(:placeholder-shown) {
+  border-color: var(--accent);
+}
+
+.src-form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+
+.src-submit {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  padding: 10px 18px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.src-submit:hover { background: var(--accent); border-color: var(--accent); }
+.src-submit:disabled { background: var(--ink-faint); border-color: var(--ink-faint); cursor: wait; }
+
+.src-disclaimer {
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.src-thanks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.src-thanks h3 {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.src-thanks p {
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
+}
+
+.src-thanks button {
+  font-family: var(--serif);
+  font-size: 0.8125rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  padding: 8px 18px;
+  margin: 0 auto;
+  transition: background 0.15s, color 0.15s;
+}
+
+.src-thanks button:hover { background: var(--ink); color: var(--bg); }
+
+/* ============ PRINT ====================================== */
+
+@media print {
+  .topnav, .src-icon, .stat-toggle { display: none; }
+  body { background: white; color: black; }
+  .stat-reveal { grid-template-rows: 1fr !important; }
+  section { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========================================================
+     STICKY TOP NAV
+     ======================================================== -->
+<nav class="topnav" aria-label="Section navigation">
+  <div class="topnav-inner">
+    <a href="#" class="topnav-brand"><span class="dot"></span>scrapers-lib</a>
+    <ul class="topnav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#challenges">Challenges</a></li>
+      <li><a href="#output">Output</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+<!-- ========================================================
+     MASTHEAD
+     ======================================================== -->
+<header class="masthead">
+  <div class="masthead-id">
+    <h1>scrapers-lib</h1>
+    <p class="hook">A Python library that scrapes and collects data from multiple public sites to pull relevant data and make it available for synthesis. Built in <span class="u-stat">2 weeks</span>!</p>
+  </div>
+  <div class="masthead-credit">
+    <span class="by">By Swarnim Bagre</span>
+    <span class="when">May 2026<span class="sep">&middot;</span><span class="ver">v1.3.1</span></span>
+  </div>
+</header>
+
+<!-- ========================================================
+     OVERVIEW (hero: paragraphs left, stats right)
+     ======================================================== -->
+<section class="hero" id="overview" aria-label="Overview">
+  <div class="hero-grid">
+
+    <div class="hero-text">
+      <p>Scrapers-lib gathers product information and reader sentiment from across the consumer-tech web &mdash; manufacturer pages, retailer listings, news outlets, video reviews, and online forums. It produces two record types: point-in-time product snapshots, and verbatim mentions of named products.</p>
+      <p>Downstream projects consume these records as their data layer. The library itself takes no opinion on what to do with them &mdash; its job is to deliver consistent, well-shaped data, nothing more.</p>
+    </div>
+
+    <div class="hero-stats">
+
+      <details class="stat">
+        <summary>
+          <span class="stat-num">14</span>
+          <span class="stat-label">source modules</span>
+          <span class="stat-toggle" aria-hidden="true">+</span>
+        </summary>
+        <div class="stat-reveal">
+          <div class="stat-reveal-inner">
+            <div class="stat-reveal-pad">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Tier I</td>
+                    <td class="mod-list">rss<span class="sep">&middot;</span>article<span class="sep">&middot;</span>reddit<span class="sep">&middot;</span>youtube<span class="sep">&middot;</span>bestbuy_api<span class="note">(dormant)</span></td>
+                  </tr>
+                  <tr>
+                    <td>Tier II</td>
+                    <td class="mod-list">acer<span class="sep">&middot;</span>asus_rog<span class="sep">&middot;</span>asus_www<span class="sep">&middot;</span>dell<span class="sep">&middot;</span>hp<span class="sep">&middot;</span>lenovo<span class="sep">&middot;</span>msi</td>
+                  </tr>
+                  <tr>
+                    <td>Tier III</td>
+                    <td class="mod-list">amazon<span class="sep">&middot;</span>bestbuy</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="stat">
+        <summary>
+          <span class="stat-num">6</span>
+          <span class="stat-label">manufacturer brands</span>
+          <span class="stat-toggle" aria-hidden="true">+</span>
+        </summary>
+        <div class="stat-reveal">
+          <div class="stat-reveal-inner">
+            <div class="stat-reveal-pad">
+              <div class="mod-list">Acer<span class="sep">&middot;</span>ASUS<span class="sep">&middot;</span>Dell<span class="sep">&middot;</span>HP<span class="sep">&middot;</span>Lenovo<span class="sep">&middot;</span>MSI</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+  </div>
+  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
+</section>
+
+<!-- ========================================================
+     ARCHITECTURE
+     ======================================================== -->
+<section class="architecture" id="architecture">
+  <header class="sec-mark">
+    <span class="sec-title">Architecture</span>
+    <span class="sec-meta">tiers feed core; core feeds use cases</span>
+  </header>
+
+  <div class="arch-frame">
+
+    <!-- LEFT ZONE: scrapers-lib (tiers + core, arrows tier to core) -->
+    <div class="arch-zone arch-zone-lib">
+      <header class="arch-zone-label">
+        <span>scrapers-lib</span>
+        <span class="count">14 modules + core</span>
+      </header>
+      <div class="arch-zone-grid">
+
+        <div class="arch-tiers">
+          <div class="arch-card tier">
+            <div class="arch-card-title">Tier I</div>
+            <div class="arch-card-tag">open &amp; API sources</div>
+            <div class="arch-mods">rss<span class="sep">&middot;</span>article<span class="sep">&middot;</span>reddit<span class="sep">&middot;</span>youtube<span class="sep">&middot;</span>bestbuy_api</div>
+          </div>
+          <div class="arch-card tier">
+            <div class="arch-card-title">Tier II</div>
+            <div class="arch-card-tag">manufacturer sites</div>
+            <div class="arch-mods">Acer<span class="sep">&middot;</span>ASUS<span class="sep">&middot;</span>Dell<span class="sep">&middot;</span>HP<span class="sep">&middot;</span>Lenovo<span class="sep">&middot;</span>MSI</div>
+          </div>
+          <div class="arch-card tier">
+            <div class="arch-card-title">Tier III</div>
+            <div class="arch-card-tag">retailer review pages</div>
+            <div class="arch-mods">amazon<span class="sep">&middot;</span>bestbuy</div>
+          </div>
+        </div>
+
+        <div class="arch-flow" aria-hidden="true">
+          <span class="farrow">&rarr;</span>
+          <span class="farrow">&rarr;</span>
+          <span class="farrow">&rarr;</span>
+        </div>
+
+        <div class="arch-core-wrap">
+          <div class="arch-card core arch-core">
+            <div class="arch-card-title">Core</div>
+            <div class="arch-card-tag">internals shared by every tier</div>
+            <ul>
+              <li><span class="m">schemas</span><span class="d">point-in-time records, identity</span></li>
+              <li><span class="m">scheduler</span><span class="d">queue and sequencing</span></li>
+              <li><span class="m">normalizers</span><span class="d">consistent shape across sources</span></li>
+              <li><span class="m">attribution</span><span class="d">match mentions to products</span></li>
+              <li><span class="m">dispatch</span><span class="d">routes per-tier fetcher calls</span></li>
+            </ul>
+            <p class="core-foot">Single source of truth for shape, timing, and what counts as the same product. Public API frozen at v1.0 since 22 April 2026.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BRIDGE: visual flow from scrapers-lib zone to use-cases zone -->
+    <div class="arch-bridge" aria-hidden="true">
+      <span class="barrow">&rarr;</span>
+    </div>
+
+    <!-- RIGHT ZONE: ways to use it -->
+    <div class="arch-zone arch-zone-use">
+      <header class="arch-zone-label">
+        <span>ways to use it</span>
+        <span class="count">downstream applications</span>
+      </header>
+      <div class="arch-cases">
+        <div class="arch-card case">
+          <div class="arch-card-title">Product sentiment tracking</div>
+          <div class="arch-card-desc">Track how perception of a product shifts over time across reviews, forum threads, and video discussion.</div>
+        </div>
+        <div class="arch-card case">
+          <div class="arch-card-title">Competitor spec aggregation</div>
+          <div class="arch-card-desc">Pull and compare technical specifications across competing manufacturer sites, side by side.</div>
+        </div>
+        <div class="arch-card case">
+          <div class="arch-card-title">Trend &amp; chatter monitoring</div>
+          <div class="arch-card-desc">Follow discussion volume and sentiment across niche communities and reviewer outlets.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
+</section>
+
+<!-- ========================================================
+     CHALLENGES
+     ======================================================== -->
+<section class="challenges" id="challenges">
+  <header class="sec-mark">
+    <span class="sec-title">Challenges Faced</span>
+    <span class="sec-meta">solved or worked around &middot; with what would unlock a proper fix</span>
+  </header>
+
+  <table class="ch-table">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col>
+    </colgroup>
+    <thead>
+      <tr>
+        <th scope="col">Status</th>
+        <th scope="col">Challenge</th>
+        <th scope="col">How I handled it</th>
+        <th scope="col">What would unlock a proper fix</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- BY DESIGN at the top -->
+      <tr data-status="design" data-status-label="By design" class="ch-group-end">
+        <td class="ch-status-cell"><span class="ch-status">By design</span></td>
+        <td data-label="Challenge"><h3>Built without paid infrastructure &mdash; a scaling ceiling</h3></td>
+        <td data-label="How handled">Free-tier infrastructure throughout: no paid proxies, no managed scraping, no premium APIs. Careful pacing keeps within free quotas.</td>
+        <td data-label="Proper fix">A budget unlocks proxy pools, commercial scraping, and premium data APIs for higher volume.</td>
+      </tr>
+
+      <!-- SOLVED group: 2 rows under one status cell (rowspan) -->
+      <tr data-status="solved" data-status-label="Solved">
+        <td class="ch-status-cell" rowspan="2"><span class="ch-status">Solved</span></td>
+        <td data-label="Challenge"><h3>Retailer pages actively block scrapers</h3></td>
+        <td data-label="How handled">A slow, browser-mimicking approach reliably collects reviews from Amazon and Best Buy.</td>
+        <td data-label="Proper fix">Official merchant APIs (e.g.&nbsp;Amazon Selling Partner API) replace scraping with sanctioned, stable feeds.</td>
+      </tr>
+      <tr data-status="solved" data-status-label="Solved" class="ch-continuation ch-group-end">
+        <td data-label="Challenge"><h3>Manufacturer sites use different, shifting back-ends</h3></td>
+        <td data-label="How handled">Six tailored fetchers (one per brand) plus a shared session helper for common patterns. Every site rebuild requires re-research.</td>
+        <td data-label="Proper fix">Direct partner data feeds from each manufacturer would replace per-site scraping with stable, structured access.</td>
+      </tr>
+
+      <!-- WORKING AROUND -->
+      <tr data-status="working" data-status-label="Working around" class="ch-group-end">
+        <td class="ch-status-cell"><span class="ch-status">Working around</span></td>
+        <td data-label="Challenge"><h3>Reddit closed self-service API access in late 2025</h3></td>
+        <td data-label="How handled">Switched to public JSON and RSS endpoints &mdash; the same data anyone can read without logging in.</td>
+        <td data-label="Proper fix">An approved Reddit API key would unlock authenticated quotas, private communities, and richer metadata.</td>
+      </tr>
+
+      <!-- BLOCKED -->
+      <tr data-status="blocked" data-status-label="Blocked" class="ch-group-end">
+        <td class="ch-status-cell"><span class="ch-status">Blocked</span></td>
+        <td data-label="Challenge"><h3>Best Buy product &amp; price data sits behind closed developer keys</h3></td>
+        <td data-label="How handled">Built the official-API connector anyway, so it&rsquo;s ready to activate; for now Best Buy product data stays dormant.</td>
+        <td data-label="Proper fix">A Best Buy Developer API credential turns it on immediately.</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
+</section>
+
+<!-- ========================================================
+     OUTPUT (JSON specimens)
+     ======================================================== -->
+<section class="specimens" id="output">
+  <header class="sec-mark">
+    <span class="sec-title">Output Shape</span>
+    <span class="sec-meta">two record types &middot; verbatim from <code>scrapers_lib/core/schemas.py</code></span>
+  </header>
+
+  <figure class="spec">
+    <figcaption>
+      <span class="spec-label">ProductSnapshot</span>
+      <span class="spec-desc">&mdash; a point-in-time observation of a product as listed on a specific source.</span>
+      <span class="spec-meta"><b>21</b>&nbsp;fields</span>
+    </figcaption>
+<pre><code>{
+  <span class="k">"source"</span>:            <span class="s">"dell"</span>,
+  <span class="k">"source_id"</span>:         <span class="s">"xps-15-9530-i7-rtx4070-oled"</span>,
+  <span class="k">"variant_key"</span>:       <span class="s">"16gb-512gb"</span>,
+  <span class="k">"anchor_id"</span>:         <span class="s">"dell:xps-15-9530"</span>,
+  <span class="k">"url"</span>:               <span class="s">"https://www.dell.com/en-us/shop/laptops/xps-15/spd/xps-15-9530-laptop"</span>,
+  <span class="k">"title"</span>:             <span class="s">"XPS 15 Laptop"</span>,
+  <span class="k">"brand"</span>:             <span class="s">"Dell"</span>,
+  <span class="k">"model"</span>:             <span class="s">"XPS 15 9530"</span>,
+  <span class="k">"category"</span>:          <span class="s">"laptop"</span>,
+  <span class="k">"config_summary"</span>:    <span class="s">"Intel Core i7-13700H &middot; 16GB DDR5 &middot; 512GB NVMe &middot; 15.6\" OLED 3.5K &middot; RTX 4070"</span>,
+  <span class="k">"price"</span>:             <span class="s">"1899.99"</span>,
+  <span class="k">"list_price"</span>:        <span class="s">"2099.99"</span>,
+  <span class="k">"currency"</span>:          <span class="s">"USD"</span>,
+  <span class="k">"in_stock"</span>:          <span class="b">true</span>,
+  <span class="k">"availability_text"</span>: <span class="s">"Ships in 3&ndash;5 business days"</span>,
+  <span class="k">"rating"</span>:            <span class="nu">4.3</span>,
+  <span class="k">"review_count"</span>:      <span class="nu">287</span>,
+  <span class="k">"image_url"</span>:         <span class="s">"https://i.dell.com/is/image/DellContent/xps-15-9530.png"</span>,
+  <span class="k">"specs"</span>: {
+    <span class="k">"cpu"</span>:     <span class="s">"Intel Core i7-13700H"</span>,
+    <span class="k">"ram"</span>:     <span class="s">"16 GB DDR5"</span>,
+    <span class="k">"storage"</span>: <span class="s">"512 GB NVMe SSD"</span>,
+    <span class="k">"display"</span>: <span class="s">"15.6\" OLED 3.5K (3456&times;2160)"</span>,
+    <span class="k">"gpu"</span>:     <span class="s">"NVIDIA RTX 4070 8 GB"</span>
+  },
+  <span class="k">"raw"</span>:               <span class="b">null</span>,
+  <span class="k">"fetched_at"</span>:        <span class="s">"2026-05-07T14:23:11Z"</span>
+}</code></pre>
+  </figure>
+
+  <figure class="spec">
+    <figcaption>
+      <span class="spec-label">RawMention</span>
+      <span class="spec-desc">&mdash; verbatim text from a source, optionally attributed to a tracked product.</span>
+      <span class="spec-meta"><b>14</b>&nbsp;fields</span>
+    </figcaption>
+<pre><code>{
+  <span class="k">"mention_id"</span>:    <span class="s">"reddit:t3_1ce8x9p"</span>,
+  <span class="k">"source"</span>:        <span class="s">"reddit"</span>,
+  <span class="k">"source_type"</span>:   <span class="s">"FORUM"</span>,
+  <span class="k">"source_url"</span>:    <span class="s">"https://www.reddit.com/r/laptops/comments/1ce8x9p/two_months_with_the_xps_15_oled/"</span>,
+  <span class="k">"source_title"</span>:  <span class="s">"Two months with the XPS 15 OLED &mdash; honest take"</span>,
+  <span class="k">"author"</span>:        <span class="s">"throwaway_keyboard92"</span>,
+  <span class="k">"author_id"</span>:     <span class="s">"t2_xkj4nm"</span>,
+  <span class="k">"channel"</span>:       <span class="s">"r/laptops"</span>,
+  <span class="k">"parent_id"</span>:     <span class="b">null</span>,
+  <span class="k">"published_at"</span>:  <span class="s">"2026-05-02T19:48:00Z"</span>,
+  <span class="k">"fetched_at"</span>:    <span class="s">"2026-05-07T14:23:11Z"</span>,
+  <span class="k">"raw_text"</span>:      <span class="s">"Just hit the 60-day mark with the XPS 15 9530 (i7, RTX 4070, OLED). Build quality is excellent, but the fan curve is aggressive under sustained load. Battery on the OLED panel is rough &mdash; five hours tops in mixed use. Worth it for the screen if you can plug in often."</span>,
+  <span class="k">"attribution"</span>: {
+    <span class="k">"anchor_id"</span>:  <span class="s">"dell:xps-15-9530"</span>,
+    <span class="k">"match_type"</span>: <span class="s">"title"</span>,
+    <span class="k">"confidence"</span>: <span class="nu">0.94</span>
+  },
+  <span class="k">"raw"</span>:           <span class="b">null</span>
+}</code></pre>
+  </figure>
+
+  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
+</section>
+
+<!-- ========================================================
+     COLOPHON
+     ======================================================== -->
+<footer class="colophon" id="contact">
+  <div class="cl-grid">
+
+    <div class="cl-block">
+      <span class="cl-label">Built</span>
+      <span class="cl-built-line1">2 weeks <em>&middot; 21 Apr &rarr; 7 May 2026</em></span>
+      <span class="cl-built-line2">using dev system and Claude Code</span>
+    </div>
+
+    <div class="cl-block">
+      <span class="cl-label">Method</span>
+      <p class="cl-method">Human-led architectural calls, product framing, and design directions; Claude was the collaborative ideator and executor for coding and writing.</p>
+    </div>
+
+    <div class="cl-block">
+      <span class="cl-label">Source</span>
+      <span class="cl-source-line">
+        Available on request
+        <button type="button" class="src-icon" id="open-src" aria-label="Request source code access">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M2 4 L14 4 L14 12 L2 12 Z M2 4 L8 9 L14 4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="miter"/>
+          </svg>
+        </button>
+      </span>
+    </div>
+
+  </div>
+  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
+</footer>
+
+</main>
+
+<!-- ========================================================
+     CONTACT MODAL
+     ======================================================== -->
+<dialog id="src-dialog" class="src-modal" aria-labelledby="src-dialog-title">
+  <form id="src-form" class="src-form" novalidate>
+    <header class="src-form-head">
+      <div>
+        <span class="src-form-eyebrow">Contact</span>
+        <h3 id="src-dialog-title">Request source access</h3>
+      </div>
+      <button type="button" class="src-close" id="src-close" aria-label="Close">&times;</button>
+    </header>
+
+    <p class="src-form-intro">A few sentences on who you are and what you&rsquo;d like access for. I read each request.</p>
+
+    <label class="src-field">
+      <span class="src-field-label">Name <em>required</em></span>
+      <input type="text" name="name" required minlength="2" autocomplete="name">
+    </label>
+
+    <label class="src-field">
+      <span class="src-field-label">Email <em>required</em></span>
+      <input type="email" name="email" required autocomplete="email">
+    </label>
+
+    <label class="src-field">
+      <span class="src-field-label">Reason <em>required &middot; min 50 characters</em></span>
+      <textarea name="reason" required minlength="50" rows="4" placeholder="Who you are, and what you'd like access for..."></textarea>
+    </label>
+
+    <footer class="src-form-foot">
+      <button type="submit" class="src-submit">Send request</button>
+      <span class="src-disclaimer">Opens your mail app with the request prefilled.</span>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  var dialog  = document.getElementById('src-dialog');
+  var openBtn = document.getElementById('open-src');
+  var closeBtn = document.getElementById('src-close');
+  var form    = document.getElementById('src-form');
+  if (!dialog || !openBtn || !form) return;
+
+  // Email assembled at runtime to keep raw address out of static HTML
+  var EMAIL = ['swarnim_bagre', 'dell.com'].join('@');
+
+  openBtn.addEventListener('click', function () {
+    if (typeof dialog.showModal === 'function') {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute('open', '');
+    }
+  });
+
+  closeBtn.addEventListener('click', function () { dialog.close(); });
+
+  // Click on backdrop closes
+  dialog.addEventListener('click', function (e) {
+    if (e.target === dialog) dialog.close();
+  });
+
+  // Esc closes natively for <dialog>; nothing extra needed.
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    var submit = form.querySelector('.src-submit');
+    submit.disabled = true;
+    submit.textContent = 'Opening...';
+
+    var fd = new FormData(form);
+    var name   = String(fd.get('name')   || '').trim();
+    var email  = String(fd.get('email')  || '').trim();
+    var reason = String(fd.get('reason') || '').trim();
+
+    var subject = 'scrapers-lib — source access request';
+    var body    =
+      'Name: '   + name  + '\r\n' +
+      'Email: '  + email + '\r\n' +
+      '\r\n' +
+      'Reason:\r\n' + reason + '\r\n';
+
+    var mailtoUrl = 'mailto:' + EMAIL +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body='    + encodeURIComponent(body);
+
+    // Open user's mail client
+    window.location.href = mailtoUrl;
+
+    // Replace form with confirmation + visible fallback (in case mailto: did nothing)
+    setTimeout(function () {
+      form.innerHTML =
+        '<div class="src-thanks">' +
+          '<h3>Mail app opened.</h3>' +
+          '<p>Your request should be ready to send. If nothing happened, you can email me directly at <strong>' + EMAIL + '</strong>.</p>' +
+          '<button type="button" id="src-thanks-close">Close</button>' +
+        '</div>';
+      var btn = document.getElementById('src-thanks-close');
+      if (btn) btn.addEventListener('click', function () { dialog.close(); });
+    }, 200);
+  });
+})();
+</script>
+</body>
+</html>
