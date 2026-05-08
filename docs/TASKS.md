@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 (post-Wave-2g doc sweep + library-intrinsic roadmap pivot) &nbsp;·&nbsp; **Library version:** 1.3.1
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 (resting state declared; landing page planned) &nbsp;·&nbsp; **Library version:** 1.3.1
 
 This is the operational roadmap. Library-intrinsic priorities lead — the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are now built externally in their own repos and no longer drive the order in which library work happens. Wave history below records the past order accurately, including which consumer drove each Tier 2 / Tier 3 wave; future direction is library-intrinsic.
 
@@ -8,12 +8,12 @@ This is the operational roadmap. Library-intrinsic priorities lead — the downs
 
 ## Current state
 
-**Last updated:** 2026-05-07 (post-Wave-2g doc sweep + library-intrinsic roadmap pivot)
+**Last updated:** 2026-05-07 (resting state declared; landing page planned)
 
 - **Latest tag:** **v1.3.1** (2026-05-07) — Wave 2g closure: `tier2.base.warmed_curl_session()` helper graduated, with `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` migrated onto it. Pure refactor — public API unchanged. Prior tags: v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
 - **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper, v1.3.1)**.
 - **In progress:** none — Wave 2g closed at v1.3.1.
-- **Next direction:** library-intrinsic now that the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are out-of-tree. Three candidate directions on deck, none locked: **(a) plugin / extension API** so external consumers can register fetchers without forking — the fetcher signature is already plugin-compatible, what's missing is the registration surface graduated for third-party use; **(b) PyPI publication** — the library has been frozen at v1.0+ since 2026-04-22 with stable docs and a CONSUMER_GUIDE, and `pip install scrapers-lib` is the natural next move now that consumers are external; **(c) source catalog** — additional Tier 1 (Walmart affiliate API, YouTube Data API channel monitoring), additional Tier 3 (Newegg / Target / Costco), forums — listed but deferred until a consumer brief drives one. See the `## Library-intrinsic next directions` section below. Distributed Scheduler stays deferred. No specific wave is currently queued.
+- **Next direction:** **Library is at a stable resting state at v1.3.1.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives. **Active follow-up thread: a single-page portfolio explainer at `landing/index.html`.** Plan + anti-AI-slop design constraints captured in `landing/PLAN.md`; build deferred to next session.
 - **Test state:** **see CHANGELOG `[1.3.1]` for the post-Wave-2g baseline** (full unit suite + skipped breakdown).
 - **New dep:** none. `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
