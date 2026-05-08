@@ -714,13 +714,10 @@ section, .section { margin-bottom: var(--gap-section); }
   border-bottom: 1px solid var(--rule-soft);
 }
 
-/* Color + darkness hierarchy:
-   BY DESIGN = dark forest green (engineer's intentional choice)
-   SOLVED / WORKING = neutral darkness gradient
-   BLOCKED = dark rust/oxblood (external constraint, alarm) */
-tr[data-status="design"]  { --row-color: #1a3a1a; --row-h3: #102810; }
-tr[data-status="solved"]  { --row-color: #2c2a25; --row-h3: #1f1d19; }
-tr[data-status="working"] { --row-color: #4a4844; --row-h3: #3a3833; }
+/* All rows share the default ink color; BLOCKED stands out in dark rust */
+tr[data-status="design"],
+tr[data-status="solved"],
+tr[data-status="working"] { --row-color: #181816; --row-h3: #181816; }
 tr[data-status="blocked"] { --row-color: #5e1f0a; --row-h3: #421405; }
 
 .ch-table tbody td:last-child { padding-right: 0; }
