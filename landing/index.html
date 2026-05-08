@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>scrapers-lib &mdash; Swarnim Bagre</title>
+<title>scrapers-lib · Swarnim Bagre</title>
 <style>
 /* =========================================================
    scrapers-lib portfolio page
@@ -1237,8 +1237,8 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   <div class="hero-grid">
 
     <div class="hero-text">
-      <p>Scrapers-lib gathers product information and reader sentiment from across the consumer-tech web &mdash; manufacturer pages, retailer listings, news outlets, video reviews, and online forums. It produces two record types: point-in-time product snapshots, and verbatim mentions of named products.</p>
-      <p>Downstream projects consume these records as their data layer. The library itself takes no opinion on what to do with them &mdash; its job is to deliver consistent, well-shaped data, nothing more.</p>
+      <p>Scrapers-lib gathers product information and reader sentiment from across the consumer-tech web: manufacturer pages, retailer listings, news outlets, video reviews, and online forums. It produces two record types: point-in-time product snapshots, and verbatim mentions of named products.</p>
+      <p>Downstream projects consume these records as their data layer. The library itself takes no opinion on what to do with them. Its job is to deliver consistent, well-shaped data, nothing more.</p>
     </div>
 
     <div class="hero-stats">
@@ -1416,7 +1416,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
       <!-- BY DESIGN at the top -->
       <tr data-status="design" data-status-label="By design" class="ch-group-end">
         <td class="ch-status-cell"><span class="ch-status">By design</span></td>
-        <td data-label="Challenge"><h3>Built without paid infrastructure &mdash; a scaling ceiling</h3></td>
+        <td data-label="Challenge"><h3>Built without paid infrastructure (a scaling ceiling)</h3></td>
         <td data-label="How handled">Free-tier infrastructure throughout: no paid proxies, no managed scraping, no premium APIs. Careful pacing keeps within free quotas.</td>
         <td data-label="Proper fix">A budget unlocks proxy pools, commercial scraping, and premium data APIs for higher volume.</td>
       </tr>
@@ -1438,7 +1438,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
       <tr data-status="working" data-status-label="Working around" class="ch-group-end">
         <td class="ch-status-cell"><span class="ch-status">Working around</span></td>
         <td data-label="Challenge"><h3>Reddit closed self-service API access in late 2025</h3></td>
-        <td data-label="How handled">Switched to public JSON and RSS endpoints &mdash; the same data anyone can read without logging in. Caps at 100 posts per request; the library paginates from there.</td>
+        <td data-label="How handled">Switched to public JSON and RSS endpoints, the same data anyone can read without logging in. Caps at 100 posts per request; the library paginates from there.</td>
         <td data-label="Proper fix">An approved Reddit API key would unlock authenticated quotas, private communities, and richer metadata.</td>
       </tr>
 
@@ -1468,7 +1468,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   <figure class="spec">
     <figcaption>
       <span class="spec-label">ProductSnapshot</span>
-      <span class="spec-desc">&mdash; a point-in-time observation of a product as listed on a specific source.</span>
+      <span class="spec-desc">: a point-in-time observation of a product as listed on a specific source.</span>
       <span class="spec-meta"><b>21</b>&nbsp;fields</span>
     </figcaption>
 <pre><code>{
@@ -1486,7 +1486,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   <span class="k">"list_price"</span>:        <span class="s">"2099.99"</span>,
   <span class="k">"currency"</span>:          <span class="s">"USD"</span>,
   <span class="k">"in_stock"</span>:          <span class="b">true</span>,
-  <span class="k">"availability_text"</span>: <span class="s">"Ships in 3&ndash;5 business days"</span>,
+  <span class="k">"availability_text"</span>: <span class="s">"Ships in 3-5 business days"</span>,
   <span class="k">"rating"</span>:            <span class="nu">4.3</span>,
   <span class="k">"review_count"</span>:      <span class="nu">287</span>,
   <span class="k">"image_url"</span>:         <span class="s">"https://i.dell.com/is/image/DellContent/xps-15-9530.png"</span>,
@@ -1505,7 +1505,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   <figure class="spec">
     <figcaption>
       <span class="spec-label">RawMention</span>
-      <span class="spec-desc">&mdash; verbatim text from a source, optionally attributed to a tracked product.</span>
+      <span class="spec-desc">: verbatim text from a source, optionally attributed to a tracked product.</span>
       <span class="spec-meta"><b>14</b>&nbsp;fields</span>
     </figcaption>
 <pre><code>{
@@ -1513,14 +1513,14 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   <span class="k">"source"</span>:        <span class="s">"reddit"</span>,
   <span class="k">"source_type"</span>:   <span class="s">"FORUM"</span>,
   <span class="k">"source_url"</span>:    <span class="s">"https://www.reddit.com/r/laptops/comments/1ce8x9p/two_months_with_the_xps_15_oled/"</span>,
-  <span class="k">"source_title"</span>:  <span class="s">"Two months with the XPS 15 OLED &mdash; honest take"</span>,
+  <span class="k">"source_title"</span>:  <span class="s">"Two months with the XPS 15 OLED: honest take"</span>,
   <span class="k">"author"</span>:        <span class="s">"throwaway_keyboard92"</span>,
   <span class="k">"author_id"</span>:     <span class="s">"t2_xkj4nm"</span>,
   <span class="k">"channel"</span>:       <span class="s">"r/laptops"</span>,
   <span class="k">"parent_id"</span>:     <span class="b">null</span>,
   <span class="k">"published_at"</span>:  <span class="s">"2026-05-02T19:48:00Z"</span>,
   <span class="k">"fetched_at"</span>:    <span class="s">"2026-05-07T14:23:11Z"</span>,
-  <span class="k">"raw_text"</span>:      <span class="s">"Just hit the 60-day mark with the XPS 15 9530 (i7, RTX 4070, OLED). Build quality is excellent, but the fan curve is aggressive under sustained load. Battery on the OLED panel is rough &mdash; five hours tops in mixed use. Worth it for the screen if you can plug in often."</span>,
+  <span class="k">"raw_text"</span>:      <span class="s">"Just hit the 60-day mark with the XPS 15 9530 (i7, RTX 4070, OLED). Build quality is excellent, but the fan curve is aggressive under sustained load. Battery on the OLED panel is rough. Five hours tops in mixed use. Worth it for the screen if you can plug in often."</span>,
   <span class="k">"attribution"</span>: {
     <span class="k">"anchor_id"</span>:  <span class="s">"dell:xps-15-9530"</span>,
     <span class="k">"match_type"</span>: <span class="s">"title"</span>,
@@ -1652,7 +1652,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
     var email  = String(fd.get('email')  || '').trim();
     var reason = String(fd.get('reason') || '').trim();
 
-    var subject = 'scrapers-lib — source access request';
+    var subject = 'scrapers-lib: source access request';
     var body    =
       'Name: '   + name  + '\r\n' +
       'Email: '  + email + '\r\n' +
