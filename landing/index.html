@@ -1438,7 +1438,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
       <tr data-status="working" data-status-label="Working around" class="ch-group-end">
         <td class="ch-status-cell"><span class="ch-status">Working around</span></td>
         <td data-label="Challenge"><h3>Reddit closed self-service API access in late 2025</h3></td>
-        <td data-label="How handled">Switched to public JSON and RSS endpoints &mdash; the same data anyone can read without logging in.</td>
+        <td data-label="How handled">Switched to public JSON and RSS endpoints &mdash; the same data anyone can read without logging in. Caps at 100 posts per request; the library paginates from there.</td>
         <td data-label="Proper fix">An approved Reddit API key would unlock authenticated quotas, private communities, and richer metadata.</td>
       </tr>
 
