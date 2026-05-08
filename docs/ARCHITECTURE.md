@@ -1,6 +1,6 @@
 # scrapers-lib — Architecture
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.1
 
 ---
 
@@ -245,7 +245,7 @@ Respected by default. Per-call `ignore_robots=True` override exists for sites wh
 
 ## 11. Per-source coverage
 
-Actual coverage per source as of v1.3.0. Rows evolve as fetchers are revised in later minor versions; breaking changes to a row's schema or column semantics would require a major bump.
+Actual coverage per source as of v1.3.1. Rows evolve as fetchers are revised in later minor versions; breaking changes to a row's schema or column semantics would require a major bump.
 
 | Source | Tier | Schema | Fields reliably populated | Known limitations |
 |---|---|---|---|---|
@@ -324,7 +324,7 @@ The library's core (schemas, Scheduler, cache, rate limiter, attribution) does n
 
 - Semantic versioning.
 - **As of v1.0.0:** public schemas and fetcher signatures are frozen. Deprecations go through one minor-version warning before removal.
-- Git tags mark releases (`v0.1.0`, `v0.2.0`, …, `v1.0.0`, `v1.1.0`, `v1.2.0`, `v1.2.1`, `v1.3.0`) on the local repo.
+- Git tags mark releases (`v0.1.0`, `v0.2.0`, …, `v1.0.0`, `v1.1.0`, `v1.2.0`, `v1.2.1`, `v1.3.0`, `v1.3.1`) on the local repo.
 - Consumers install via `pip install -e ../scrapers-lib` and note the tag they are testing against.
 - Library version is single-sourced from `scrapers_lib/_version.py`; `pyproject.toml` reads it via `[tool.hatch.version]`. Bump the one place, the rest follows.
 

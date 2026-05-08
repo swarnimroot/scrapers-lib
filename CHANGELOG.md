@@ -4,32 +4,6 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
-### Documentation
-
-- **v1.3.0-state alignment audit** across `README.md`, `docs/PRD.md`,
-  `docs/ARCHITECTURE.md`, and `docs/CONSUMER_GUIDE.md` (commit `5c3073f`).
-  `ARCHITECTURE.md`: fixed broken §5.1 Quickstart (`rss.fetch_feed` →
-  `rss.fetch_rss_feed`); marked `RawMention.attribution` Optional in
-  §3.3 to match the discovery-mode contract; dropped the misleading
-  "PRAW-compatible signatures so OAuth can swap in later" claim from
-  the §11 Reddit row (Reddit's Nov-2025 self-service block is
-  indefinite); rewrote the §12.1 `register_fetcher` paragraph (it
-  read as "not built in v0.1" while §12.2 step 3 calls it directly);
-  extended the §14 release-tag example list through v1.3.0; dropped
-  the stale "in v0.x" qualifier from the §16 no-PyPI bullet; added
-  `asus_www.py` and `_version.py` to the §1 file tree; switched the
-  §2 Tier 1 example from "Reddit (PRAW)" to "Reddit (unauthenticated
-  JSON)". `README.md`: tagged the BestBuy Developer API credentials
-  row as dormant (self-service approvals not currently flowing);
-  shifted the Reddit row's "supported way in v1.0" to "since v1.0".
-  `PRD.md`: §5 non-goals and §7 in-scope language now reflect the
-  actual `httpx` + `curl_cffi` (warmed-session) + selective stealth
-  Playwright primitive mix (Playwright is Dell-only at v1.3.0); §8
-  notes that the v1.0.0 freeze has held through v1.3.0 across Waves
-  2d/2e/2f. `CONSUMER_GUIDE.md`: Targets header v1.1.0+ → v1.3.0+;
-  §5 worker-entry-point example now imports the full v1.3 six-brand
-  Tier 2 set (added `acer` and `msi`).
-
 ## [1.3.1] — 2026-05-07
 
 **Wave 2g — `warmed_curl_session()` helper graduated into `tier2/base`.**
@@ -88,6 +62,47 @@ unit tests for `warmed_curl_session`). No new dependencies.
   the +9 delta is `tests/tier2/test_base.py::TestWarmedCurlSession`.
 - No live integration tests added in Wave 2g (helper is exercised
   through the existing HP / MSI / BestBuy gated-live paths).
+
+### Documentation
+- **v1.3.0-state alignment audit** across `README.md`, `docs/PRD.md`,
+  `docs/ARCHITECTURE.md`, and `docs/CONSUMER_GUIDE.md` (commit `5c3073f`,
+  recorded under `[Unreleased]` in commit `a9eb574` and folded into
+  this 1.3.1 entry post-tag). `ARCHITECTURE.md`: fixed broken §5.1
+  Quickstart (`rss.fetch_feed` → `rss.fetch_rss_feed`); marked
+  `RawMention.attribution` Optional in §3.3 to match the discovery-mode
+  contract; dropped the misleading "PRAW-compatible signatures so OAuth
+  can swap in later" claim from the §11 Reddit row (Reddit's Nov-2025
+  self-service block is indefinite); rewrote the §12.1 `register_fetcher`
+  paragraph (it read as "not built in v0.1" while §12.2 step 3 calls it
+  directly); extended the §14 release-tag example list through v1.3.0;
+  dropped the stale "in v0.x" qualifier from the §16 no-PyPI bullet;
+  added `asus_www.py` and `_version.py` to the §1 file tree; switched
+  the §2 Tier 1 example from "Reddit (PRAW)" to "Reddit (unauthenticated
+  JSON)". `README.md`: tagged the BestBuy Developer API credentials
+  row as dormant (self-service approvals not currently flowing);
+  shifted the Reddit row's "supported way in v1.0" to "since v1.0".
+  `PRD.md`: §5 non-goals and §7 in-scope language now reflect the
+  actual `httpx` + `curl_cffi` (warmed-session) + selective stealth
+  Playwright primitive mix (Playwright is Dell-only at v1.3.0); §8
+  notes that the v1.0.0 freeze has held through v1.3.0 across Waves
+  2d/2e/2f. `CONSUMER_GUIDE.md`: Targets header v1.1.0+ → v1.3.0+;
+  §5 worker-entry-point example now imports the full v1.3 six-brand
+  Tier 2 set (added `acer` and `msi`).
+- **Post-Wave-2g doc sweep + library-intrinsic roadmap pivot.**
+  Bumped headline version stamps to v1.3.1 across `README.md`,
+  `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/CONSUMER_GUIDE.md`,
+  and `docs/SOURCE_ATLAS.md`; extended `PRD.md` §4 + §8 and
+  `ARCHITECTURE.md` §11 + §14 to include Wave 2g (`warmed_curl_session()`
+  graduation) in the freeze-held wave list and tag-list example.
+  `docs/TASKS.md` rewritten more substantially: closed-wave entry
+  added for Wave 2g; the `Current consumer drivers` section renamed
+  to `Downstream consumers (external)` and reframed in past tense
+  to acknowledge Demo 2 / Demo 3 / Pilot 1 as out-of-tree consumer
+  projects that no longer drive this library's roadmap; new
+  `Library-intrinsic next directions` section surfaces plugin /
+  extension API, PyPI publication, and a deferred-until-driven
+  source catalog as candidate next directions without locking one;
+  Deferred section trimmed accordingly.
 
 ## [1.3.0] — 2026-05-07
 

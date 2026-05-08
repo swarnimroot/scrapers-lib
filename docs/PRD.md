@@ -1,6 +1,6 @@
 # scrapers-lib — Product Requirements Document
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.1
 
 ---
 
@@ -31,7 +31,7 @@ The library is designed so none of these use cases leak into its code. New consu
 **v1.0.0 shipped on 2026-04-22 with the following guarantees, all met:**
 
 - Three schemas (Anchor, ProductSnapshot, RawMention) stable and documented; backward-compatible changes only within the 1.x line.
-- Working fetchers across all three tiers: six Tier 1 (rss, article, reddit, reddit_comments, youtube, bestbuy_api), six Tier 2 (dell, hp, lenovo, asus, acer, msi), three Tier 3 (amazon, amazon_reviews, bestbuy_reviews). API-based, feed-based, and scraping-based sources all represented. (Tier 2 expanded post-v1.0 in Waves 2e + 2f without changing existing signatures.)
+- Working fetchers across all three tiers: six Tier 1 (rss, article, reddit, reddit_comments, youtube, bestbuy_api), six Tier 2 (dell, hp, lenovo, asus, acer, msi), three Tier 3 (amazon, amazon_reviews, bestbuy_reviews). API-based, feed-based, and scraping-based sources all represented. (Tier 2 expanded post-v1.0 in Waves 2e + 2f, and the shared `warmed_curl_session()` helper graduated in Wave 2g, all without changing existing signatures.)
 - A queue-based Scheduler that can run unattended for days on a single laptop without losing state.
 - Reasonable success rates per source, documented honestly in ARCHITECTURE.md §11 (coverage, fields populated, and known limitations called out per source — no marketing claims about reliability).
 - Consumers pin a library version and depend on its public API behavior within the 1.x line.
@@ -67,6 +67,6 @@ scrapers-lib **does not**:
 ## 8. Versioning and API stability
 
 - Semantic versioning (`0.x.y` → `1.0.0` → `1.x.y`).
-- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump. The freeze has held through v1.3.0 — Waves 2d, 2e, and 2f added kwargs and new fetchers (BestBuy reviews pagination, HP `async_techspecs`, ASUS `www` host, Acer, MSI) without breaking any existing signature.
+- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump. The freeze has held through v1.3.1 — Waves 2d, 2e, 2f, and 2g added kwargs, new fetchers, and one internal-helper refactor (BestBuy reviews pagination, HP `async_techspecs`, ASUS `www` host, Acer, MSI, `warmed_curl_session()` graduation) without breaking any existing signature.
 - Documented deprecation path: any removed public API goes through a deprecation warning in one minor version before removal.
 - Historical: before v1.0.0 public APIs could change between minor versions; consumers pinned exact versions during the 0.x line.

@@ -1,19 +1,19 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 (Wave 2g warmed_curl_session helper shipped) &nbsp;·&nbsp; **Library version:** 1.3.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 (post-Wave-2g doc sweep + library-intrinsic roadmap pivot) &nbsp;·&nbsp; **Library version:** 1.3.1
 
-This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
+This is the operational roadmap. Library-intrinsic priorities lead — the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are now built externally in their own repos and no longer drive the order in which library work happens. Wave history below records the past order accurately, including which consumer drove each Tier 2 / Tier 3 wave; future direction is library-intrinsic.
 
 ---
 
 ## Current state
 
-**Last updated:** 2026-05-07 (Wave 2g warmed_curl_session helper shipped)
+**Last updated:** 2026-05-07 (post-Wave-2g doc sweep + library-intrinsic roadmap pivot)
 
-- **Latest tag:** **v1.3.0** (2026-05-07) — Wave 2f closure: Acer + MSI greenfield Tier 2 fetchers shipped, completing the six-brand Tier 2 manufacturer set. **v1.3.1 staged in working tree** (Wave 2g `warmed_curl_session()` helper refactor) but not yet tagged — user reviews + tags manually. Prior tags: v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
-- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → Wave 2g (warmed_curl_session helper, v1.3.1 pending tag).
-- **In progress:** v1.3.1 staged in working tree, awaiting user greenlight to commit + tag. Wave 2g graduated the warm `curl_cffi` + Chrome + HTTP/1.1 + homepage-warming bootstrap into a shared `scrapers_lib.tier2.base.warmed_curl_session()` context manager; `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` all now call the helper instead of duplicating the dance inline. Public API unchanged — `warm` / `impersonate` kwargs preserved on all three fetchers; observable behavior unchanged. +9 new unit tests for the helper in `tests/tier2/test_base.py`.
-- **Next direction:** **Pilot 1 brainstorming** (pivoted Demo 1 per `project_demo1_pulse_check` — currently in brainstorm phase, no scope locked) and **BestBuy Developer API activation** (per `project_bestbuy_api_dormant` — fetcher is shipped and unit-tested but dormant until a credential lands) are the candidate directions. No library-side wave is currently queued.
+- **Latest tag:** **v1.3.1** (2026-05-07) — Wave 2g closure: `tier2.base.warmed_curl_session()` helper graduated, with `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` migrated onto it. Pure refactor — public API unchanged. Prior tags: v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
+- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper, v1.3.1)**.
+- **In progress:** none — Wave 2g closed at v1.3.1.
+- **Next direction:** library-intrinsic now that the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are out-of-tree. Three candidate directions on deck, none locked: **(a) plugin / extension API** so external consumers can register fetchers without forking — the fetcher signature is already plugin-compatible, what's missing is the registration surface graduated for third-party use; **(b) PyPI publication** — the library has been frozen at v1.0+ since 2026-04-22 with stable docs and a CONSUMER_GUIDE, and `pip install scrapers-lib` is the natural next move now that consumers are external; **(c) source catalog** — additional Tier 1 (Walmart affiliate API, YouTube Data API channel monitoring), additional Tier 3 (Newegg / Target / Costco), forums — listed but deferred until a consumer brief drives one. See the `## Library-intrinsic next directions` section below. Distributed Scheduler stays deferred. No specific wave is currently queued.
 - **Test state:** **see CHANGELOG `[1.3.1]` for the post-Wave-2g baseline** (full unit suite + skipped breakdown).
 - **New dep:** none. `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
@@ -29,11 +29,13 @@ Say "wrap this session" (or similar). Claude will commit any in-flight work (or 
 
 ---
 
-## Current consumer drivers
+## Downstream consumers (external)
 
-- **Pilot 1 — product sentiment & reviews (pivoted 2026-04-22 from Demo 1).** PC-manufacturer-POV tool that reads consumer sentiment across the library's sources to inform product / pricing / positioning / warranty decisions. Currently in brainstorm phase; scope not locked. Uses hybrid LLM routing (local for classification volume; Anthropic for synthesis quality). See memory `project_demo1_pulse_check.md` for the full framing. **Note:** the pre-scrapers-lib standalone "Pulse Check" 9-script pipeline was the previous attempt; treated as data-shape witness only, not a template (see memory `project_demo1_not_a_scraping_reference.md`).
-- **Demo 2 — Hot Response (manufacturer spec comparisons).** Scrapes Dell / HP / Lenovo / ASUS / Acer / MSI manufacturer pages for maximum spec detail per product, targeting the consumer-side **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design). Drove Wave 2a/2b/2e/2f; six-brand Tier 2 set complete at v1.3.0. Per-brand raw coverage estimate: Lenovo PSREF ~95%, ASUS ROG ~85–90%, ASUS www non-ROG ~85–90%, Acer ~85–90%, MSI ~80–85%, HP ~70–80% (Wave 2e closed the prior browser-gate gap), Dell ~75–80% — all six brands in the ~75–95% raw-coverage band against the 83-row target. Library scope ends at raw acquisition; downstream parsing / normalization / spreadsheet population is a separate user-owned project. Status / Segment / Year / Sub Brand columns are editorial (not on PDPs) and remain manual.
-- **Demo 3 — Gaming news radar.** Aggregates ~20 gaming news / reviewer sites + Reddit gaming subs for trend and sentiment. Drove Wave 3. Library side is ready; consumer not started.
+The downstream consumer projects below are **built externally** in their own repos as siblings of `scrapers-lib`. They drove the library's past wave order — that history is recorded accurately in the wave entries below — but they no longer drive future library work. Library-intrinsic priorities lead now (see `## Library-intrinsic next directions`).
+
+- **Pilot 1 — product sentiment & reviews (pivoted 2026-04-22 from Demo 1).** PC-manufacturer-POV tool that reads consumer sentiment across the library's sources to inform product / pricing / positioning / warranty decisions. Out-of-tree consumer project; brainstorm phase per memory `project_demo1_pulse_check.md`. Uses hybrid LLM routing (local for classification volume; Anthropic for synthesis quality). The pre-scrapers-lib standalone "Pulse Check" 9-script pipeline was the previous attempt; treated as data-shape witness only, not a template (see memory `project_demo1_not_a_scraping_reference.md`).
+- **Demo 2 — Hot Response (manufacturer spec comparisons).** Out-of-tree consumer project that scrapes Dell / HP / Lenovo / ASUS / Acer / MSI manufacturer pages for maximum spec detail per product, targeting its own **`Competitor Columns` 83-row spec schema** (CPU / GPU / Memory / Display / Battery / I/O / Thermals / Design). Drove Waves 2a/2b/2e/2f; six-brand Tier 2 set was completed at v1.3.0. Per-brand raw coverage estimate at v1.3.0: Lenovo PSREF ~95%, ASUS ROG ~85–90%, ASUS www non-ROG ~85–90%, Acer ~85–90%, MSI ~80–85%, HP ~70–80% (Wave 2e closed the prior browser-gate gap), Dell ~75–80%. Library scope ended at raw acquisition; downstream parsing / normalization / spreadsheet population live in the consumer repo. Status / Segment / Year / Sub Brand columns are editorial and remain manual.
+- **Demo 3 — Gaming news radar.** Out-of-tree consumer project aggregating ~20 gaming news / reviewer sites + Reddit gaming subs for trend and sentiment. Drove Wave 3 (RSS / article / Reddit / YouTube fetchers shipped at v0.5.0).
 
 ---
 
@@ -257,29 +259,76 @@ API.
 - [x] CHANGELOG `[1.3.0]` entry; `_version.py` bumped 1.2.1 → 1.3.0;
   tag `v1.3.0`.
 
-## Wave 2g — Tier 2 base helper: `warmed_curl_session()`
+## Wave 2g — Tier 2 base helper: `warmed_curl_session()` *(shipped v1.3.1, 2026-05-07)*
 
-Driver: code-quality cleanup. Three modules now duplicate the warm
-`curl_cffi` + Chrome + HTTP/1.1 session bootstrap pattern — `tier2/hp.py`
-(Wave 2e), `tier2/msi.py` (Wave 2f), and `tier3/bestbuy.py` (Wave 2c).
-Wave 2g graduates the helper into `tier2/base.py` so future Akamai /
-CDN-gated Tier 2/3 sources can drop in without re-implementing the
-homepage-warming dance. Pure refactor — public API unchanged.
+**Closed 2026-05-07 at v1.3.1.** The warm `curl_cffi` + Chrome + HTTP/1.1
++ homepage-warming bootstrap pattern that three modules had been
+duplicating (`tier2/hp.py` from Wave 2e, `tier2/msi.py` from Wave 2f,
+`tier3/bestbuy.py` from Wave 2c) graduated into a shared
+`scrapers_lib.tier2.base.warmed_curl_session()` context manager. Pure
+refactor — public API unchanged on top of the frozen v1.0 surface.
 
-- [x] Identify the common shape across the three call sites; specify the helper signature (likely `warmed_curl_session(homepage: str, *, impersonate: str = "chrome", warm_delay: float = 0.5) -> Session`)
-- [x] Migrate `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` to the shared helper; verify no behavior change via existing test suites
-- [x] Document the helper in `docs/ADDING_A_SOURCE.md` §4.1 (generic pattern types)
-- [x] CHANGELOG entry; tag `v1.3.1` (refactor, additive helper)
+- [x] **`tier2.base.warmed_curl_session()` helper introduced.** Context
+  manager yielding a warmed `curl_cffi.requests.Session` configured
+  with Chrome TLS impersonation and `CurlHttpVersion.V1_1`. Signature
+  `warmed_curl_session(homepage, *, impersonate="chrome", warm=True,
+  warm_delay=1.0, warm_headers=None, timeout=30.0)`. `curl_cffi`
+  imported lazily inside the helper so callers of unrelated `tier2.base`
+  symbols don't pay the import cost. Warm-up failures are swallowed
+  and logged at DEBUG (best-effort).
+- [x] **Three migration sites:** `tier2/hp.py` (`_fetch_pdp_with_techspecs`),
+  `tier2/msi.py` (`_fetch_msi_html`), and `tier3/bestbuy.py`
+  (`_fetch_pdp` and `_iter_reviews_pages`) all now open their sessions
+  via the helper instead of constructing the `curl_cffi` Session inline.
+  DEBUG warm-failure log text unified across all three modules from
+  per-module prefixes to a single
+  `"warmed_curl_session(<homepage>): warm failed: ..."`.
+- [x] **Public API unchanged.** `fetch_hp_product`, `fetch_msi_product`,
+  and `fetch_bestbuy_reviews` all preserve their `warm: bool = True`
+  and `impersonate: str = "chrome"` kwargs verbatim; observable behavior
+  unchanged.
+- [x] **+9 new unit tests** in `tests/tier2/test_base.py::TestWarmedCurlSession`;
+  unit suite goes 1073 / 20 → 1082 / 20.
+- [x] **No new dependencies.** `curl_cffi>=0.7` already shipped in Wave 2c.
+- [x] Helper documented in `docs/ADDING_A_SOURCE.md` §4.1 (generic
+  pattern types — new "Reusable primitive" subsection).
+- [x] CHANGELOG `[1.3.1]` entry; `_version.py` bumped 1.3.0 → 1.3.1;
+  tag `v1.3.1`.
+
+## Library-intrinsic next directions
+
+With the downstream consumer projects external and the six-brand Tier 2
+set complete, the library's roadmap turns inward. Three candidate
+directions — none locked, all surfaced for selection:
+
+- **(a) Plugin / extension API.** Let third-party consumer packages
+  register fetchers without forking. The fetcher signature is already
+  plugin-compatible (per the existing note in this doc and ARCHITECTURE
+  §12.1); what's missing is the registration surface graduated for
+  third-party use — e.g. `pip install scrapers-lib-walmart` auto-registers
+  `fetch_walmart` via setuptools entry points. Implementation surface is
+  small; the value is unblocking source growth from outside this repo.
+- **(b) PyPI publication.** The library has been frozen at v1.0+ since
+  2026-04-22 with stable docs, a CONSUMER_GUIDE, and 1082 / 20 unit
+  tests. Now that consumers are external, `pip install scrapers-lib` is
+  more ergonomic than `pip install -e ../scrapers-lib`. PyPI release
+  also unblocks the entry-point flavor of (a).
+- **(c) Source catalog (deferred-until-driven).** Additional Tier 1
+  (Walmart affiliate API, YouTube Data API for channel monitoring),
+  additional Tier 3 (Newegg, Target, Costco), and forums sit in the
+  Deferred bucket below. They remain deferred without a consumer brief
+  to drive specific recon — the right move is to ship one when an
+  external consumer needs it, not speculatively.
+
+Distributed Scheduler coordination stays deferred (no consumer
+currently runs more than one worker against shared state).
 
 ## Deferred (not blocking any current work)
 
-- Demo 2 (Hot Response) consumer project — library side complete (six-brand Tier 2 set shipped at v1.3.0: Dell + HP + Lenovo + ASUS-rog + ASUS-www + Acer + MSI; ~75–95% per-brand raw coverage against the 83-row Competitor Columns schema). Consumer scaffold deferred until the user chooses to build it.
-- Demo 3 (Gaming Radar) consumer project — library side is shipped (Wave 3); consumer scaffold deferred until user chooses to build it.
+- Consumer projects (Demo 2 Hot Response, Demo 3 Gaming Radar, Pilot 1 product sentiment) are now built externally and don't constrain this library's roadmap.
 - BestBuy Developer API activation — fetcher is shipped and unit-tested but dormant until a credential lands (see `project_bestbuy_api_dormant`).
 - Additional Tier 1 sources: Walmart affiliate API, YouTube Data API (channel monitoring).
 - Additional Tier 2 sources: forums, more manufacturers.
 - Additional Tier 3 sources: Newegg, Target, Costco.
-- Plugin registration API (fetcher signature is already plugin-compatible).
 - Spec-vocabulary normalization helpers.
-- PyPI publication.
 - Distributed Scheduler coordination across multiple workers.
