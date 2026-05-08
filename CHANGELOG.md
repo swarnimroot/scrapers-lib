@@ -30,6 +30,65 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
   §5 worker-entry-point example now imports the full v1.3 six-brand
   Tier 2 set (added `acer` and `msi`).
 
+## [1.3.1] — 2026-05-07
+
+**Wave 2g — `warmed_curl_session()` helper graduated into `tier2/base`.**
+Pure refactor — public API unchanged. Three modules
+(`tier2/hp.py`, `tier2/msi.py`, `tier3/bestbuy.py`) had each been
+duplicating the same warm `curl_cffi` + Chrome TLS impersonation +
+HTTP/1.1 + homepage-warming bootstrap dance to clear the Akamai HTTP/2
+RST-stream gate. Wave 2g extracts that primitive into a shared
+context-manager helper so future Akamai- / CDN-gated Tier 2 / Tier 3
+sources can drop in without re-implementing the warming sequence.
+Tests: **1082 passed, 20 skipped** (was 1073 / 20 pre-wave — +9 new
+unit tests for `warmed_curl_session`). No new dependencies.
+
+### Added
+- **`scrapers_lib.tier2.base.warmed_curl_session(homepage, *, impersonate="chrome", warm=True, warm_delay=1.0, warm_headers=None, timeout=30.0)`**
+  — context manager yielding a warmed `curl_cffi.requests.Session`
+  configured with Chrome TLS impersonation and `CurlHttpVersion.V1_1`.
+  When `warm=True`, fires a homepage GET and sleeps `warm_delay`
+  seconds before yielding so cookies settle. Warm-up failures are
+  swallowed and logged at DEBUG. `curl_cffi` is imported lazily inside
+  the helper so callers of unrelated `tier2.base` symbols
+  (`parse_product_jsonld`, `parse_spec_table`, etc.) do not pay the
+  `curl_cffi` import cost. The `warm_headers` kwarg ships unused by
+  current callers but is there for future Akamai-gated sources whose
+  warm-up needs custom headers.
+
+### Changed
+- **`tier2/hp.py` `_fetch_pdp_with_techspecs`** now opens its session
+  via `warmed_curl_session(HOME_URL, impersonate=..., warm=...)` instead
+  of constructing the `curl_cffi` Session inline. Caller-side headers
+  on the main PDP GET (`Accept`, `Accept-Language`) and the follow-up
+  `_fetch_async_techspecs(s, ...)` call are unchanged.
+- **`tier2/msi.py` `_fetch_msi_html`** now opens its session via
+  `warmed_curl_session(HOME_URL, impersonate=..., warm=...)`. The main
+  `s.get(url, ...)` call's caller-side headers (`Accept`,
+  `Accept-Language`, **`Referer`**) are unchanged — Referer stays on
+  the target request, not on the warm-up.
+- **`tier3/bestbuy.py` `_fetch_pdp` and `_iter_reviews_pages`** both
+  now open their sessions via
+  `warmed_curl_session(HOME_URL, impersonate=..., warm=...)`. No
+  caller-side headers on the main GETs (unchanged).
+- **DEBUG warm-failure log text** unified across all three modules
+  from per-module prefixes (`"hp: warm failed: ..."`, `"msi: warm
+  failed: ..."`, `"bestbuy: warm failed: ..."`) to a single
+  `"warmed_curl_session(<homepage>): warm failed: ..."`. INFO and
+  WARN log lines elsewhere in the modules are unchanged.
+- **Public API unchanged.** `fetch_hp_product`, `fetch_msi_product`,
+  and `fetch_bestbuy_reviews` all preserve their `warm: bool = True`
+  and `impersonate: str = "chrome"` kwargs verbatim. Observable behavior
+  unchanged. Existing tests (e.g.
+  `test_target_request_carries_referer_and_accept` in
+  `tests/tier2/test_msi.py`) pass without modification.
+
+### Test baseline
+- **Unit suite: 1082 passed, 20 skipped** — was 1073 / 20 pre-wave;
+  the +9 delta is `tests/tier2/test_base.py::TestWarmedCurlSession`.
+- No live integration tests added in Wave 2g (helper is exercised
+  through the existing HP / MSI / BestBuy gated-live paths).
+
 ## [1.3.0] — 2026-05-07
 
 **Wave 2f — Tier 2 expansion: Acer + MSI greenfield fetchers.** Two

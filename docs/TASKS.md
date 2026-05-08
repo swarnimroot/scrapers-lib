@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 (Wave 2f Acer + MSI shipped) &nbsp;·&nbsp; **Library version:** 1.3.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 (Wave 2g warmed_curl_session helper shipped) &nbsp;·&nbsp; **Library version:** 1.3.0
 
 This is the operational roadmap. Unlike PRD and Architecture, this document is **demo-aware** — specific consumer projects drive the order in which sources get built. The roadmap is pruned and rewritten as demos come and go.
 
@@ -8,13 +8,13 @@ This is the operational roadmap. Unlike PRD and Architecture, this document is *
 
 ## Current state
 
-**Last updated:** 2026-05-07 (Wave 2f Acer + MSI greenfield Tier 2 fetchers shipped)
+**Last updated:** 2026-05-07 (Wave 2g warmed_curl_session helper shipped)
 
-- **Latest tag:** **v1.3.0** (2026-05-07) — Wave 2f closure: Acer + MSI greenfield Tier 2 fetchers shipped, completing the six-brand Tier 2 manufacturer set. Prior tags: v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
-- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)**.
-- **In progress:** none — Wave 2f closed at v1.3.0. `tier2/acer.py` covers `acer.com/<region-locale>/<brand>/laptops/<model>/pdp/<SKU>` via plain-httpx + 13 SSR `<table class="agw-table_techSpec">` blocks (no anti-bot, ~60+ unique label keys per page, per-SKU granularity). `tier2/msi.py` covers `us.msi.com/Laptop/<slug>` and `us.msi.com/Laptop/<slug>/Specification` via `curl_cffi` with Chrome TLS impersonation + warmed session — same Akamai-bypass primitive established by HP and BestBuy in earlier waves. **`/Specification` confirmed universal across MSI's product lines** (gaming Raider / Crosshair + premium Stealth-AI); column-per-SKU `<table>` layout, 27-31 spec rows per page; one snapshot per `<thead>` SKU column. Bare `/Laptop/<slug>` URLs fetch `/Specification` first; on parse failure they fall back to the main page's JSON-LD `ItemList` (~11-field highlights summary, present only on newer AI/Stealth lines). Public API frozen at v1.x — both new fetchers are additive `@register("acer")` / `@register("msi")` modules. **Six-brand Tier 2 set complete:** Dell + HP + Lenovo + ASUS (rog + www) + Acer + MSI all shipped.
-- **Next direction:** **Wave 2g — graduate the warm-session helper to `tier2/base.warmed_curl_session()`**. Three modules now duplicate the `curl_cffi` + Chrome + HTTP/1.1 + homepage-warming bootstrap dance: `tier2/hp.py` (Wave 2e), `tier2/msi.py` (Wave 2f), and `tier3/bestbuy.py` (Wave 2c). Wave 2g extracts the helper into `tier2/base.py` so future Akamai/CDN-gated Tier 2/3 sources can drop in without re-implementing the warming sequence. Public API unchanged (modules use the helper internally). Pilot 1 brainstorming (pivoted Demo 1 per `project_demo1_pulse_check`) and BestBuy Developer API activation (per `project_bestbuy_api_dormant`) remain on hold.
-- **Test state:** **see CHANGELOG `[1.3.0]` for the post-Wave-2f baseline** (full unit suite + skipped breakdown). Acer suite: 57 new unit tests in `tests/tier2/test_acer.py` (Aspire 7 Intel + Predator Helios Neo 16s AI + Nitro V 16s AI fixtures). MSI suite: 107 new unit tests in `tests/tier2/test_msi.py` (Stealth 16 AI+ B3WX main + spec, Raider 16 Max HX B2WX main + spec, Crosshair 16 HX E14WX spec fixtures). No live-integration tests added in Wave 2f (Acer is plain-httpx with no anti-bot — covered by unit tests against real fixtures; MSI's Akamai gate makes a stable gated-live test brittle and will be revisited if needed).
+- **Latest tag:** **v1.3.0** (2026-05-07) — Wave 2f closure: Acer + MSI greenfield Tier 2 fetchers shipped, completing the six-brand Tier 2 manufacturer set. **v1.3.1 staged in working tree** (Wave 2g `warmed_curl_session()` helper refactor) but not yet tagged — user reviews + tags manually. Prior tags: v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
+- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → Wave 2g (warmed_curl_session helper, v1.3.1 pending tag).
+- **In progress:** v1.3.1 staged in working tree, awaiting user greenlight to commit + tag. Wave 2g graduated the warm `curl_cffi` + Chrome + HTTP/1.1 + homepage-warming bootstrap into a shared `scrapers_lib.tier2.base.warmed_curl_session()` context manager; `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` all now call the helper instead of duplicating the dance inline. Public API unchanged — `warm` / `impersonate` kwargs preserved on all three fetchers; observable behavior unchanged. +9 new unit tests for the helper in `tests/tier2/test_base.py`.
+- **Next direction:** **Pilot 1 brainstorming** (pivoted Demo 1 per `project_demo1_pulse_check` — currently in brainstorm phase, no scope locked) and **BestBuy Developer API activation** (per `project_bestbuy_api_dormant` — fetcher is shipped and unit-tested but dormant until a credential lands) are the candidate directions. No library-side wave is currently queued.
+- **Test state:** **see CHANGELOG `[1.3.1]` for the post-Wave-2g baseline** (full unit suite + skipped breakdown).
 - **New dep:** none. `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking library work.
@@ -266,10 +266,10 @@ Wave 2g graduates the helper into `tier2/base.py` so future Akamai /
 CDN-gated Tier 2/3 sources can drop in without re-implementing the
 homepage-warming dance. Pure refactor — public API unchanged.
 
-- [ ] Identify the common shape across the three call sites; specify the helper signature (likely `warmed_curl_session(homepage: str, *, impersonate: str = "chrome", warm_delay: float = 0.5) -> Session`)
-- [ ] Migrate `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` to the shared helper; verify no behavior change via existing test suites
-- [ ] Document the helper in `docs/ADDING_A_SOURCE.md` §4.1 (generic pattern types)
-- [ ] CHANGELOG entry; tag `v1.3.1` (refactor, additive helper)
+- [x] Identify the common shape across the three call sites; specify the helper signature (likely `warmed_curl_session(homepage: str, *, impersonate: str = "chrome", warm_delay: float = 0.5) -> Session`)
+- [x] Migrate `tier2/hp.py`, `tier2/msi.py`, and `tier3/bestbuy.py` to the shared helper; verify no behavior change via existing test suites
+- [x] Document the helper in `docs/ADDING_A_SOURCE.md` §4.1 (generic pattern types)
+- [x] CHANGELOG entry; tag `v1.3.1` (refactor, additive helper)
 
 ## Deferred (not blocking any current work)
 

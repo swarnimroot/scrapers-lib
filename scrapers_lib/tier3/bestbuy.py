@@ -54,7 +54,11 @@ from scrapers_lib.core.attribution import attribute_url, bestbuy_review_id
 from scrapers_lib.core.registry import register
 from scrapers_lib.core.schemas import Anchor, Attribution, RawMention
 from scrapers_lib.core.scheduler import BlockedError
-from scrapers_lib.tier2.base import normalize_spec_value, parse_product_jsonld
+from scrapers_lib.tier2.base import (
+    normalize_spec_value,
+    parse_product_jsonld,
+    warmed_curl_session,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -297,19 +301,9 @@ def _iter_reviews_pages(
     ``curl_cffi`` is imported lazily so ``import scrapers_lib`` stays
     cheap for consumers who do not touch Tier 3.
     """
-    from curl_cffi import CurlHttpVersion, requests  # noqa: I001
-
-    with requests.Session(
-        impersonate=impersonate,
-        http_version=CurlHttpVersion.V1_1,
+    with warmed_curl_session(
+        HOME_URL, impersonate=impersonate, warm=warm
     ) as s:
-        if warm:
-            try:
-                s.get(HOME_URL, timeout=timeout)
-                time.sleep(1)
-            except Exception as e:  # pragma: no cover - warming best-effort
-                logger.debug("bestbuy: warm failed: %s", e)
-
         page = 1
         while True:
             if max_pages is not None and page > max_pages:
@@ -350,19 +344,9 @@ def _fetch_pdp(
     ``curl_cffi`` is imported lazily so ``import scrapers_lib`` stays
     cheap for consumers who do not touch Tier 3.
     """
-    from curl_cffi import CurlHttpVersion, requests  # noqa: I001
-
-    with requests.Session(
-        impersonate=impersonate,
-        http_version=CurlHttpVersion.V1_1,
+    with warmed_curl_session(
+        HOME_URL, impersonate=impersonate, warm=warm
     ) as s:
-        if warm:
-            try:
-                s.get(HOME_URL, timeout=timeout)
-                time.sleep(1)
-            except Exception as e:  # pragma: no cover - warming best-effort
-                logger.debug("bestbuy: warm failed: %s", e)
-
         r = s.get(url, timeout=timeout)
         r.raise_for_status()
         return r.text

@@ -52,14 +52,17 @@ import html as html_module
 import json
 import logging
 import re
-import time
 from typing import Any
 from urllib.parse import urlparse
 
 from scrapers_lib.core.attribution import attribute_url
 from scrapers_lib.core.registry import register
 from scrapers_lib.core.schemas import Anchor, ProductSnapshot
-from scrapers_lib.tier2.base import normalize_spec_value, parse_product_jsonld
+from scrapers_lib.tier2.base import (
+    normalize_spec_value,
+    parse_product_jsonld,
+    warmed_curl_session,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -393,19 +396,9 @@ def _fetch_msi_html(
     ``curl_cffi`` is imported lazily so ``import scrapers_lib`` stays
     cheap for consumers that never touch Tier 2.
     """
-    from curl_cffi import CurlHttpVersion, requests  # noqa: I001
-
-    with requests.Session(
-        impersonate=impersonate,
-        http_version=CurlHttpVersion.V1_1,
+    with warmed_curl_session(
+        HOME_URL, impersonate=impersonate, warm=warm
     ) as s:
-        if warm:
-            try:
-                s.get(HOME_URL, timeout=timeout)
-                time.sleep(1)
-            except Exception as e:  # pragma: no cover - warming best-effort
-                logger.debug("msi: warm failed: %s", e)
-
         r = s.get(
             url,
             headers={

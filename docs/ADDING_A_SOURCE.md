@@ -171,6 +171,43 @@ Akamai-on-HTTP/2 sites) belong here too — any fetcher may need them.
 | **Akamai HTTP/2-layer bot gate** (Wave 2c) | Site serves real HTML to browsers but drops bot clients at the HTTP/2 protocol layer — signatures include `RemoteProtocolError: Server disconnected` (plain httpx), `net::ERR_HTTP2_PROTOCOL_ERROR` (stealth Playwright), or `HTTP/2 stream N not closed cleanly: INTERNAL_ERROR` (curl_cffi on HTTP/2). TLS handshake completes; the gate is specifically HTTP/2 frame / fingerprint analysis. | `curl_cffi` with Chrome TLS impersonation **forced onto HTTP/1.1** (`CurlHttpVersion.V1_1`), plus a homepage warm-up to seat Akamai cookies. HTTP/1.1 avoids the gate entirely; Chrome impersonation still clears the TLS check. (BestBuy `/site/...` PDPs — `tier3/bestbuy`. New dep `curl_cffi>=0.7` added Wave 2c.) |
 | **Two-request session — PDP + sibling hydration endpoint** (Wave 2e) | Site SSRs partial spec data into the PDP, then hydrates the rest from a slug-keyed JSON endpoint discoverable via a `<link rel="prefetch">` near the top of the PDP body. Hydration endpoint requires the same session (cookies) that fetched the PDP — a fresh session returns an empty envelope. The HTTP layer itself may not be the gate; HP's PDP HTML is plain-httpx-reachable (recon proved curl_cffi delta is ~0.7% bytes), but the hydration endpoint is session-scoped. | One warmed `curl_cffi` + Chrome + HTTP/1.1 session (kept open as a context manager) makes both calls. Derive the hydration URL from the PDP URL (HP: `/pdp/<slug>` → `/app/api/web/graphql/page/pdp%2F<slug>/async`). Send `Referer: <PDP URL>` + `X-Requested-With: XMLHttpRequest` + `Accept: application/json` on the hydration call. Best-effort: log + fall back to PDP-only data on hydration failure. (HP `/shop/pdp/` Tech Specs — `tier2/hp`.) |
 
+#### Reusable primitive: `warmed_curl_session()` (Wave 2g)
+
+When the Akamai HTTP/2-layer bot gate row above applies, prefer the
+shared helper over re-implementing the bootstrap dance:
+
+```python
+from scrapers_lib.tier2.base import warmed_curl_session
+
+with warmed_curl_session(HOME_URL, impersonate=impersonate, warm=warm) as s:
+    r = s.get(url, headers={"Accept": "..."}, timeout=timeout)
+    r.raise_for_status()
+    return r.text
+```
+
+**Signature.**
+`warmed_curl_session(homepage, *, impersonate="chrome", warm=True, warm_delay=1.0, warm_headers=None, timeout=30.0)`
+— context manager yielding a `curl_cffi.requests.Session` configured
+with Chrome TLS impersonation and `CurlHttpVersion.V1_1`. When
+`warm=True`, the helper fires a homepage GET and sleeps `warm_delay`
+seconds before yielding so the CDN's session cookies settle. Warm-up
+exceptions are swallowed and logged at DEBUG (best-effort —
+homepage 503s should not break the target fetch). `warm_headers`
+overrides the warm-up call's request headers when the homepage itself
+needs custom headers; leave it at the default `None` for the common
+case (HP / MSI / BestBuy).
+
+**When to use.** Any Tier 2 / Tier 3 source where plain `httpx`
+returns 403 (or the equivalent block-page shape) and Chrome TLS
+impersonation + warmed cookies clear the gate. Caller-side headers
+on the main `s.get(url, ...)` request (e.g. MSI's `Referer`) stay
+caller-side; the helper only owns the session lifecycle and the
+warm-up call.
+
+**In-tree examples.** `tier2/hp.py` (`_fetch_pdp_with_techspecs`),
+`tier2/msi.py` (`_fetch_msi_html`), `tier3/bestbuy.py` (`_fetch_pdp`,
+`_iter_reviews_pages`).
+
 ## 5. Decision tree for a new manufacturer
 
 Walk this in order. Stop at the first step whose answer is yes.
