@@ -714,11 +714,14 @@ section, .section { margin-bottom: var(--gap-section); }
   border-bottom: 1px solid var(--rule-soft);
 }
 
-/* Darkness hierarchy: BY DESIGN darkest, BLOCKED lightest */
-tr[data-status="design"]  { --row-color: #181816; --row-h3: #181816; }
+/* Color + darkness hierarchy:
+   BY DESIGN = dark forest green (engineer's intentional choice)
+   SOLVED / WORKING = neutral darkness gradient
+   BLOCKED = dark rust/oxblood (external constraint, alarm) */
+tr[data-status="design"]  { --row-color: #1a3a1a; --row-h3: #102810; }
 tr[data-status="solved"]  { --row-color: #2c2a25; --row-h3: #1f1d19; }
 tr[data-status="working"] { --row-color: #4a4844; --row-h3: #3a3833; }
-tr[data-status="blocked"] { --row-color: #898680; --row-h3: #6a675f; }
+tr[data-status="blocked"] { --row-color: #5e1f0a; --row-h3: #421405; }
 
 .ch-table tbody td:last-child { padding-right: 0; }
 
