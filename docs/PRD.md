@@ -1,6 +1,6 @@
 # scrapers-lib — Product Requirements Document
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.1
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-12 &nbsp;·&nbsp; **Library version:** 1.4.0
 
 ---
 
@@ -67,6 +67,6 @@ scrapers-lib **does not**:
 ## 8. Versioning and API stability
 
 - Semantic versioning (`0.x.y` → `1.0.0` → `1.x.y`).
-- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump. The freeze has held through v1.3.1 — Waves 2d, 2e, 2f, and 2g added kwargs, new fetchers, and one internal-helper refactor (BestBuy reviews pagination, HP `async_techspecs`, ASUS `www` host, Acer, MSI, `warmed_curl_session()` graduation) without breaking any existing signature.
+- **As of v1.0.0:** schemas and public fetcher signatures are frozen. Backward-incompatible changes require a major bump. The freeze has held through v1.4.0 — Waves 2d, 2e, 2f, 2g, and the v1.4.0 article-fetcher upgrade added kwargs, new fetchers, internal-helper refactors, and a Tier 1 acquisition-method swap (BestBuy reviews pagination, HP `async_techspecs`, ASUS `www` host, Acer, MSI, `warmed_curl_session()` graduation into `scrapers_lib.core.curl_session`, `tier1/article.py` Chrome impersonation) without breaking any existing signature.
 - Documented deprecation path: any removed public API goes through a deprecation warning in one minor version before removal.
 - Historical: before v1.0.0 public APIs could change between minor versions; consumers pinned exact versions during the 0.x line.

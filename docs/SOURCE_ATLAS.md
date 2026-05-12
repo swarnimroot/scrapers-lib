@@ -1,6 +1,6 @@
 # Source Atlas — how each source is scraped
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Library version:** 1.3.1
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-12 &nbsp;·&nbsp; **Library version:** 1.4.0
 
 > A 2-minute map of every source the library can read — or drill into one row for the full story. For dense field-by-field shape, see [`ARCHITECTURE.md §11`](ARCHITECTURE.md#11-per-source-coverage) and [`CONSUMER_GUIDE.md §9`](CONSUMER_GUIDE.md#9-data-shape-quick-reference).
 
@@ -25,7 +25,7 @@ Sources are grouped by **how likely they are to break**, not by subject matter.
 | Source | Primitive | Dependency |
 |---|---|---|
 | `rss` | RSS feed parser | feedparser |
-| `article` | Main-content extractor | trafilatura |
+| `article` | Main-content extractor over a Chrome-impersonated session | trafilatura + curl_cffi |
 | `reddit`, `reddit_comments` | Plain JSON endpoint | httpx |
 | `youtube` | Caption-track API | youtube-transcript-api |
 | `bestbuy_api` | Official product API | httpx + API key |
@@ -61,8 +61,8 @@ These sources publish their data. We ask politely and they hand it over.
 
 ## 5.2 Article body (`article`)
 
-- **How:** httpx fetch → `trafilatura` main-content extraction.
-- **Why this method:** article HTML is cluttered with navigation, ads, and sidebars. Trafilatura strips the junk and keeps the body text that matters.
+- **How:** `warmed_curl_session()` fetch (Chrome TLS impersonation + HTTP/1.1 + per-host homepage warming) → `trafilatura` main-content extraction. curl_cffi response errors are re-wrapped as `httpx.HTTPStatusError` so the Scheduler's retry / backoff logic is unaffected.
+- **Why this method:** article HTML is cluttered with navigation, ads, and sidebars. Trafilatura strips the junk and keeps the body text that matters. Plain httpx is fine for most news / blog hosts, but Cloudflare-fronted reviewer sites (notebookcheck and similar) reject it with 403 — the same Chrome-impersonation primitive already used for HP / MSI / BestBuy clears the gate in one extra request, so since v1.4.0 the article fetcher uses it by default.
 - **Returns:** `RawMention` — full body as `raw_text`, plus `source_title`, `author`, best-effort `published_at`.
 - **Example:** `https://www.ign.com/articles/<slug>` → one mention with the article body. Returns empty list if no usable body (paywall, 404 chrome) — partial success is first-class.
 

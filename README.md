@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Library version:** 1.3.1
+**Status:** stable &nbsp;·&nbsp; **Library version:** 1.4.0
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -196,7 +196,7 @@ fetch_fn(url: str, anchors: list[Anchor] | None = None, *, <source-specific kwar
 | 2 (manufacturer pages) | `dell`, `hp`, `lenovo`, `asus`, `acer`, `msi` |
 | 3 (retailer scraping) | `amazon`, `amazon_reviews`, `bestbuy_reviews` |
 
-Shared Tier 2 parsing helpers live in `scrapers_lib.tier2.base` (`parse_product_jsonld`, `parse_inline_json`, `parse_spec_table`, `normalize_spec_value`, `fetch_rendered_html`) — use these when building a new Tier 2 fetcher; see [`docs/ADDING_A_SOURCE.md`](docs/ADDING_A_SOURCE.md).
+Shared Tier 2 parsing helpers live in `scrapers_lib.tier2.base` (`parse_product_jsonld`, `parse_inline_json`, `parse_spec_table`, `normalize_spec_value`, `fetch_rendered_html`) — use these when building a new Tier 2 fetcher; see [`docs/ADDING_A_SOURCE.md`](docs/ADDING_A_SOURCE.md). The Chrome-impersonated `warmed_curl_session()` helper lives at `scrapers_lib.core.curl_session` (re-exported from `scrapers_lib.tier2.base` for backwards compatibility); since v1.4.0 it is also used by the Tier 1 `article` fetcher so Cloudflare-fronted reviewer sites no longer return 403.
 
 ## Documentation
 

@@ -177,7 +177,8 @@ When the Akamai HTTP/2-layer bot gate row above applies, prefer the
 shared helper over re-implementing the bootstrap dance:
 
 ```python
-from scrapers_lib.tier2.base import warmed_curl_session
+from scrapers_lib.core.curl_session import warmed_curl_session
+# (also re-exported from scrapers_lib.tier2.base for backwards compatibility — pre-v1.4.0 callers keep working)
 
 with warmed_curl_session(HOME_URL, impersonate=impersonate, warm=warm) as s:
     r = s.get(url, headers={"Accept": "..."}, timeout=timeout)
@@ -204,8 +205,11 @@ on the main `s.get(url, ...)` request (e.g. MSI's `Referer`) stay
 caller-side; the helper only owns the session lifecycle and the
 warm-up call.
 
-**In-tree examples.** `tier2/hp.py` (`_fetch_pdp_with_techspecs`),
-`tier2/msi.py` (`_fetch_msi_html`), `tier3/bestbuy.py` (`_fetch_pdp`,
+**In-tree examples.** `tier1/article.py` (`_fetch_html`, since v1.4.0 —
+the helper is no longer Tier 2 / Tier 3 only; the Tier 1 article fetcher
+uses it to clear Cloudflare gates on reviewer sites like notebookcheck),
+`tier2/hp.py` (`_fetch_pdp_with_techspecs`), `tier2/msi.py`
+(`_fetch_msi_html`), `tier3/bestbuy.py` (`_fetch_pdp`,
 `_iter_reviews_pages`).
 
 ## 5. Decision tree for a new manufacturer

@@ -1,10 +1,14 @@
 """Article body fetcher (trafilatura) — Tier 1 source.
 
 Follow-up body extraction for URLs whose summary (from RSS, newsletter,
-hand-curated list, etc.) is too terse for analysis. Calls ``httpx`` to
-download, then hands the HTML to ``trafilatura.bare_extraction`` which
-returns a ``Document`` with the main body text plus metadata (title,
-author, date, sitename) — resilient to most news / blog layouts.
+hand-curated list, etc.) is too terse for analysis. Fetches via the
+shared ``warmed_curl_session()`` helper (Chrome TLS impersonation +
+HTTP/1.1 + per-host homepage warming) so Cloudflare-fronted reviewer
+sites (notebookcheck.net and the broader gaming/tech reviewer set)
+return real HTML instead of a 403. The HTML then goes through
+``trafilatura.bare_extraction`` which returns a ``Document`` with the
+main body text plus metadata (title, author, date, sitename) —
+resilient to most news / blog layouts.
 
 Dual-mode matches :mod:`tier1.rss`:
 
@@ -17,8 +21,10 @@ Dual-mode matches :mod:`tier1.rss`:
 **Partial-success posture**: returns an empty list (not an exception)
 when trafilatura can't pull a usable body — paywalls, 404 pages with
 navigation chrome only, pages below ``min_length`` chars. HTTP errors
-(non-2xx) still raise via ``httpx.HTTPStatusError`` — the caller / the
-Scheduler handles retry and domain-level backoff.
+(non-2xx) still raise via ``httpx.HTTPStatusError`` (curl_cffi response
+errors are re-wrapped to preserve the documented exception contract,
+since the Scheduler's retry / backoff logic keys off that type) — the
+caller / the Scheduler handles retry and domain-level backoff.
 
 ``trafilatura`` is imported lazily so ``import scrapers_lib`` stays
 cheap for consumers that never touch Wave 3.
@@ -42,6 +48,7 @@ from scrapers_lib.core.attribution import (
     article_mention_id,
     attribute_regex_all,
 )
+from scrapers_lib.core.curl_session import warmed_curl_session
 from scrapers_lib.core.registry import register
 from scrapers_lib.core.schemas import Anchor, Attribution, RawMention
 
@@ -168,22 +175,53 @@ def parse_article(
 
 
 def _fetch_html(url: str, *, timeout: float) -> str:
-    """Fetch article HTML with a conservative User-Agent and follow redirects.
+    """Fetch article HTML via a warmed, Chrome-impersonated curl_cffi session.
+
+    Uses :func:`warmed_curl_session` (Chrome TLS impersonation + HTTP/1.1
+    + per-host homepage warming) so Cloudflare-fronted reviewer sites
+    return real HTML instead of 403. curl_cffi response errors on the
+    target fetch are translated into :class:`httpx.HTTPStatusError` so
+    the documented exception contract — and the Scheduler's retry /
+    backoff logic that keys off it — keep working.
 
     Raises :class:`httpx.HTTPStatusError` on non-2xx.
     """
-    r = httpx.get(
-        url,
-        headers={
-            "User-Agent": _DEFAULT_USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-        follow_redirects=True,
-        timeout=timeout,
-    )
-    r.raise_for_status()
+    homepage = _homepage_for(url)
+    with warmed_curl_session(homepage, timeout=timeout) as s:
+        r = s.get(
+            url,
+            headers={
+                "User-Agent": _DEFAULT_USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+            timeout=timeout,
+        )
+    status = getattr(r, "status_code", 0)
+    if status >= 400:
+        request = httpx.Request("GET", url)
+        response = httpx.Response(status, request=request)
+        kind = "Client" if status < 500 else "Server"
+        raise httpx.HTTPStatusError(
+            f"{kind} error '{status}' for url '{url}'",
+            request=request,
+            response=response,
+        )
     return r.text
+
+
+def _homepage_for(url: str) -> str:
+    """Return the ``scheme://host/`` form of ``url`` for session warming.
+
+    Used as the warm-up GET target before the article fetch — settles
+    CDN cookies under the same hostname. Falls back to the input URL if
+    parsing yields no host (defensive — should not happen for valid
+    inputs).
+    """
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        return url
+    return f"{parsed.scheme}://{parsed.netloc}/"
 
 
 # ---------------------------------------------------------------------------

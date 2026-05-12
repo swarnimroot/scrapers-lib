@@ -1,6 +1,6 @@
 # Consumer Guide — building projects on scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-07 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.3.1+
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-12 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.4.0+
 
 This guide is for people building a *consumer project* that uses
 `scrapers-lib` as a data-fetching library. The library returns typed
@@ -639,7 +639,7 @@ see [`ARCHITECTURE.md`](ARCHITECTURE.md) §11.
 | Source | Return | Notes |
 |---|---|---|
 | `rss` | `list[RawMention]` | One per feed entry. Discovery or anchor mode. `source` = your `source_slug`. Has `author`, `channel`, `published_at`. |
-| `article` | `list[RawMention]` | Full body via trafilatura. `source` = your `source_slug`. Returns `[]` on paywall / short body. |
+| `article` | `list[RawMention]` | Full body via trafilatura. Fetched through `warmed_curl_session()` (Chrome impersonation + HTTP/1.1) since v1.4.0, so Cloudflare-fronted reviewer sites (notebookcheck and similar) now work. `source` = your `source_slug`. Returns `[]` on paywall / short body. |
 | `reddit` | `list[RawMention]` | `source_type="post"`. `channel="r/<sub>"`. `raw.score`, `raw.num_comments` present. |
 | `reddit_comments` | `list[RawMention]` | Post first + comment tree. `source_type="post"` or `"comment"`. `parent_id=t3_<post_id>`. |
 | `youtube` | `list[RawMention]` | `source_type="transcript_chunk"`. `source_url` deep-linked with `&t=<s>s`. No `author` / `channel` / `published_at` (would need YouTube Data API). |

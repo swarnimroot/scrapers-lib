@@ -4,6 +4,26 @@ All notable changes to scrapers-lib are documented here. Follows [Keep a Changel
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-05-12
+
+**Article fetcher upgraded to Chrome-impersonated, warmed sessions; `warmed_curl_session()` graduated out of Tier 2.** `tier1/article.py` now fetches article HTML via the shared `warmed_curl_session()` helper instead of plain `httpx.get()`. This makes Cloudflare-fronted reviewer sites — notebookcheck.net first, with the broader gaming/tech reviewer set in Demo 3's scope unblocked by the same fix — return real HTML instead of 403. To keep the documented exception contract for callers and the Scheduler's retry / backoff logic, curl_cffi response errors are re-wrapped as `httpx.HTTPStatusError`. `fetch_article`'s signature, return type, and kwargs are unchanged. The helper itself moved from `scrapers_lib.tier2.base` to a new shared module `scrapers_lib.core.curl_session`; `tier2.base` keeps a re-export so HP / MSI / BestBuy callers stay byte-for-byte unchanged. No new dependencies (`curl_cffi>=0.7` already shipped in Wave 2c). Tests: **1092 passed, 21 skipped** (was 1073 / 20 at v1.3.0 and 1082 / 20 at v1.3.1 — +10 new article-fetcher / homepage-derivation unit tests, +1 new live integration test skipped without `SCRAPERSLIB_LIVE_TESTS=1`).
+
+### Added
+- **`scrapers_lib.core.curl_session`** — new shared module housing `warmed_curl_session()`. Identical signature and semantics to the v1.3.1 helper that previously lived in `tier2/base.py`; the helper is now reused by the Tier 1 article fetcher in addition to the three Akamai-gated Tier 2 / Tier 3 callers.
+- **Notebookcheck added as a Tier 1 RSS source** via the existing `rss` fetcher. Firehose feed URL: `https://www.notebookcheck.net/RSS-Feed-All-Articles-EN.165552.0.html` (500-entry English-edition mix of news + reviews). No code change in the library — the RSS path worked as-is; follow-up `article` fetches now also clear notebookcheck's Cloudflare gate via the upgraded fetcher above. Reconnaissance also identified two narrower feeds (`/News.152.100.html` for news-only, `/RSS-Feed-Notebook-Reviews.8156.0.html` for reviews-only) for consumers that want category-routed ingestion without parsing `<category>` tags on the firehose.
+
+### Changed
+- **`tier1/article.py` `_fetch_html`** swapped from `httpx.get()` to `warmed_curl_session()` (Chrome TLS impersonation, HTTP/1.1, per-host homepage warming). The existing `Accept` and `Accept-Language` headers and the existing `_DEFAULT_USER_AGENT` continue to ride on the target request. `curl_cffi` response errors on the main fetch are translated into `httpx.HTTPStatusError` so the documented exception contract — and the Scheduler's retry / backoff logic that depends on it — keep working. `fetch_article`'s public signature, return type, and kwargs are unchanged.
+- **`scrapers_lib.tier2.base.warmed_curl_session`** is now a re-export of `scrapers_lib.core.curl_session.warmed_curl_session`. Existing `from scrapers_lib.tier2.base import warmed_curl_session` imports keep working unchanged; no caller-side edits in `tier2/hp.py`, `tier2/msi.py`, or `tier3/bestbuy.py`.
+
+### Test baseline
+- **`tests/tier2/test_base.py::TestWarmedCurlSession` moved to `tests/core/test_curl_session.py`** to track the helper's new home.
+- **`tests/tier1/test_article.py`** gains a `fake_curl_cffi` module fixture mirroring the pattern established in `tests/tier2/test_base.py`, so the article fetcher's curl_cffi integration is unit-tested without network.
+- One new opt-in live integration test against notebookcheck.net, gated by the existing `SCRAPERSLIB_LIVE_TESTS=1` env var (mirrors the IGN live test in `tests/tier1/test_article_integration.py`).
+
+### Documentation
+- `README.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/CONSUMER_GUIDE.md`, `docs/SOURCE_ATLAS.md`, `docs/TASKS.md`, and `docs/ADDING_A_SOURCE.md` updated to reflect the helper's new home, the article fetcher's upgraded acquisition method, and notebookcheck's presence in the supported-feed catalog.
+
 ## [1.3.1] — 2026-05-07
 
 **Wave 2g — `warmed_curl_session()` helper graduated into `tier2/base`.**

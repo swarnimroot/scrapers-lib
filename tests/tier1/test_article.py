@@ -16,7 +16,11 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
+from unittest.mock import MagicMock, patch
 
+import httpx
 import pytest
 
 from scrapers_lib.core.registry import get_fetcher
@@ -25,6 +29,7 @@ from scrapers_lib.tier1 import article
 from scrapers_lib.tier1.article import (
     SOURCE,
     _derive_slug,
+    _homepage_for,
     _parse_date,
     parse_article,
 )
@@ -310,6 +315,168 @@ class TestParseDate:
     def test_malformed_returns_none(self):
         assert _parse_date("22 April 2026") is None
         assert _parse_date("not a date") is None
+
+
+# ---------------------------------------------------------------------------
+# Homepage derivation (for warm-up GET)
+# ---------------------------------------------------------------------------
+
+
+class TestHomepageFor:
+    def test_strips_path(self):
+        assert (
+            _homepage_for("https://www.notebookcheck.net/Foo.123.0.html")
+            == "https://www.notebookcheck.net/"
+        )
+
+    def test_strips_query_and_fragment(self):
+        assert (
+            _homepage_for("https://example.com/article?x=y#frag")
+            == "https://example.com/"
+        )
+
+    def test_preserves_scheme(self):
+        assert _homepage_for("http://example.com/article") == "http://example.com/"
+
+    def test_fallback_on_invalid_url(self):
+        # No scheme or netloc → echo input rather than synthesizing a bogus host.
+        assert _homepage_for("not-a-url") == "not-a-url"
+
+
+# ---------------------------------------------------------------------------
+# _fetch_html — warmed curl_cffi session + httpx.HTTPStatusError adapter
+# ---------------------------------------------------------------------------
+
+
+def _build_fake_curl_cffi_module(
+    *,
+    target_status: int = 200,
+    target_text: str = "<html><body><p>x</p></body></html>",
+):
+    """Fake curl_cffi module for ``_fetch_html`` tests.
+
+    First ``Session.get`` is the warm-up — always 200, empty body. The
+    second ``Session.get`` is the target article fetch — returns the
+    configured ``(target_status, target_text)``.
+
+    Returns ``(fake_module, calls_recorder)``.
+    """
+    calls = MagicMock()
+
+    class _FakeResp:
+        def __init__(self, text: str, status: int) -> None:
+            self.text = text
+            self.status_code = status
+
+    class _FakeSession:
+        def __init__(self, **kwargs: Any) -> None:
+            self.kwargs = kwargs
+            self._call_count = 0
+
+        def __enter__(self) -> "_FakeSession":
+            return self
+
+        def __exit__(self, *exc: Any) -> None:
+            return None
+
+        def get(self, url: str, **kwargs: Any) -> _FakeResp:
+            calls(url=url, session_kwargs=self.kwargs, **kwargs)
+            self._call_count += 1
+            if self._call_count == 1:
+                return _FakeResp("", 200)
+            return _FakeResp(target_text, target_status)
+
+    fake_requests = SimpleNamespace(Session=_FakeSession)
+    fake_module = SimpleNamespace(
+        requests=fake_requests,
+        CurlHttpVersion=SimpleNamespace(V1_1="V1_1_SENTINEL"),
+    )
+    return fake_module, calls
+
+
+def _patch_curl_cffi(fake_module: Any):
+    return patch.dict(
+        "sys.modules",
+        {
+            "curl_cffi": fake_module,
+            "curl_cffi.requests": fake_module.requests,
+        },
+    )
+
+
+class TestFetchHtmlOverWarmedSession:
+    """``_fetch_html`` uses ``warmed_curl_session()`` (Chrome impersonation
+    + HTTP/1.1 + per-host warm-up) and wraps non-2xx responses as
+    ``httpx.HTTPStatusError`` to preserve the documented exception
+    contract.
+    """
+
+    def test_warm_up_targets_scheme_plus_host(self):
+        fake_module, calls = _build_fake_curl_cffi_module()
+        with _patch_curl_cffi(fake_module), patch(
+            "scrapers_lib.core.curl_session.time.sleep"
+        ):
+            article._fetch_html(
+                "https://www.notebookcheck.net/Some-Article.123.0.html",
+                timeout=30.0,
+            )
+        urls = [c.kwargs["url"] for c in calls.call_args_list]
+        assert urls == [
+            "https://www.notebookcheck.net/",
+            "https://www.notebookcheck.net/Some-Article.123.0.html",
+        ]
+
+    def test_target_request_sends_default_headers(self):
+        fake_module, calls = _build_fake_curl_cffi_module()
+        with _patch_curl_cffi(fake_module), patch(
+            "scrapers_lib.core.curl_session.time.sleep"
+        ):
+            article._fetch_html(
+                "https://example.com/article", timeout=30.0
+            )
+        target_call = calls.call_args_list[1]
+        headers = target_call.kwargs["headers"]
+        assert "User-Agent" in headers
+        assert headers["Accept-Language"] == "en-US,en;q=0.9"
+        assert headers["Accept"].startswith("text/html")
+
+    def test_html_body_returned_on_success(self):
+        fake_module, _calls = _build_fake_curl_cffi_module(
+            target_text="<html><body><p>actual body</p></body></html>"
+        )
+        with _patch_curl_cffi(fake_module), patch(
+            "scrapers_lib.core.curl_session.time.sleep"
+        ):
+            html = article._fetch_html(
+                "https://example.com/article", timeout=30.0
+            )
+        assert html == "<html><body><p>actual body</p></body></html>"
+
+    def test_403_raises_httpx_status_error(self):
+        fake_module, _calls = _build_fake_curl_cffi_module(
+            target_status=403, target_text=""
+        )
+        with _patch_curl_cffi(fake_module), patch(
+            "scrapers_lib.core.curl_session.time.sleep"
+        ):
+            with pytest.raises(httpx.HTTPStatusError) as exc_info:
+                article._fetch_html(
+                    "https://example.com/blocked", timeout=30.0
+                )
+        assert exc_info.value.response.status_code == 403
+
+    def test_500_raises_httpx_status_error(self):
+        fake_module, _calls = _build_fake_curl_cffi_module(
+            target_status=500, target_text=""
+        )
+        with _patch_curl_cffi(fake_module), patch(
+            "scrapers_lib.core.curl_session.time.sleep"
+        ):
+            with pytest.raises(httpx.HTTPStatusError) as exc_info:
+                article._fetch_html(
+                    "https://example.com/", timeout=30.0
+                )
+        assert exc_info.value.response.status_code == 500
 
 
 # ---------------------------------------------------------------------------
