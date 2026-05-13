@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-12 (v1.4.0 article-fetcher upgrade; notebookcheck added) &nbsp;·&nbsp; **Library version:** 1.4.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 (v1.5.0 Dell configurator option menu; `ProductSnapshot.options` + `ComponentOption` added) &nbsp;·&nbsp; **Library version:** 1.5.0
 
 This is the operational roadmap. Library-intrinsic priorities lead — the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are now built externally in their own repos and no longer drive the order in which library work happens. Wave history below records the past order accurately, including which consumer drove each Tier 2 / Tier 3 wave; future direction is library-intrinsic.
 
@@ -8,13 +8,13 @@ This is the operational roadmap. Library-intrinsic priorities lead — the downs
 
 ## Current state
 
-**Last updated:** 2026-05-12 (v1.4.0 shipped: `tier1/article.py` upgraded to warmed curl_cffi; notebookcheck added as Tier 1 RSS source)
+**Last updated:** 2026-05-13 (v1.5.0 shipped: Dell `include_options=True` enriches snapshots with the `cty/pdp` configurator option menu; new `ComponentOption` schema + `ProductSnapshot.options` field)
 
-- **Latest tag:** **v1.4.0** (2026-05-12) — `tier1/article.py` upgraded to fetch via the shared `warmed_curl_session()` helper (Chrome TLS impersonation + HTTP/1.1 + per-host warming); curl_cffi response errors re-wrapped as `httpx.HTTPStatusError` to preserve the exception contract. Helper graduated from `tier2.base` into a new shared `scrapers_lib.core.curl_session` module; `tier2.base` keeps a re-export shim so HP / MSI / BestBuy callers stay byte-for-byte unchanged. Notebookcheck added as a Tier 1 RSS source (existing `rss` fetcher; no library code change). Triggered by Cloudflare gates on notebookcheck.net and the broader gaming/tech reviewer set in Demo 3's scope. Public API unchanged. Prior tags: v1.3.1 (Wave 2g: `warmed_curl_session()` graduated into `tier2/base`, 2026-05-07), v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
-- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper graduated, v1.3.1)** → **v1.4.0 release (article fetcher upgraded; `curl_session` module graduated; notebookcheck added as Tier 1 RSS source)**.
-- **In progress:** none — v1.4.0 shipped 2026-05-12.
-- **Next direction:** **Library is at a stable resting state at v1.4.0.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives. **Active follow-up thread: a single-page portfolio explainer at `landing/index.html`.** Plan + anti-AI-slop design constraints captured in `landing/PLAN.md`; build deferred to next session.
-- **Test state:** **see CHANGELOG `[1.4.0]` for the post-release baseline** (full unit suite + skipped breakdown).
+- **Latest tag:** **v1.5.0** (2026-05-13) — Wave 2h. `fetch_dell_product` gained an opt-in `include_options: bool = False` kwarg. When true, the fetcher constructs the `cty/pdp` URL from the shop-landing URL's `spd-slug` + the first tile's order code, navigates to it through the same stealth Playwright session (Akamai cookies stay warm), parses the 10 SSR hardware modules (Processor / Graphics / Memory / Storage / Display / Keyboard / Primary Battery / AC Adapter / OS / OS Language Pack — ~19 options on the Aurora 16 reference), and attaches the resulting `dict[str, list[ComponentOption]]` to every emitted snapshot's new `options` field. New top-level type `ComponentOption(label, status, option_id)`; new `ProductSnapshot.options: dict[str, list[ComponentOption]] | None = None`. Triggered by an external need to scrape Dell `cty/pdp` configurator URLs that the v1.4 fetcher rejected (no `[data-oc]` tiles → `RuntimeError`). Public API additive — every existing caller sees `s.options is None` unchanged. Prior tags: v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added, 2026-05-12), v1.3.1 (Wave 2g: `warmed_curl_session()` graduated into `tier2/base`, 2026-05-07), v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
+- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper graduated, v1.3.1)** → **v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added)** → **Wave 2h (Dell configurator option menu, v1.5.0)**.
+- **In progress:** none — v1.5.0 shipped 2026-05-13.
+- **Next direction:** **Library is at a stable resting state at v1.5.0.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives.
+- **Test state:** **see CHANGELOG `[1.5.0]` for the post-release baseline** (1114 passed, 22 skipped — +22 new unit tests, +1 new gated-live integration test).
 - **New dep:** none. `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking library work.
@@ -294,6 +294,73 @@ refactor — public API unchanged on top of the frozen v1.0 surface.
   pattern types — new "Reusable primitive" subsection).
 - [x] CHANGELOG `[1.3.1]` entry; `_version.py` bumped 1.3.0 → 1.3.1;
   tag `v1.3.1`.
+
+## Wave 2h — Dell configurator option menu *(shipped v1.5.0, 2026-05-13)*
+
+**Closed 2026-05-13 at v1.5.0.** External need surfaced: a consumer
+project wanted to scrape Dell `cty/pdp` (Configure-To-Order) URLs to
+discover the **commodity options** Dell offers for a product line
+(Processor / Graphics / Memory / Storage / Display / Keyboard / Battery
+/ AC Adapter / OS / OS Language Pack). The v1.4 fetcher rejected those
+URLs because the configurator page has no `[data-oc]` tile structure
+— `_extract_tiles` returned empty and `RuntimeError: dell: no
+configuration tiles found ... page structure may have changed` was
+raised. Wave 2h closes that gap **without changing the supported entry
+point** (still the shop-landing URL) by adding an opt-in kwarg that
+internally rewrites the URL to the `cty/pdp` form, navigates to it
+through the same stealth Playwright session, and attaches the parsed
+menu to every emitted snapshot. Additive on top of the frozen v1.0
+public API.
+
+- [x] **Recon** against URL A (`/shop/cty/pdp/spd/<spd-slug>/<oc>`).
+  Confirmed: page loads under existing `stealth_context` (no Akamai
+  block); 10 hardware modules SSR'd in the initial HTML (no scrolling
+  needed); each option card is `div.option.detailed-option[role="button"]`
+  inside `div.accordion-box.single-column-accordion` and carries
+  `data-option-id="<moduleId>-<sku>"` and `data-status="selected|
+  available|unavailable"`; module title in sibling `h2.module-title`.
+  Software / accessories modules use a different `<input type="radio">`
+  DOM and are out of scope. Recon script committed at
+  `scripts/dell/recon_configurator.py`; fixtures captured at
+  `tests/tier2/fixtures/dell/cto_useac16250hbtshtgb_*.html`.
+- [x] **New schema type `ComponentOption`** in `core/schemas.py`
+  (Pydantic v2 BaseModel, `extra="forbid"`): `label: str`, `status: str`,
+  `option_id: str`. Re-exported at the top level
+  (`from scrapers_lib import ComponentOption`).
+- [x] **New field `ProductSnapshot.options: dict[str, list[ComponentOption]]
+  | None = None`**. Default `None` everywhere; populated only when the
+  Dell fetcher is invoked with `include_options=True`. Additive — every
+  existing call site continues to see `s.options is None` verbatim.
+- [x] **New parser `parse_dell_configurator_options(html) -> dict[str,
+  list[ComponentOption]]`** in `tier2/dell.py`. Pure function; walks
+  every `div.accordion-box.single-column-accordion`, reads each option
+  card's label / `data-option-id` / `data-status`. Module order mirrors
+  on-page order; option order mirrors DOM order; duplicate
+  `data-option-id` deduped within a module (first wins).
+- [x] **URL constructor `_construct_cto_url(shop_url, oc)`** rewrites
+  `/shop/<category-path>/spd/<spd_slug>` → `/shop/cty/pdp/spd/<spd_slug>
+  /<oc>`, preserving scheme, host, and locale prefix (`/en-us`,
+  `/en-uk`, ...). Returns `None` for unrecognized shapes.
+- [x] **`fetch_dell_product` gained `include_options: bool = False`
+  kwarg.** When true, after the techspecs loop, the same stealth session
+  navigates to the derived `cty/pdp` URL (Akamai cookies stay warm),
+  the parser runs, and the resulting dict is attached to every emitted
+  snapshot via `parse_dell_product_page(..., configurator_options=...)`.
+  Default `False` preserves historical performance / behavior verbatim
+  (no extra page nav, `options=None` on every snapshot).
+- [x] **+22 new unit tests** across `TestConstructCtoUrl` (4),
+  `TestParseConfiguratorOptions` (11), `TestParseConfiguratorOptionsEdgeCases`
+  (4), and `TestProductPageWithConfiguratorOptions` (2); unit suite
+  goes 1092 / 21 → 1114 / 22 (the +1 skip is a new gated-live
+  integration test `test_fetch_aurora_live_include_options`).
+- [x] **No new dependencies.** Playwright + playwright-stealth +
+  beautifulsoup4 already shipped.
+- [x] Docs updated: `README.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md`
+  (§1 file tree, §3.2 schema + new ComponentOption sub-section, §11 Dell
+  row, §14 tag list), `docs/CONSUMER_GUIDE.md` (§9 Dell row),
+  `docs/SOURCE_ATLAS.md` (§6.1 Dell entry).
+- [x] CHANGELOG `[1.5.0]` entry; `_version.py` bumped 1.4.0 → 1.5.0;
+  tag `v1.5.0`.
 
 ## Library-intrinsic next directions
 

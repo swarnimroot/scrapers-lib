@@ -1,6 +1,6 @@
 # Consumer Guide — building projects on scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-12 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.4.0+
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.5.0+
 
 This guide is for people building a *consumer project* that uses
 `scrapers-lib` as a data-fetching library. The library returns typed
@@ -649,7 +649,7 @@ see [`ARCHITECTURE.md`](ARCHITECTURE.md) §11.
 
 | Source | Notes |
 |---|---|
-| `dell` | Alienware + XPS. Playwright + stealth + warming. ~20 spec categories per tile. |
+| `dell` | Alienware + XPS. Playwright + stealth + warming. ~20 spec categories per tile. Pass a **shop-landing URL** (`.../shop/.../spd/<spd-slug>`) as the anchor's `source_urls["dell"]` — `cty/pdp` configuration-detail URLs are not the supported entry point. **`include_options=True` (v1.5.0)** additionally pulls the configurator's hardware option menu (Processor / Graphics / Memory / Storage / Display / Keyboard / Battery / AC Adapter / OS / OS Language Pack — 10 modules) onto every snapshot's `options` field as `dict[str, list[ComponentOption]]`; off by default (one extra page nav when enabled). |
 | `hp` | Shop PDPs. curl_cffi + warmed session → ~23-26 categories per tile (config-picker + async GraphQL Tech Specs, Wave 2e). Async fetch is best-effort with fallback to ~12-category config-picker-only data. |
 | `lenovo` | PSREF spec reference. No prices. ~50 features across 8 categories. |
 | `asus` | Host-dispatched. `rog.asus.com` → ROG SSR spec sections (20+ categories). `www.asus.com` → Zenbook / Vivobook / TUF Gaming via Nuxt JS state (22-28 categories). Both share `SOURCE = "asus"`. No prices. |

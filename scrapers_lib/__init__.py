@@ -6,6 +6,7 @@ from scrapers_lib.core.schemas import (
     Anchor,
     Attribution,
     AttributionRegex,
+    ComponentOption,
     ProductSnapshot,
     RawMention,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "Attribution",
     "AttributionRegex",
     "BlockedError",
+    "ComponentOption",
     "ProductSnapshot",
     "RawMention",
     "Scheduler",

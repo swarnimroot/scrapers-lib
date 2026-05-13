@@ -10,15 +10,17 @@ from pathlib import Path
 import pytest
 
 from scrapers_lib.core.registry import list_fetchers
-from scrapers_lib.core.schemas import Anchor, AttributionRegex
+from scrapers_lib.core.schemas import Anchor, AttributionRegex, ComponentOption
 from scrapers_lib.tier2 import dell
 from scrapers_lib.tier2.dell import (
     _config_summary,
+    _construct_cto_url,
     _extract_techspecs_endpoints,
     _extract_tiles,
     _jsonld_shared,
     _parse_techspecs_html,
     _parse_tile_bullets,
+    parse_dell_configurator_options,
     parse_dell_product_page,
 )
 
@@ -438,3 +440,236 @@ class TestRegistered:
     def test_registered_callable_is_fetch_dell_product(self):
         from scrapers_lib.core.registry import get_fetcher
         assert get_fetcher("dell") is dell.fetch_dell_product
+
+
+# ---------------------------------------------------------------------------
+# _construct_cto_url
+# ---------------------------------------------------------------------------
+
+
+class TestConstructCtoUrl:
+    def test_shop_landing_url_yields_cty_pdp(self):
+        url = (
+            "https://www.dell.com/en-us/shop/dell-laptops/"
+            "alienware-16-aurora-gaming-laptop/spd/"
+            "alienware-aurora-ac16250-gaming-laptop"
+        )
+        assert _construct_cto_url(url, "useac16250hbtshtgb") == (
+            "https://www.dell.com/en-us/shop/cty/pdp/spd/"
+            "alienware-aurora-ac16250-gaming-laptop/useac16250hbtshtgb"
+        )
+
+    def test_preserves_locale_prefix(self):
+        url = (
+            "https://www.dell.com/en-uk/shop/dell-laptops/some-product/"
+            "spd/some-spd-slug"
+        )
+        assert _construct_cto_url(url, "ukabc123") == (
+            "https://www.dell.com/en-uk/shop/cty/pdp/spd/some-spd-slug/ukabc123"
+        )
+
+    def test_empty_oc_returns_none(self):
+        url = (
+            "https://www.dell.com/en-us/shop/dell-laptops/x/spd/some-slug"
+        )
+        assert _construct_cto_url(url, "") is None
+
+    def test_unrecognized_shape_returns_none(self):
+        assert _construct_cto_url("https://www.dell.com/category-page", "useoc") is None
+        assert _construct_cto_url("https://www.dell.com/en-us/shop/no-spd-segment", "useoc") is None
+
+
+# ---------------------------------------------------------------------------
+# parse_dell_configurator_options — fixture-driven
+# ---------------------------------------------------------------------------
+
+
+CTO_FIXTURE = "cto_useac16250hbtshtgb_after_scroll.html"
+CTO_OC = "useac16250hbtshtgb"
+
+
+class TestParseConfiguratorOptions:
+    @pytest.fixture
+    def options(self):
+        return parse_dell_configurator_options(_load(CTO_FIXTURE))
+
+    def test_returns_dict_keyed_by_module_name(self, options):
+        assert isinstance(options, dict)
+        for k, v in options.items():
+            assert isinstance(k, str)
+            assert isinstance(v, list)
+
+    def test_ten_hardware_modules_present(self, options):
+        # Per recon: Processor, OS, OS Language Pack, Graphics, Memory,
+        # Storage, Display, Keyboard, Primary Battery, AC Adapter.
+        assert len(options) == 10
+        for expected in (
+            "Processor",
+            "Operating System",
+            "Operating System Language Pack",
+            "Graphics",
+            "Memory",
+            "Storage",
+            "Display",
+            "Keyboard",
+            "Primary Battery",
+            "AC Adapter",
+        ):
+            assert expected in options, f"missing module: {expected}"
+
+    def test_module_order_matches_dom(self, options):
+        # Dell renders Processor first and AC Adapter last on the Aurora 16
+        # configurator. Insertion order should reflect that.
+        keys = list(options.keys())
+        assert keys[0] == "Processor"
+        assert keys[-1] == "AC Adapter"
+
+    def test_every_option_is_component_option(self, options):
+        for opts in options.values():
+            for o in opts:
+                assert isinstance(o, ComponentOption)
+                assert o.label
+                assert o.option_id
+                assert o.status
+
+    def test_status_vocabulary_is_dell_specific(self, options):
+        seen = {o.status for opts in options.values() for o in opts}
+        assert seen.issubset({"selected", "available", "unavailable"})
+
+    def test_each_module_has_exactly_one_selected(self, options):
+        # Every module must surface a current default; Dell can't render a
+        # configurator with nothing chosen.
+        for module, opts in options.items():
+            selected = [o for o in opts if o.status == "selected"]
+            assert len(selected) == 1, (
+                f"module {module!r} has {len(selected)} selected options"
+            )
+
+    def test_processor_options_match_recon(self, options):
+        labels = [o.label for o in options["Processor"]]
+        assert any("Core" in label and "240H" in label for label in labels)
+        assert any("Core" in label and "270H" in label for label in labels)
+
+    def test_graphics_carries_four_options(self, options):
+        gpu = options["Graphics"]
+        assert len(gpu) == 4
+        # 5050 is the captured default
+        selected = [o for o in gpu if o.status == "selected"]
+        assert "5050" in selected[0].label
+
+    def test_storage_size_options(self, options):
+        labels = " | ".join(o.label for o in options["Storage"])
+        assert "512 GB" in labels
+        assert "1 TB" in labels
+
+    def test_option_id_carries_module_id_prefix(self, options):
+        # Dell's option_id is composite "<moduleId>-<sku>"; e.g. Processor's
+        # module id is 146. The prefix is stable across both options.
+        for o in options["Processor"]:
+            assert o.option_id.startswith("146-"), o.option_id
+        for o in options["Graphics"]:
+            assert o.option_id.startswith("6-"), o.option_id
+
+    def test_no_software_modules_surfaced(self, options):
+        # Software / accessories live in a different DOM and must not
+        # leak into the hardware options dict.
+        for forbidden in ("Microsoft 365", "Microsoft Office", "Anti-Virus", "PDF Solutions"):
+            assert forbidden not in options
+
+
+class TestParseConfiguratorOptionsEdgeCases:
+    def test_empty_html_returns_empty_dict(self):
+        assert parse_dell_configurator_options("") == {}
+
+    def test_unrelated_html_returns_empty_dict(self):
+        html = "<html><body><div>nothing to see here</div></body></html>"
+        assert parse_dell_configurator_options(html) == {}
+
+    def test_module_with_no_options_is_omitted(self):
+        # An accordion-box that has a title but zero options — skip it.
+        html = (
+            '<div class="accordion-box single-column-accordion">'
+            '  <h2 class="module-title">Empty Module</h2>'
+            '  <div class="options"></div>'
+            "</div>"
+        )
+        assert parse_dell_configurator_options(html) == {}
+
+    def test_option_missing_required_attrs_is_skipped(self):
+        html = (
+            '<div class="accordion-box single-column-accordion">'
+            '  <h2 class="module-title">Processor</h2>'
+            '  <div class="options">'
+            '    <div class="option detailed-option">No attrs at all</div>'
+            '    <div class="option detailed-option" data-option-id="146-A" data-status="selected">Real CPU</div>'
+            "  </div>"
+            "</div>"
+        )
+        result = parse_dell_configurator_options(html)
+        assert list(result.keys()) == ["Processor"]
+        assert len(result["Processor"]) == 1
+        assert result["Processor"][0].option_id == "146-A"
+
+    def test_duplicate_option_ids_deduped(self):
+        html = (
+            '<div class="accordion-box single-column-accordion">'
+            '  <h2 class="module-title">Processor</h2>'
+            '  <div class="options">'
+            '    <div class="option detailed-option" data-option-id="146-A" data-status="selected">CPU A</div>'
+            '    <div class="option detailed-option" data-option-id="146-A" data-status="selected">CPU A duplicate</div>'
+            '    <div class="option detailed-option" data-option-id="146-B" data-status="available">CPU B</div>'
+            "  </div>"
+            "</div>"
+        )
+        result = parse_dell_configurator_options(html)
+        assert len(result["Processor"]) == 2
+        ids = [o.option_id for o in result["Processor"]]
+        assert ids == ["146-A", "146-B"]
+
+
+# ---------------------------------------------------------------------------
+# parse_dell_product_page: configurator_options threading
+# ---------------------------------------------------------------------------
+
+
+class TestProductPageWithConfiguratorOptions:
+    def _build_options(self) -> dict[str, list[ComponentOption]]:
+        return {
+            "Processor": [
+                ComponentOption(label="CPU A", status="selected", option_id="146-A"),
+                ComponentOption(label="CPU B", status="available", option_id="146-B"),
+            ],
+            "Graphics": [
+                ComponentOption(label="GPU X", status="selected", option_id="6-X"),
+            ],
+        }
+
+    def test_options_attached_to_every_snapshot(self):
+        html = _load("alienware_aurora_16x.html")
+        opts = self._build_options()
+        snapshots = parse_dell_product_page(
+            html,
+            AURORA_URL,
+            anchors=[_anchor("dell_alienware_aurora_16x", AURORA_URL)],
+            techspecs_html_by_oc=_techspecs(AURORA_OCS),
+            configurator_options=opts,
+        )
+        assert len(snapshots) == 3
+        # Pydantic v2 validates+copies nested models on construction, so we
+        # compare by value (not identity). Logically the same menu rides
+        # along on every tile.
+        for s in snapshots:
+            assert s.options == opts
+            assert "Processor" in s.options
+            assert s.options["Processor"][0].option_id == "146-A"
+
+    def test_options_default_to_none(self):
+        # Backward-compat: omitting the kwarg keeps the field None.
+        html = _load("alienware_aurora_16x.html")
+        snapshots = parse_dell_product_page(
+            html,
+            AURORA_URL,
+            anchors=[_anchor("dell_alienware_aurora_16x", AURORA_URL)],
+            techspecs_html_by_oc=_techspecs(AURORA_OCS),
+        )
+        assert all(s.options is None for s in snapshots)

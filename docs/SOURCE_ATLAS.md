@@ -1,6 +1,6 @@
 # Source Atlas — how each source is scraped
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-12 &nbsp;·&nbsp; **Library version:** 1.4.0
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Library version:** 1.5.0
 
 > A 2-minute map of every source the library can read — or drill into one row for the full story. For dense field-by-field shape, see [`ARCHITECTURE.md §11`](ARCHITECTURE.md#11-per-source-coverage) and [`CONSUMER_GUIDE.md §9`](CONSUMER_GUIDE.md#9-data-shape-quick-reference).
 
@@ -113,6 +113,7 @@ sequenceDiagram
 
 - **Returns:** `ProductSnapshot` per pre-built tile — ~20 categories (processor, GPU, memory, storage, display, ports, slots, dimensions, weight, keyboard, camera, audio, chassis, wireless) plus `price`, `image_url`.
 - **Example:** `https://www.dell.com/us-en/shop/dell-laptops/alienware-16` → 3 snapshots (one per "Recommended Configuration" tile).
+- **`include_options=True` (v1.5.0):** opt-in kwarg that additionally navigates to the `cty/pdp` configurator URL (constructed internally from the shop-landing URL's spd-slug + the first tile's order code) and attaches the product line's **hardware option menu** to every snapshot's `options` field. 10 modules surfaced — Processor, Operating System, OS Language Pack, Graphics, Memory, Storage, Display, Keyboard, Primary Battery, AC Adapter — each with a `list[ComponentOption(label, status, option_id)]`. `status` is one of `"selected"` (current default), `"available"`, `"unavailable"` (offered but not currently shippable). Software / accessories modules (Microsoft 365, antivirus, PDF tools) intentionally not surfaced. Costs ~5–8 s extra per call (one additional page nav through the same stealth session); off by default.
 
 ## 6.2 HP (`hp`)
 

@@ -33,7 +33,7 @@ from typing import Any
 from scrapers_lib.core.attribution import attribute_url
 from scrapers_lib.core.playwright_base import stealth_context
 from scrapers_lib.core.registry import register
-from scrapers_lib.core.schemas import Anchor, ProductSnapshot
+from scrapers_lib.core.schemas import Anchor, ComponentOption, ProductSnapshot
 from scrapers_lib.core.scheduler import BlockedError
 from scrapers_lib.tier2.base import normalize_spec_value, parse_product_jsonld
 
@@ -65,6 +65,7 @@ def fetch_dell_product(
     *,
     profiles_dir: str | Path = "./.profiles",
     warm: bool = True,
+    include_options: bool = False,
     **_: Any,
 ) -> list[ProductSnapshot]:
     """Fetch a Dell product page; return one :class:`ProductSnapshot` per tile.
@@ -74,24 +75,43 @@ def fetch_dell_product(
     is requested. Each tile's ``csbapi/unifiedpd/techspecs`` endpoint is
     called through the same browser context so its cookies ride along.
 
+    When ``include_options`` is true, the fetcher additionally navigates to
+    the ``cty/pdp`` configurator page (constructed from the spd-slug + the
+    first tile's order code) through the same stealth session and parses
+    the hardware-module option menu (Processor / Graphics / Memory /
+    Storage / Display / Keyboard / Battery / AC Adapter / OS / OS Language
+    Pack). The same options dict is attached to every emitted snapshot —
+    the menu is product-line-level, not tile-level. Default ``False`` keeps
+    the historical single-navigation behavior.
+
     Attribution uses the URL-map gate: one of ``anchors`` must have
     ``source_urls["dell"] == url``. Raises :class:`ValueError` otherwise.
 
     Raises :class:`BlockedError` if the product page appears to be an
     Akamai challenge despite stealth + warming.
     """
-    product_html, techspecs_by_oc = _fetch_dell_session(
-        url, profiles_dir, warm=warm
+    product_html, techspecs_by_oc, configurator_html = _fetch_dell_session(
+        url, profiles_dir, warm=warm, include_options=include_options
     )
 
     if _looks_blocked(product_html):
         raise BlockedError(f"dell: product page appears blocked at {url}")
+
+    configurator_options: dict[str, list[ComponentOption]] | None = None
+    if configurator_html is not None:
+        try:
+            configurator_options = parse_dell_configurator_options(configurator_html)
+        except Exception as e:  # pragma: no cover - defensive
+            logger.warning("dell: configurator parse failed: %s", e)
+        if not configurator_options:
+            configurator_options = None
 
     return parse_dell_product_page(
         product_html,
         url,
         anchors=anchors,
         techspecs_html_by_oc=techspecs_by_oc,
+        configurator_options=configurator_options,
     )
 
 
@@ -101,6 +121,7 @@ def parse_dell_product_page(
     *,
     anchors: list[Anchor] | None = None,
     techspecs_html_by_oc: dict[str, str] | None = None,
+    configurator_options: dict[str, list[ComponentOption]] | None = None,
 ) -> list[ProductSnapshot]:
     """Pure parse: product page HTML + optional per-OC techspecs responses → snapshots.
 
@@ -109,7 +130,10 @@ def parse_dell_product_page(
     2. In-page bullet list — 6 short summary values.
 
     Shared JSON-LD fields (brand, rating, review count, hero image) are
-    pulled once and applied to every emitted snapshot.
+    pulled once and applied to every emitted snapshot. When
+    ``configurator_options`` is provided (typically by ``fetch_dell_product``
+    with ``include_options=True``), the same options dict is attached to
+    every emitted snapshot — the option menu is product-line-level.
     """
     techspecs = techspecs_html_by_oc or {}
 
@@ -166,6 +190,7 @@ def parse_dell_product_page(
                 review_count=shared.get("review_count"),
                 image_url=shared.get("image"),
                 specs=specs,
+                options=configurator_options,
                 raw={"spec_source": spec_source},
             )
         )
@@ -183,13 +208,17 @@ def _fetch_dell_session(
     profiles_dir: str | Path,
     *,
     warm: bool,
-) -> tuple[str, dict[str, str]]:
+    include_options: bool = False,
+) -> tuple[str, dict[str, str], str | None]:
     """Navigate to the product page; call each tile's techspecs endpoint.
 
     Uses one stealth browser context for everything so Akamai cookies
     acquired during warming and the main fetch apply to the API calls.
+    When ``include_options`` is true, also navigates to the ``cty/pdp``
+    configurator page within the same context and returns its HTML.
     """
     techspecs: dict[str, str] = {}
+    configurator_html: str | None = None
 
     with stealth_context(profiles_dir=profiles_dir, domain="www.dell.com") as page:
         if warm:
@@ -229,7 +258,26 @@ def _fetch_dell_session(
             except Exception as e:  # pragma: no cover - network edge cases
                 logger.warning("dell: techspecs fetch failed for %s: %s", oc, e)
 
-    return product_html, techspecs
+        if include_options:
+            first_oc = next(iter(endpoints), None)
+            cto_url = _construct_cto_url(url, first_oc) if first_oc else None
+            if cto_url is None:
+                logger.warning(
+                    "dell: include_options=True but could not derive a cty/pdp URL "
+                    "from %s (no tile OC available)",
+                    url,
+                )
+            else:
+                try:
+                    page.goto(cto_url, wait_until="domcontentloaded", timeout=60_000)
+                    time.sleep(4)
+                    configurator_html = page.content()
+                except Exception as e:  # pragma: no cover - network edge cases
+                    logger.warning(
+                        "dell: configurator fetch failed for %s: %s", cto_url, e
+                    )
+
+    return product_html, techspecs, configurator_html
 
 
 # ---------------------------------------------------------------------------
@@ -240,6 +288,79 @@ def _fetch_dell_session(
 def _looks_blocked(html: str) -> bool:
     low = html.lower()
     return any(m in low for m in _BLOCK_MARKERS)
+
+
+_CTO_REWRITE_RE = re.compile(r"^(.*)/shop/[^?#]*?/spd/([^/?#]+)(?:[/?#]|$)")
+
+
+def _construct_cto_url(shop_url: str, oc: str) -> str | None:
+    """Build a ``cty/pdp`` configurator URL from a shop-landing URL + an OC.
+
+    Replaces ``/shop/<category-path>/spd/<spd_slug>`` with
+    ``/shop/cty/pdp/spd/<spd_slug>/<oc>``, preserving scheme, host, and
+    locale prefix (e.g. ``/en-us``). Returns ``None`` if ``shop_url`` is
+    not a recognizable shop-landing URL or ``oc`` is empty.
+    """
+    if not oc:
+        return None
+    m = _CTO_REWRITE_RE.match(shop_url)
+    if not m:
+        return None
+    prefix, spd_slug = m.group(1), m.group(2)
+    return f"{prefix}/shop/cty/pdp/spd/{spd_slug}/{oc}"
+
+
+def parse_dell_configurator_options(
+    html: str,
+) -> dict[str, list[ComponentOption]]:
+    """Parse a Dell ``cty/pdp`` configurator page → ``{module: [options]}``.
+
+    Walks every ``div.accordion-box.single-column-accordion`` (one per
+    hardware module — Processor, Graphics, Memory, Storage, Display,
+    Keyboard, Primary Battery, AC Adapter, Operating System, OS Language
+    Pack) and reads each option card's visible label,
+    ``data-option-id``, and ``data-status``.
+
+    Module order in the returned dict mirrors the on-page order; option
+    order within each module preserves the in-DOM order. Returns an empty
+    dict for pages that carry no recognizable configurator modules.
+
+    Software / accessories modules lower on the page (Microsoft 365,
+    antivirus, etc.) use a different ``<input type="radio">`` DOM and are
+    intentionally not surfaced here.
+    """
+    from bs4 import BeautifulSoup  # noqa: I001
+
+    soup = BeautifulSoup(html, "html.parser")
+    options: dict[str, list[ComponentOption]] = {}
+
+    for box in soup.select("div.accordion-box.single-column-accordion"):
+        title_el = box.select_one(".module-title")
+        if title_el is None:
+            continue
+        module_name = normalize_spec_value(title_el.get_text(" ", strip=True))
+        if not module_name:
+            continue
+
+        module_opts: list[ComponentOption] = []
+        seen_ids: set[str] = set()
+        for opt in box.select("div.option.detailed-option"):
+            label = normalize_spec_value(opt.get_text(" ", strip=True))
+            option_id = (opt.get("data-option-id") or "").strip()
+            status = (opt.get("data-status") or "").strip()
+            if not (label and option_id and status):
+                continue
+            if option_id in seen_ids:
+                continue
+            seen_ids.add(option_id)
+            module_opts.append(
+                ComponentOption(label=label, status=status, option_id=option_id)
+            )
+
+        if module_opts and module_name not in options:
+            options[module_name] = module_opts
+
+    return options
 
 
 def _extract_techspecs_endpoints(html: str) -> dict[str, str]:

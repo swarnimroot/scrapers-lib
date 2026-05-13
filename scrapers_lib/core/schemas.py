@@ -76,6 +76,24 @@ class Attribution(BaseModel):
     matched_tokens: list[str] = Field(default_factory=list)
 
 
+class ComponentOption(BaseModel):
+    """A single selectable option within a configurator module.
+
+    Currently surfaced only by the Dell fetcher (Wave 2h, v1.5.0) when
+    invoked with ``include_options=True``. ``status`` carries the source
+    site's vocabulary verbatim — Dell uses ``"selected"`` (the current
+    default), ``"available"`` (offered and orderable), and
+    ``"unavailable"`` (offered on the page but not currently shippable
+    — typically out of stock or constrained by another selection).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    label: str = Field(..., min_length=1)
+    status: str = Field(..., min_length=1)
+    option_id: str = Field(..., min_length=1)
+
+
 class ProductSnapshot(BaseModel):
     """A point-in-time observation of a product listing on a specific source.
 
@@ -104,6 +122,7 @@ class ProductSnapshot(BaseModel):
     review_count: int | None = Field(default=None, ge=0)
     image_url: str | None = None
     specs: dict[str, str] = Field(default_factory=dict)
+    options: dict[str, list[ComponentOption]] | None = None
     raw: dict[str, Any] | None = None
     fetched_at: datetime = Field(default_factory=_utc_now)
 

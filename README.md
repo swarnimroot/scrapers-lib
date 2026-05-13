@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Library version:** 1.4.0
+**Status:** stable &nbsp;·&nbsp; **Library version:** 1.5.0
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -166,6 +166,7 @@ The top level exports only the headline types. Everything else lives at a deep i
 - `Scheduler`, `BlockedError` — persistent job queue and its blocking-signal exception.
 - `Anchor`, `AttributionRegex` — consumer-defined targets and the token rules that attribute text to them.
 - `Attribution`, `RawMention`, `ProductSnapshot` — the three return shapes every fetcher emits.
+- `ComponentOption` — one selectable option (label + status + option_id) within a configurator module; populated on `ProductSnapshot.options` when the Dell fetcher is invoked with `include_options=True` (v1.5.0+).
 - `__version__` — library version string.
 
 **Core primitives (`from scrapers_lib.core.<module> import ...`):**

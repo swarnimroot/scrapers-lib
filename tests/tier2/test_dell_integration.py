@@ -55,3 +55,36 @@ def test_fetch_aurora_live(tmp_path: Path):
         # The techspecs API returns ~20 categories; accept bullet-fallback
         # (6 categories) if a single tile's API call happens to fail.
         assert len(s.specs) >= 6
+        # Default flow does not enrich with configurator options.
+        assert s.options is None
+
+
+@pytest.mark.skipif(not LIVE, reason="live tests disabled; set SCRAPERSLIB_LIVE_TESTS=1")
+def test_fetch_aurora_live_include_options(tmp_path: Path):
+    """`include_options=True` should also pull the cty/pdp option menu."""
+    anchor = Anchor(
+        anchor_id="dell_alienware_aurora_16x",
+        anchor_type="product",
+        name="Alienware Aurora 16X",
+        attribution_regex=AttributionRegex(primary=["Aurora 16X"]),
+        source_urls={"dell": AURORA_URL},
+    )
+
+    snapshots = fetch_dell_product(
+        AURORA_URL,
+        anchors=[anchor],
+        profiles_dir=tmp_path / "profiles",
+        include_options=True,
+    )
+
+    assert len(snapshots) >= 1
+    for s in snapshots:
+        assert s.options is not None, f"tile {s.source_id}: options not enriched"
+        # Aurora 16 / 16X both surface the same Processor / Graphics axes.
+        assert "Processor" in s.options
+        assert "Graphics" in s.options
+        # Every option carries a non-empty label + recognized status.
+        for module, opts in s.options.items():
+            assert opts, f"module {module!r} has no options"
+            for o in opts:
+                assert o.label and o.option_id and o.status
