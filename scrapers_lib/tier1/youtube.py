@@ -12,6 +12,15 @@ return an **empty list** rather than raising. Genuine bot-gate hits
 (``RequestBlocked``, ``IpBlocked``, ``PoTokenRequired``) raise
 :class:`BlockedError` so the Scheduler can back off at the domain level.
 
+Audio fallback (opt-in via ``audio_fallback=True``): YouTube's caption
+endpoint became POT-gated through 2025-2026; in practice roughly half
+of caption requests from residential IPs are now refused. Passing
+``audio_fallback=True`` routes bot-gated and caption-absent videos to
+:mod:`._youtube_audio`, which downloads audio with ``yt-dlp`` and
+transcribes locally with ``faster-whisper`` on CPU. The audio path
+requires the ``[youtube-audio]`` extras package and is otherwise off
+by default — consumers that don't enable it pay nothing.
+
 Dual-mode (discovery / anchor-driven) matches :mod:`tier1.rss`,
 :mod:`tier1.article`, and :mod:`tier1.reddit`.
 
@@ -77,6 +86,8 @@ def fetch_youtube_transcript(
     languages: tuple[str, ...] = ("en",),
     chunk_seconds: float = 60.0,
     preserve_formatting: bool = False,
+    audio_fallback: bool = False,
+    audio_model: str = "small.en",
     **_: Any,
 ) -> list[RawMention]:
     """Fetch a video's captions; emit :class:`RawMention` per chunked segment.
@@ -94,22 +105,76 @@ def fetch_youtube_transcript(
     sentiment / anchor matching). Reduce for finer temporal granularity;
     increase for coarser, paragraph-level chunks.
 
+    ``audio_fallback`` (default ``False``) turns on a local speech-to-
+    text safety net. When ``True``, two conditions route to the audio
+    path: (a) the caption endpoint raises :class:`BlockedError`
+    (PoToken / IpBlocked / RequestBlocked); (b) the caption endpoint
+    returns ``[]`` (uploader disabled captions, no caption track in
+    the requested languages, etc.). yt-dlp downloads audio-only,
+    faster-whisper transcribes locally on CPU, and the resulting
+    timestamped segments flow through the same chunking + deep-link
+    logic as native captions. Requires ``pip install
+    "scrapers-lib[youtube-audio]"``. See :mod:`._youtube_audio`.
+
+    ``audio_model`` selects the faster-whisper model when the audio
+    path runs. Default ``"small.en"`` (~150 MB weights, ~30 s wall time
+    per 10-minute clip on a modern consumer CPU, solid WER for product
+    / gaming review vocabulary). Other useful choices: ``"base.en"``
+    (faster, slightly worse), ``"medium.en"`` (slower, better WER).
+
     Raises :class:`BlockedError` when YouTube is clearly refusing the
-    request (rate-limit, IP block, PoToken required). Returns ``[]``
-    for videos that legitimately lack captions.
+    request (rate-limit, IP block, PoToken required) *and*
+    ``audio_fallback`` is off or itself blocked. Returns ``[]`` for
+    videos that legitimately lack captions when ``audio_fallback`` is
+    off, or that are also unavailable to the audio path (private,
+    deleted, age-gated, region-locked).
     """
     video_id = _extract_video_id(url)
-    snippets = _fetch_snippets(
-        video_id,
-        languages=languages,
-        preserve_formatting=preserve_formatting,
-    )
+    try:
+        snippets = _fetch_snippets(
+            video_id,
+            languages=languages,
+            preserve_formatting=preserve_formatting,
+        )
+    except BlockedError:
+        if not audio_fallback:
+            raise
+        logger.info(
+            "youtube: captions bot-gated for %s; routing to audio fallback",
+            video_id,
+        )
+        snippets = _audio_fallback_snippets(video_id, model_name=audio_model)
+    else:
+        if not snippets and audio_fallback:
+            logger.info(
+                "youtube: no captions for %s; routing to audio fallback",
+                video_id,
+            )
+            snippets = _audio_fallback_snippets(video_id, model_name=audio_model)
+
     return parse_youtube_transcript(
         snippets,
         video_id=video_id,
         anchors=anchors,
         chunk_seconds=chunk_seconds,
     )
+
+
+def _audio_fallback_snippets(
+    video_id: str,
+    *,
+    model_name: str,
+) -> list[dict[str, Any]]:
+    """Thin wrapper around :mod:`._youtube_audio` with lazy import.
+
+    Kept as a module-level function (not inlined) so tests can
+    ``monkeypatch.setattr(youtube, "_audio_fallback_snippets", ...)``
+    to exercise the fallthrough wiring without needing the
+    ``[youtube-audio]`` extras installed.
+    """
+    from ._youtube_audio import fetch_audio_snippets
+
+    return fetch_audio_snippets(video_id, model_name=model_name)
 
 
 def parse_youtube_transcript(
