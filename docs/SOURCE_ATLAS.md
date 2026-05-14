@@ -1,6 +1,6 @@
 # Source Atlas — how each source is scraped
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Library version:** 1.5.0
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Library version:** 1.6.0
 
 > A 2-minute map of every source the library can read — or drill into one row for the full story. For dense field-by-field shape, see [`ARCHITECTURE.md §11`](ARCHITECTURE.md#11-per-source-coverage) and [`CONSUMER_GUIDE.md §9`](CONSUMER_GUIDE.md#9-data-shape-quick-reference).
 
@@ -119,9 +119,11 @@ sequenceDiagram
 
 - **How:** `curl_cffi` with Chrome impersonation + HTTP/1.1, one warmed session that fetches both the PDP HTML (config-picker tiles, embedded as a JSON-encoded HTML comment in `<div id="data"><!--{...}--></div>`) and a sibling GraphQL endpoint (`/us-en/shop/app/api/web/graphql/page/pdp%2F<slug>/async`) for product-wide Tech Specs.
 - **Why this method:** HP's config-picker categories are server-rendered into the PDP, but the broader Tech Specs section (Dimensions, Weight, External I/O Ports, Audio, Power supply, Warranty, etc.) is hydrated from a separate GraphQL endpoint. The warmed `curl_cffi` session works against both surfaces in one round-trip. Vanilla and stealth Playwright are still rejected with `ERR_HTTP2_PROTOCOL_ERROR` on `/shop/pdp/`.
-- **Returns:** `ProductSnapshot` per pre-built tile — **~23-26 categories** per laptop tile (was ~12 pre-Wave-2e), now including Dimensions, Weight, External I/O Ports, Audio Features, Network interface, Battery Recharge Time, Power supply, Webcam, Warranty (set varies by product family). Per-tile config-picker values overlay async product-wide values on overlap.
-- **Failure mode:** the async fetch is best-effort. On any failure (non-200, JSON parse error, missing envelope) the fetcher logs at INFO and falls back to config-picker-only data, mirroring the v1.1 12-category behavior.
-- **Example:** `https://www.hp.com/us-en/shop/pdp/omen-max-16-laptop-pc`.
+- **Returns (CTO customizer URLs, slugs typically `…av-1`):** `ProductSnapshot` per pre-built tile — **~23-26 categories** per laptop tile (was ~12 pre-Wave-2e), now including Dimensions, Weight, External I/O Ports, Audio Features, Network interface, Battery Recharge Time, Power supply, Webcam, Warranty (set varies by product family). Per-tile config-picker values overlay async product-wide values on overlap.
+- **Returns (STO SKU-final URLs, slugs typically `…nr`, v1.6.0):** **one** `ProductSnapshot` for the single fixed SKU; `source_id` = `productInitial.sku` (e.g. `B96S8UA#ABA`). Specs come from the same async `pdpTechSpecs` endpoint (28+ categories on the OMEN 16-ap0097nr reference — strictly more coverage than CTO tiles). Title/brand/price/list_price/rating/review_count/image all populated from the SSR'd `productInitial` + `productInitialPrice` + `pdpImages` blocks. JSON-LD Product is also present on STO PDPs (absent on CTO) and serves as brand/rating/image fallback. `raw.spec_source = "productInitial+pdpTechSpecs"`.
+- **Delisted slugs (v1.6.0):** HP silently rewrites discontinued PDP slugs to the shop homepage at the CMS layer — the HTTP response is 200, but `templateKey` becomes `"home"` and the product surfaces disappear. Parser raises `HPProductNotFoundError` (a typed `RuntimeError` subclass) so consumers can `except HPProductNotFoundError: continue` to skip dead slugs without aborting a batch.
+- **Failure modes:** the async fetch is best-effort. On any failure (non-200, JSON parse error, missing envelope) the fetcher logs at INFO and falls back to config-picker-only data on CTO (~12 categories, v1.1 behavior) or to an empty `specs` dict on STO. PDP HTML itself is hard-fail.
+- **Examples:** CTO `https://www.hp.com/us-en/shop/pdp/omen-16-inch-gaming-laptop-pc-a58a5av-1` → 3 snapshots. STO `https://www.hp.com/us-en/shop/pdp/omen-gaming-laptop-16-ap0097nr` → 1 snapshot.
 
 ## 6.3 Lenovo PSREF (`lenovo`)
 

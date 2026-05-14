@@ -17,13 +17,17 @@ from scrapers_lib.core.registry import list_fetchers
 from scrapers_lib.core.schemas import Anchor, AttributionRegex
 from scrapers_lib.tier2 import hp
 from scrapers_lib.tier2.hp import (
+    HPProductNotFoundError,
     _config_summary,
     _derive_async_url,
     _extract_async_specs,
     _extract_state_json,
+    _first_pdp_image_url,
     _flatten_technical_specs,
     _jsonld_shared,
     _pick_title,
+    _rating_from_product_initial,
+    _review_count_from_product_initial,
     _validate_pdp_url,
     parse_hp_product_page,
 )
@@ -366,13 +370,17 @@ class TestExtractStateJson:
 
 class TestParsePageStructuralFailures:
     def test_missing_pdpCTOConfiguration_raises(self):
-        # A page whose state JSON is valid but lacks the configurations path.
+        # A page whose state JSON is valid, templateKey *is* "pdp" (so the
+        # delisted-slug HPProductNotFoundError branch doesn't fire), but
+        # the components carry neither pdpCTOConfiguration nor
+        # productInitial. Post-Wave-2i dispatch: opaque RuntimeError
+        # signaling a structural break ("page structure may have changed").
         html = (
             '<html><body><div id="data" style="display:none">'
-            '<!-- {"slugInfo": {"components": {}}} -->'
+            '<!-- {"slugInfo": {"templateKey": "pdp", "components": {}}} -->'
             "</div></body></html>"
         )
-        with pytest.raises(RuntimeError, match="no pdpCTOConfiguration"):
+        with pytest.raises(RuntimeError, match="page structure may have changed"):
             parse_hp_product_page(
                 html,
                 OMEN_MAX_URL,
@@ -769,3 +777,260 @@ class TestParseHpProductPageWithAsync:
                 f"async value bled through on Operating system in tile {snap.source_id}"
             )
             assert snap.specs.get("Async-Only Category") == "ASYNC FILLS GAP"
+
+
+# ---------------------------------------------------------------------------
+# parse_hp_product_page — STO (SKU-final) fallback (Wave 2i, v1.6.0)
+# ---------------------------------------------------------------------------
+
+
+OMEN_STO_URL = "https://www.hp.com/us-en/shop/pdp/omen-gaming-laptop-16-ap0097nr"
+OMEN_STO_SKU = "B96S8UA#ABA"
+OMEN_173_REDIRECT_URL = (
+    "https://www.hp.com/us-en/shop/pdp/omen-173-inch-gaming-laptop-pc-a7jp9av-1"
+)
+
+
+class TestParseStoFallback:
+    """STO (`product_class="STO"`) PDPs have `pdpCTOConfiguration: None` but a
+    rich `productInitial` block. The parser should emit one snapshot per URL
+    with specs sourced from the async pdpTechSpecs array.
+    """
+
+    @pytest.fixture
+    def snapshots(self):
+        html = _load("recon_nr_ap0097nr.html")
+        async_techspecs = _load_async_techspecs("recon_nr_ap0097nr_async.json")
+        return parse_hp_product_page(
+            html,
+            OMEN_STO_URL,
+            anchors=[_anchor("hp_omen_ap0097", OMEN_STO_URL)],
+            async_techspecs=async_techspecs,
+        )
+
+    def test_emits_single_snapshot(self, snapshots):
+        # STO is fixed-SKU; one snapshot per URL.
+        assert len(snapshots) == 1
+
+    def test_source_id_is_sku(self, snapshots):
+        assert snapshots[0].source_id == OMEN_STO_SKU
+        assert snapshots[0].variant_key == OMEN_STO_SKU
+
+    def test_attribution_carried(self, snapshots):
+        assert snapshots[0].anchor_id == "hp_omen_ap0097"
+
+    def test_brand_is_hp(self, snapshots):
+        assert snapshots[0].brand == "HP"
+
+    def test_title_from_product_initial(self, snapshots):
+        title = snapshots[0].title
+        assert "OMEN" in title
+        assert "ap0097nr" in title
+
+    def test_prices_match_captured_values(self, snapshots):
+        s = snapshots[0]
+        # productInitialPrice.salePrice = 1699.99, regularPrice = 2599.99.
+        assert s.price == Decimal("1699.99")
+        assert s.list_price == Decimal("2599.99")
+
+    def test_currency_default_usd(self, snapshots):
+        assert snapshots[0].currency == "USD"
+
+    def test_rating_coerced_to_float(self, snapshots):
+        assert snapshots[0].rating == 4.0
+
+    def test_review_count_coerced_to_int(self, snapshots):
+        assert snapshots[0].review_count == 82
+
+    def test_image_url_is_non_video(self, snapshots):
+        s = snapshots[0]
+        assert s.image_url
+        assert s.image_url.startswith("https://")
+        # pdpImages.fullImages on STO PDPs interleaves a marketing .mp4
+        # with the still images. The parser must skip the video.
+        assert not s.image_url.lower().endswith((".mp4", ".webm", ".mov"))
+
+    def test_specs_came_from_async_techspecs(self, snapshots):
+        s = snapshots[0]
+        # The captured async response has 28 categories.
+        assert len(s.specs) == 28
+        # Spot-check a few keys that the STO test fixture is known to carry.
+        assert "Operating system" in s.specs
+        assert "Processor" in s.specs
+        assert "Memory" in s.specs
+        assert "Storage" in s.specs
+
+    def test_specs_unaffected_when_async_missing(self):
+        html = _load("recon_nr_ap0097nr.html")
+        snaps = parse_hp_product_page(
+            html,
+            OMEN_STO_URL,
+            anchors=[_anchor("hp_omen_ap0097", OMEN_STO_URL)],
+            async_techspecs=None,
+        )
+        assert len(snaps) == 1
+        # No async data → empty specs dict; the snapshot still ships.
+        assert snaps[0].specs == {}
+        assert snaps[0].raw["spec_source"] == "productInitial"
+
+    def test_raw_records_spec_source_and_part_info(self, snapshots):
+        s = snapshots[0]
+        assert s.raw["spec_source"] == "productInitial+pdpTechSpecs"
+        assert s.raw["mfpartnumber"] == "B96S8UA#ABA"
+        assert s.raw["family"] == "OMEN"
+        assert s.raw["product_class"] == "STO"
+
+    def test_config_summary_present(self, snapshots):
+        # Async specs carry Processor/Memory/Storage/Display; the existing
+        # _config_summary helper should assemble a non-empty summary.
+        summary = snapshots[0].config_summary
+        assert summary
+        assert " / " in summary
+
+    def test_options_field_still_none_on_hp(self, snapshots):
+        # v1.5 Dell-only ComponentOption surface — HP must leave it None.
+        assert snapshots[0].options is None
+
+
+class TestProductNotFoundError:
+    """Delisted / homepage-redirected slugs (templateKey != "pdp") raise
+    HPProductNotFoundError rather than the opaque AttributeError /
+    RuntimeError the v1.5 parser produced.
+    """
+
+    def test_raises_on_homepage_redirect(self):
+        html = _load("recon_av_a7jp9av1_173.html")
+        with pytest.raises(HPProductNotFoundError) as excinfo:
+            parse_hp_product_page(
+                html,
+                OMEN_173_REDIRECT_URL,
+                anchors=[_anchor("hp_omen_173", OMEN_173_REDIRECT_URL)],
+            )
+        msg = str(excinfo.value)
+        assert "delisted or redirected" in msg
+        assert "templateKey='home'" in msg
+        assert OMEN_173_REDIRECT_URL in msg
+
+    def test_is_runtime_error_subclass(self):
+        # Existing `except RuntimeError` handlers continue to catch.
+        assert issubclass(HPProductNotFoundError, RuntimeError)
+
+    def test_synthetic_minimal_template_key_branch(self):
+        # Smallest possible synthetic page that trips the branch — guards
+        # against future refactors that bypass the templateKey check.
+        html = (
+            '<div id="data" style="display:none">'
+            '<!-- {"slugInfo": {"templateKey": "category"}} -->'
+            "</div>"
+        )
+        with pytest.raises(HPProductNotFoundError):
+            parse_hp_product_page(
+                html,
+                "https://www.hp.com/us-en/shop/pdp/some-slug",
+                anchors=[_anchor("hp_x", "https://www.hp.com/us-en/shop/pdp/some-slug")],
+            )
+
+
+class TestNeitherCtoNorStoRaises:
+    """A PDP that survives the templateKey check but carries neither
+    pdpCTOConfiguration.configurations nor productInitial is a genuine
+    structural break, distinct from the delisted case; the parser surfaces
+    that with an opaque RuntimeError ('page structure may have changed').
+    """
+
+    def test_raises_plain_runtime_error(self):
+        html = (
+            '<div id="data" style="display:none">'
+            '<!-- {"slugInfo": {"templateKey": "pdp", "components": {}}} -->'
+            "</div>"
+        )
+        url = "https://www.hp.com/us-en/shop/pdp/some-future-shape"
+        with pytest.raises(RuntimeError) as excinfo:
+            parse_hp_product_page(
+                html,
+                url,
+                anchors=[_anchor("hp_x", url)],
+            )
+        assert "page structure may have changed" in str(excinfo.value)
+        # And it is NOT the typed not-found error — that case is
+        # semantically different (delisted product vs. site redesign).
+        assert not isinstance(excinfo.value, HPProductNotFoundError)
+
+
+# ---------------------------------------------------------------------------
+# STO helper unit tests (Wave 2i)
+# ---------------------------------------------------------------------------
+
+
+class TestRatingFromProductInitial:
+    def test_int_value(self):
+        assert _rating_from_product_initial({"rating": 4}, {}) == 4.0
+
+    def test_string_value(self):
+        assert _rating_from_product_initial({"rating": "4.5"}, {}) == 4.5
+
+    def test_falls_back_to_jsonld(self):
+        assert _rating_from_product_initial({"rating": ""}, {"rating": 3.7}) == 3.7
+
+    def test_none_when_unparseable_and_no_fallback(self):
+        assert _rating_from_product_initial({"rating": "n/a"}, {}) is None
+
+
+class TestReviewCountFromProductInitial:
+    def test_int_value(self):
+        assert _review_count_from_product_initial({"numReviews": 82}, {}) == 82
+
+    def test_string_value(self):
+        assert _review_count_from_product_initial({"numReviews": "150"}, {}) == 150
+
+    def test_falls_back_to_jsonld(self):
+        assert _review_count_from_product_initial(
+            {"numReviews": None}, {"review_count": 42}
+        ) == 42
+
+    def test_none_when_unparseable_and_no_fallback(self):
+        assert _review_count_from_product_initial({"numReviews": "??"}, {}) is None
+
+
+class TestFirstPdpImageUrl:
+    def test_skips_mp4_video(self):
+        pdp_images = {
+            "fullImages": [
+                {"url": "https://x.example/video.mp4"},
+                {"url": "https://x.example/still.png"},
+            ]
+        }
+        assert _first_pdp_image_url(pdp_images, {}) == "https://x.example/still.png"
+
+    def test_skips_webm_and_mov(self):
+        pdp_images = {
+            "fullImages": [
+                {"url": "https://x.example/a.webm"},
+                {"url": "https://x.example/b.mov"},
+                {"url": "https://x.example/c.jpg"},
+            ]
+        }
+        assert _first_pdp_image_url(pdp_images, {}) == "https://x.example/c.jpg"
+
+    def test_handles_querystring_after_extension(self):
+        pdp_images = {
+            "fullImages": [
+                {"url": "https://hp.widen.net/content/foo/webp/foo.png?w=573&h=430"}
+            ]
+        }
+        got = _first_pdp_image_url(pdp_images, {})
+        assert got and got.endswith("h=430")
+
+    def test_falls_back_to_jsonld(self):
+        assert (
+            _first_pdp_image_url({}, {"image": "https://fallback.example/img.jpg"})
+            == "https://fallback.example/img.jpg"
+        )
+
+    def test_returns_none_when_only_videos_and_no_fallback(self):
+        pdp_images = {"fullImages": [{"url": "https://x.example/video.mp4"}]}
+        assert _first_pdp_image_url(pdp_images, {}) is None
+
+    def test_skips_non_dict_entries(self):
+        pdp_images = {"fullImages": ["not-a-dict", {"url": "https://x.example/ok.png"}]}
+        assert _first_pdp_image_url(pdp_images, {}) == "https://x.example/ok.png"

@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 (v1.5.0 Dell configurator option menu; `ProductSnapshot.options` + `ComponentOption` added) &nbsp;·&nbsp; **Library version:** 1.5.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 (v1.6.0 HP STO PDP fallback + `HPProductNotFoundError` for delisted slugs) &nbsp;·&nbsp; **Library version:** 1.6.0
 
 This is the operational roadmap. Library-intrinsic priorities lead — the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are now built externally in their own repos and no longer drive the order in which library work happens. Wave history below records the past order accurately, including which consumer drove each Tier 2 / Tier 3 wave; future direction is library-intrinsic.
 
@@ -8,13 +8,13 @@ This is the operational roadmap. Library-intrinsic priorities lead — the downs
 
 ## Current state
 
-**Last updated:** 2026-05-13 (v1.5.0 shipped: Dell `include_options=True` enriches snapshots with the `cty/pdp` configurator option menu; new `ComponentOption` schema + `ProductSnapshot.options` field)
+**Last updated:** 2026-05-13 (v1.6.0 shipped: HP `parse_hp_product_page` now dispatches on PDP shape — CTO unchanged, STO (`…nr`) gains fallback, delisted slugs raise `HPProductNotFoundError`)
 
-- **Latest tag:** **v1.5.0** (2026-05-13) — Wave 2h. `fetch_dell_product` gained an opt-in `include_options: bool = False` kwarg. When true, the fetcher constructs the `cty/pdp` URL from the shop-landing URL's `spd-slug` + the first tile's order code, navigates to it through the same stealth Playwright session (Akamai cookies stay warm), parses the 10 SSR hardware modules (Processor / Graphics / Memory / Storage / Display / Keyboard / Primary Battery / AC Adapter / OS / OS Language Pack — ~19 options on the Aurora 16 reference), and attaches the resulting `dict[str, list[ComponentOption]]` to every emitted snapshot's new `options` field. New top-level type `ComponentOption(label, status, option_id)`; new `ProductSnapshot.options: dict[str, list[ComponentOption]] | None = None`. Triggered by an external need to scrape Dell `cty/pdp` configurator URLs that the v1.4 fetcher rejected (no `[data-oc]` tiles → `RuntimeError`). Public API additive — every existing caller sees `s.options is None` unchanged. Prior tags: v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added, 2026-05-12), v1.3.1 (Wave 2g: `warmed_curl_session()` graduated into `tier2/base`, 2026-05-07), v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
-- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper graduated, v1.3.1)** → **v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added)** → **Wave 2h (Dell configurator option menu, v1.5.0)**.
-- **In progress:** none — v1.5.0 shipped 2026-05-13.
-- **Next direction:** **Library is at a stable resting state at v1.5.0.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives.
-- **Test state:** **see CHANGELOG `[1.5.0]` for the post-release baseline** (1114 passed, 22 skipped — +22 new unit tests, +1 new gated-live integration test).
+- **Latest tag:** **v1.6.0** (2026-05-13) — Wave 2i. `parse_hp_product_page` gained a three-way dispatcher keyed off `slugInfo.templateKey` + presence of CTO/STO data: (a) CTO customizer URLs (slugs `…av-1`) — unchanged behavior (~23-26 specs per tile via config-picker + async). (b) STO SKU-final URLs (slugs `…nr`) — new path emitting one snapshot per URL with `source_id=productInitial.sku`, specs from the same async `pdpTechSpecs` endpoint (28+ categories), prices/rating/image/title from `productInitial` + `productInitialPrice` + `pdpImages` (filtering `.mp4`/`.webm`/`.mov`). (c) Delisted slugs (`templateKey="home"`, HP silently redirects to shop homepage) — raises new typed `HPProductNotFoundError(RuntimeError)`. Triggered by an external consumer hitting `AttributeError` on `…nr` URLs (the v1.5 chain `.get("pdpCTOConfiguration", {})` did not fire its default because STO sets the value to `None`, not missing). Public API additive — CTO callers unchanged; STO callers go from crash to working snapshot; consumers can `except HPProductNotFoundError` to skip dead slugs cleanly. No new dependencies. Prior tags: v1.5.0 (Wave 2h: Dell `include_options` + `ComponentOption`, 2026-05-13), v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added, 2026-05-12), v1.3.1 (Wave 2g: `warmed_curl_session()` graduated into `tier2/base`, 2026-05-07), v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
+- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper graduated, v1.3.1)** → **v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added)** → **Wave 2h (Dell configurator option menu, v1.5.0)** → **Wave 2i (HP PDP shape dispatcher: STO fallback + delisted-slug typed error, v1.6.0)**.
+- **In progress:** none — v1.6.0 shipped 2026-05-13.
+- **Next direction:** **Library is at a stable resting state at v1.6.0.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives.
+- **Test state:** **see CHANGELOG `[1.6.0]` for the post-release baseline** (1147 passed, 22 skipped — +33 new unit tests; no new gated-live integration tests).
 - **New dep:** none. `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
 - **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
 - **Open questions:** none blocking library work.
@@ -294,6 +294,78 @@ refactor — public API unchanged on top of the frozen v1.0 surface.
   pattern types — new "Reusable primitive" subsection).
 - [x] CHANGELOG `[1.3.1]` entry; `_version.py` bumped 1.3.0 → 1.3.1;
   tag `v1.3.1`.
+
+## Wave 2i — HP PDP shape dispatcher *(shipped v1.6.0, 2026-05-13)*
+
+**Closed 2026-05-13 at v1.6.0.** External consumer surfaced an
+`AttributeError` from `fetch_hp_product` on HP's SKU-final
+preconfigured URLs (slugs typically `…nr`, e.g. `ap0097nr`,
+`fa2047nr`), and a different `RuntimeError` on a 17.3" OMEN URL
+(`a7jp9av-1`). Recon traced the failures: STO PDPs set
+`pdpCTOConfiguration: None` (key exists, value is None) so the v1.5
+`.get("pdpCTOConfiguration", {})` default never fired and the chain
+crashed on `None.get("configurations")`; the 17.3" URL is actually
+**delisted** — HP silently rewrites discontinued slugs to the shop
+homepage at the CMS layer (`templateKey="home"`, no product surfaces).
+Wave 2i closes both gaps with a three-way dispatcher and a typed
+exception. Additive on the frozen v1.0 public API.
+
+- [x] **Recon** against three URL shapes (AV-code customizer, STO `…nr`,
+  17.3" outlier). Confirmed all three are status 200 but only the first
+  carries CTO data. STO PDPs carry a rich `productInitial` +
+  `productInitialPrice` + `pdpImages` payload plus a JSON-LD Product
+  block (absent on CTO), and the same async `pdpTechSpecs` endpoint
+  returns 28+ categories. The 17.3" URL silently redirects to the shop
+  homepage (`templateKey="home"`). Recon probe committed at
+  `scripts/hp/recon_pdp_shapes.py`; fixtures at
+  `tests/tier2/fixtures/hp/recon_av_a58a5av1.html`,
+  `tests/tier2/fixtures/hp/recon_nr_ap0097nr.html`,
+  `tests/tier2/fixtures/hp/recon_nr_ap0097nr_async.json`,
+  `tests/tier2/fixtures/hp/recon_av_a7jp9av1_173.html`, plus a JSON
+  cross-URL summary.
+- [x] **New typed exception** `HPProductNotFoundError(RuntimeError)` in
+  `tier2/hp.py`. Module-scoped (not re-exported at the package top
+  level — HP-specific; generalize when a second source needs it).
+  Subclass of `RuntimeError` so existing `except RuntimeError` handlers
+  still catch.
+- [x] **New STO parser** `_parse_sto_snapshot()` in `tier2/hp.py`. Pulls
+  `source_id` from `productInitial.sku`, title from `productInitial.name`
+  (cleaner than JSON-LD `name` — observed template rot on HP CTO PDPs),
+  brand from `productInitial.brand` (fallback to JSON-LD), prices from
+  `productInitialPrice.{salePrice, regularPrice}`, rating/review_count
+  from `productInitial.{rating, numReviews}` with type coercion + JSON-LD
+  fallback, image from `pdpImages.fullImages` first non-video URL
+  (skip `.mp4`/`.webm`/`.mov`), specs from the async `pdpTechSpecs`
+  array. `raw.spec_source = "productInitial+pdpTechSpecs"` (or
+  `"productInitial"` when async failed). Three small helpers: 
+  `_rating_from_product_initial`, `_review_count_from_product_initial`,
+  `_first_pdp_image_url`.
+- [x] **Three-way dispatcher** in `parse_hp_product_page`. Order:
+  (1) `templateKey != "pdp"` → `HPProductNotFoundError` (no point trying
+  to parse a homepage redirect). (2) `pdpCTOConfiguration` populated +
+  `configurations` non-empty → existing `_parse_cto_tiles()` path
+  (unchanged from v1.5 — extracted from the inline loop into a named
+  helper). (3) `productInitial` populated → new STO snapshot path.
+  (4) Neither → opaque `RuntimeError("page structure may have
+  changed")`. The v1.5 defensive idiom changed from `.get(..., {})` to
+  `.get(...) or {}` to handle the `None`-value case STO PDPs use.
+- [x] **+33 new unit tests** across `TestParseStoFallback` (14),
+  `TestProductNotFoundError` (3), `TestNeitherCtoNorStoRaises` (1),
+  `TestRatingFromProductInitial` (4), `TestReviewCountFromProductInitial`
+  (4), `TestFirstPdpImageUrl` (6); one existing test in
+  `TestParsePageStructuralFailures` updated to use `templateKey="pdp"`
+  so it lands in the "neither CTO nor STO" branch instead of the new
+  not-found branch. Unit suite: **1147 passed, 22 skipped** (was 1114 /
+  22 at v1.5.0). No new gated-live integration tests.
+- [x] **No new dependencies.** `curl_cffi>=0.7` and the existing
+  `warmed_curl_session()` helper already in place.
+- [x] Docs updated: `README.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md`
+  (§11 HP row, §14 tag list), `docs/CONSUMER_GUIDE.md` (§9 HP row),
+  `docs/SOURCE_ATLAS.md` (§6.2 HP entry), `docs/ADDING_A_SOURCE.md`
+  (§4 HP row), `docs/TASKS.md` (Current state + this closed-wave entry),
+  `CHANGELOG.md` (`[1.6.0]` entry).
+- [x] CHANGELOG `[1.6.0]` entry; `_version.py` bumped 1.5.0 → 1.6.0;
+  tag `v1.6.0`.
 
 ## Wave 2h — Dell configurator option menu *(shipped v1.5.0, 2026-05-13)*
 

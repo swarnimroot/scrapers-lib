@@ -1,0 +1,655 @@
+[
+  {
+    "label": "av_a58a5av1",
+    "url": "https://www.hp.com/us-en/shop/pdp/omen-16-inch-gaming-laptop-pc-a58a5av-1",
+    "status": 200,
+    "final_url": "https://www.hp.com/us-en/shop/pdp/omen-16-inch-gaming-laptop-pc-a58a5av-1",
+    "size": 751762,
+    "title": null,
+    "has_div_data": true,
+    "components_inventory": {
+      "productTab": {
+        "_type": "dict",
+        "_keys": []
+      },
+      "valuePropContentSpot": {
+        "_type": "dict",
+        "_keys": [
+          "highlightBanner"
+        ]
+      },
+      "productInitial": {
+        "_type": "dict",
+        "_keys": [
+          "Categories",
+          "Country of Origin",
+          "HPFinance_Promo",
+          "brand",
+          "bundleComponents",
+          "busname",
+          "carepackDefaultMsg",
+          "carepacktype",
+          "catentryId",
+          "colorCTOs",
+          "ctaAddToCart",
+          "ctaEol",
+          "ctaEolUrl",
+          "ctaReplacementURL",
+          "deliveryDate",
+          "display_3pprichcontent",
+          "dte_facet_OS",
+          "eCarePack",
+          "energy_efficiency_icon_attribute",
+          "energystar",
+          "enrollmentKit",
+          "eol",
+          "facet_aipc",
+          "facet_formfactor",
+          "facet_subbrand",
+          "family",
+          "gtin",
+          "gtmUniqueId",
+          "hasMultiplePDK",
+          "hideAddToCart",
+          "isNew",
+          "isSMB",
+          "itemcondition",
+          "keyPoints",
+          "linkUrl",
+          "mfpartnumber",
+          "mktdiff",
+          "name",
+          "numReviews",
+          "oid",
+          "overViewLabels",
+          "overviewAttributes",
+          "plcode",
+          "pm_bigseries",
+          "pm_category",
+          "pm_model",
+          "pm_product",
+          "pm_producttype",
+          "pm_series",
+          "pm_subcategory",
+          "productBadge",
+          "productId",
+          "product_class",
+          "product_line",
+          "product_type",
+          "rating",
+          "readReviewGtmActions",
+          "return_policy",
+          "rewardsBadge",
+          "section",
+          "shipCutOffTime",
+          "shipDate",
+          "shipMessage",
+          "showPaypalBanner",
+          "sku",
+          "social_gallery",
+          "softBundleCatentryIds",
+          "sustainability_logo_attribute",
+          "topCategory",
+          "upc",
+          "usageLabel",
+          "violatorMsg",
+          "wrntyfeatures"
+        ]
+      },
+      "productInitialPrice": {
+        "_type": "dict",
+        "_keys": [
+          "images",
+          "isOOS",
+          "jPromMsg",
+          "name",
+          "productId",
+          "product_type",
+          "regularPrice",
+          "salePrice",
+          "sku"
+        ]
+      },
+      "pdpShadowCTO": {
+        "_type": "NoneType"
+      },
+      "pdpCTOColorOptions": {
+        "_type": "list",
+        "_len": 2
+      },
+      "pdpOfferCatgories": {
+        "_type": "dict",
+        "_keys": [
+          "offers"
+        ]
+      },
+      "pdpSimilarProductsLink": {
+        "_type": "dict",
+        "_keys": [
+          "ctaText",
+          "gtmAttributes",
+          "text"
+        ]
+      },
+      "pdpImages": {
+        "_type": "dict",
+        "_keys": [
+          "fullImages",
+          "has3D",
+          "hasVideo",
+          "mediumImages",
+          "openGalleryGtmActions",
+          "smallImages",
+          "thumbnailImages",
+          "zoomImages"
+        ]
+      },
+      "pdpPartnerLogos": {
+        "_type": "dict",
+        "_keys": [
+          "awards",
+          "logos"
+        ]
+      },
+      "pdpCarePackBundle": {
+        "_type": "dict",
+        "_keys": [
+          "defaultCarePack",
+          "label"
+        ]
+      },
+      "pdpFeatures": {
+        "_type": "dict",
+        "_keys": [
+          "description",
+          "keyPoints"
+        ]
+      },
+      "pdpPromoBanner": {
+        "_type": "str"
+      },
+      "pdpSimilarSupplies": {
+        "_type": "dict",
+        "_keys": [
+          "similarSupplies"
+        ]
+      },
+      "pdpCompatiblePrinters": {
+        "_type": "NoneType"
+      },
+      "pdpCTOConfiguration": {
+        "_type": "dict",
+        "_keys": [
+          "configurations"
+        ]
+      },
+      "pdpReviewsStructuredData": {
+        "_type": "NoneType"
+      },
+      "ugcAvailable": {
+        "_type": "bool"
+      },
+      "pdpSettings": {
+        "_type": "NoneType"
+      },
+      "globalValueProp": {
+        "_type": "NoneType"
+      },
+      "exitPopup": {
+        "_type": "NoneType"
+      },
+      "moxieConcierge": {
+        "_type": "NoneType"
+      }
+    },
+    "pdpCTOConfiguration": {
+      "present": true,
+      "top_keys": [
+        "configurations"
+      ],
+      "configurations_type": "list",
+      "configurations_len": 3,
+      "configurations_is_truthy": true,
+      "configurations_preview": "[list of 3; sample={'configName': \"<str 'Casual Gamer'>\", 'image': \"<str 90 chars: 'https://hp.widen.net/content/dak8r5vaqq/png/dak8r5vaqq.png?w'...>\", 'productBadges': \"<str 'CUSTOMIZABLE'>\", 'ctaText': \"<str 'ADD TO CART'>\", 'highlightSpecs': '[]', 'configCatentryId': \"<str '3074457345621937821'>\", 'icon': \"<str 90 chars: 'www.hp.com/wcsstore/HPStorefrontAssetStore/images/cto_v3/acc'...>\", 'fullSpecs': {'highlights': '<list 0 items>', 'technical_specifications': '<list 12 items>', 'datasheets': '<list 0 items>', 'translations': '<dict 4 keys>'}, 'name': '<str \\'OMEN Gaming Laptop 16t-am000, 16\"\\'>', 'ksps': '[list of 5; sample=str]', 'sku': \"<str '1CasualGamer_A58A5AV_1'>\", 'datasheet': '[]', 'regularPrice': 'float', 'salePrice': 'float', 'gtmActions': {}}]"
+    },
+    "siblings": {
+      "pdpFeatures": {
+        "_type": "dict",
+        "top_keys": [
+          "description",
+          "keyPoints"
+        ],
+        "shape": {
+          "description": "[list of 1; sample=<str 403 chars: 'The new OMEN 16 not only has the power of the latest next-ge'...>]",
+          "keyPoints": "[list of 1; sample={'data': '<list 5 items>'}]"
+        }
+      }
+    },
+    "jsonld_products": [],
+    "json_islands": [
+      {
+        "size": 93,
+        "top_keys": "<list len=19>",
+        "tag_attrs": "nstancePrefix\":\"us-prod\"},\"disclaimer\":null,\"metrics\":{},\"suppliesSearch\":{\"searchResults\":null,\"loading\":false,\"latestSearch\":\"\"},\"caasHeaderEnabled\":true,\"caasErrors\":[]} -->\n        </div>\n        "
+      },
+      {
+        "size": 52,
+        "top_keys": [
+          "namedChunks"
+        ],
+        "tag_attrs": " id=\"__LOADABLE_REQUIRED_CHUNKS__\" type=\"application/json\">[5480,614,1832,4852,9079,6435,4330,130,9023,929,3643,8241,7102,4774,3531,6116,2777,4547,9233]</script>"
+      }
+    ],
+    "static_surfaces": {
+      "table_count": 0,
+      "dl_count": 0,
+      "tr_count": 0,
+      "distinct_data_attrs": [
+        "data-bv-product-id"
+      ],
+      "data_attr_total": 1,
+      "heading_hits": {
+        "Specifications": 0,
+        "Tech Specs": 0,
+        "Technical specifications": 0,
+        "Features": 0,
+        "What's in the box": 0,
+        "What's Included": 0,
+        "Overview": 0
+      },
+      "class_hints": {
+        "pdpTechSpecs": 8,
+        "detailed-specs": 2,
+        "tech-specs": 11,
+        "spec-card": 0,
+        "product-overview": 0,
+        "feature-card": 0,
+        "feature-grid": 0,
+        "key-features": 0
+      },
+      "li_strong_pair_count": 0,
+      "li_strong_sample": []
+    }
+  },
+  {
+    "label": "nr_ap0097nr",
+    "url": "https://www.hp.com/us-en/shop/pdp/omen-gaming-laptop-16-ap0097nr",
+    "status": 200,
+    "final_url": "https://www.hp.com/us-en/shop/pdp/omen-gaming-laptop-16-ap0097nr",
+    "size": 758834,
+    "title": null,
+    "has_div_data": true,
+    "components_inventory": {
+      "productTab": {
+        "_type": "dict",
+        "_keys": []
+      },
+      "valuePropContentSpot": {
+        "_type": "dict",
+        "_keys": [
+          "highlightBanner"
+        ]
+      },
+      "productInitial": {
+        "_type": "dict",
+        "_keys": [
+          "Categories",
+          "Country of Origin",
+          "HPFinance_Promo",
+          "brand",
+          "bundleComponents",
+          "busname",
+          "carepackDefaultMsg",
+          "carepacktype",
+          "catentryId",
+          "ctaAddToCart",
+          "ctaEol",
+          "ctaEolUrl",
+          "ctaReplacementURL",
+          "deliveryDate",
+          "display_3pprichcontent",
+          "dte_facet_OS",
+          "eCarePack",
+          "energy_efficiency_icon_attribute",
+          "energystar",
+          "enrollmentKit",
+          "eol",
+          "facet_aipc",
+          "facet_formfactor",
+          "facet_subbrand",
+          "family",
+          "gtin",
+          "gtmUniqueId",
+          "hideAddToCart",
+          "isNew",
+          "isSMB",
+          "itemcondition",
+          "keyPoints",
+          "linkUrl",
+          "mfpartnumber",
+          "mktdiff",
+          "name",
+          "numReviews",
+          "oid",
+          "overViewLabels",
+          "overviewAttributes",
+          "plcode",
+          "pm_bigseries",
+          "pm_category",
+          "pm_model",
+          "pm_product",
+          "pm_producttype",
+          "pm_series",
+          "pm_subcategory",
+          "productBadge",
+          "productId",
+          "product_class",
+          "product_line",
+          "product_type",
+          "rating",
+          "readReviewGtmActions",
+          "return_policy",
+          "rewardsBadge",
+          "section",
+          "shipCutOffTime",
+          "shipDate",
+          "shipMessage",
+          "showPaypalBanner",
+          "sku",
+          "social_gallery",
+          "sustainability_logo_attribute",
+          "topCategory",
+          "upc",
+          "usageLabel",
+          "violatorMsg",
+          "wrntyfeatures"
+        ]
+      },
+      "productInitialPrice": {
+        "_type": "dict",
+        "_keys": [
+          "images",
+          "isOOS",
+          "jPromMsg",
+          "name",
+          "productId",
+          "product_type",
+          "regularPrice",
+          "salePrice",
+          "sku"
+        ]
+      },
+      "pdpShadowCTO": {
+        "_type": "NoneType"
+      },
+      "pdpCTOColorOptions": {
+        "_type": "NoneType"
+      },
+      "pdpOfferCatgories": {
+        "_type": "dict",
+        "_keys": [
+          "offers"
+        ]
+      },
+      "pdpSimilarProductsLink": {
+        "_type": "dict",
+        "_keys": [
+          "ctaText",
+          "gtmAttributes",
+          "text"
+        ]
+      },
+      "pdpImages": {
+        "_type": "dict",
+        "_keys": [
+          "fullImages",
+          "has3D",
+          "hasVideo",
+          "mediumImages",
+          "openGalleryGtmActions",
+          "smallImages",
+          "thumbnailImages",
+          "zoomImages"
+        ]
+      },
+      "pdpPartnerLogos": {
+        "_type": "dict",
+        "_keys": [
+          "awards",
+          "logos"
+        ]
+      },
+      "pdpCarePackBundle": {
+        "_type": "dict",
+        "_keys": [
+          "carepacks",
+          "defaultCarePack",
+          "gtmActions",
+          "label"
+        ]
+      },
+      "pdpFeatures": {
+        "_type": "dict",
+        "_keys": [
+          "description",
+          "keyPoints"
+        ]
+      },
+      "pdpPromoBanner": {
+        "_type": "str"
+      },
+      "pdpSimilarSupplies": {
+        "_type": "dict",
+        "_keys": [
+          "similarSupplies"
+        ]
+      },
+      "pdpCompatiblePrinters": {
+        "_type": "NoneType"
+      },
+      "pdpCTOConfiguration": {
+        "_type": "NoneType"
+      },
+      "pdpReviewsStructuredData": {
+        "_type": "NoneType"
+      },
+      "ugcAvailable": {
+        "_type": "bool"
+      },
+      "pdpSettings": {
+        "_type": "NoneType"
+      },
+      "globalValueProp": {
+        "_type": "NoneType"
+      },
+      "exitPopup": {
+        "_type": "NoneType"
+      },
+      "moxieConcierge": {
+        "_type": "NoneType"
+      }
+    },
+    "pdpCTOConfiguration": {
+      "present": false,
+      "raw_type": "missing"
+    },
+    "siblings": {
+      "pdpFeatures": {
+        "_type": "dict",
+        "top_keys": [
+          "description",
+          "keyPoints"
+        ],
+        "shape": {
+          "description": "[list of 1; sample=<str 400 chars: 'The new OMEN 16 not only has the power of the latest next-ge'...>]",
+          "keyPoints": "[list of 1; sample={'data': '<list 4 items>'}]"
+        }
+      }
+    },
+    "jsonld_products": [
+      {
+        "name": "OMEN Gaming Laptop 16-ap0097nr 16\",\u00a0Windows 11 Home, \u00a0AMD Ryzen\u2122 AI 9,\u00a032GB RAM,\u00a01TB SSD,\u00a0NVIDIA\u00ae GeForce RTX\u2122 5070,\u00a0WQX",
+        "brand": "HP",
+        "image": null,
+        "offer_price": 1699.99,
+        "offer_currency": "USD",
+        "rating_value": 4,
+        "review_count": 82
+      }
+    ],
+    "json_islands": [
+      {
+        "size": 103,
+        "top_keys": "<list len=21>",
+        "tag_attrs": "nstancePrefix\":\"us-prod\"},\"disclaimer\":null,\"metrics\":{},\"suppliesSearch\":{\"searchResults\":null,\"loading\":false,\"latestSearch\":\"\"},\"caasHeaderEnabled\":true,\"caasErrors\":[]} -->\n        </div>\n        "
+      },
+      {
+        "size": 71,
+        "top_keys": [
+          "namedChunks"
+        ],
+        "tag_attrs": " id=\"__LOADABLE_REQUIRED_CHUNKS__\" type=\"application/json\">[5480,614,1832,4852,9079,6435,4330,130,9023,929,3643,8241,7102,4774,3531,6116,2777,4547,4870,3007,9233]</script>"
+      }
+    ],
+    "static_surfaces": {
+      "table_count": 0,
+      "dl_count": 0,
+      "tr_count": 0,
+      "distinct_data_attrs": [
+        "data-bv-product-id"
+      ],
+      "data_attr_total": 1,
+      "heading_hits": {
+        "Specifications": 0,
+        "Tech Specs": 0,
+        "Technical specifications": 0,
+        "Features": 0,
+        "What's in the box": 0,
+        "What's Included": 0,
+        "Overview": 0
+      },
+      "class_hints": {
+        "pdpTechSpecs": 8,
+        "detailed-specs": 2,
+        "tech-specs": 11,
+        "spec-card": 0,
+        "product-overview": 0,
+        "feature-card": 0,
+        "feature-grid": 0,
+        "key-features": 0
+      },
+      "li_strong_pair_count": 0,
+      "li_strong_sample": []
+    }
+  },
+  {
+    "label": "av_a7jp9av1_173",
+    "url": "https://www.hp.com/us-en/shop/pdp/omen-173-inch-gaming-laptop-pc-a7jp9av-1",
+    "status": 200,
+    "final_url": "https://www.hp.com/us-en/shop",
+    "size": 692589,
+    "title": null,
+    "has_div_data": true,
+    "components_inventory": {
+      "productTab": {
+        "_type": "dict",
+        "_keys": []
+      },
+      "valuePropContentSpot": {
+        "_type": "dict",
+        "_keys": [
+          "highlightBanner"
+        ]
+      },
+      "homeHeroBanner": {
+        "_type": "list",
+        "_len": 1
+      },
+      "homeBanner": {
+        "_type": "dict",
+        "_keys": [
+          "tileLayouts"
+        ]
+      },
+      "homeShoppingAssistant": {
+        "_type": "list",
+        "_len": 3
+      },
+      "suppliesSearch": {
+        "_type": "dict",
+        "_keys": [
+          "btnLayout",
+          "hawkResults",
+          "icon",
+          "productGroups",
+          "promoBar",
+          "status",
+          "subtitle",
+          "subtitleMobile",
+          "title",
+          "titleMobile"
+        ]
+      },
+      "homePageSettings": {
+        "_type": "dict",
+        "_keys": [
+          "schemaMarkup"
+        ]
+      },
+      "globalValueProp": {
+        "_type": "NoneType"
+      },
+      "exitPopup": {
+        "_type": "NoneType"
+      }
+    },
+    "pdpCTOConfiguration": {
+      "present": false,
+      "raw_type": "missing"
+    },
+    "siblings": {},
+    "jsonld_products": [],
+    "json_islands": [
+      {
+        "size": 98,
+        "top_keys": "<list len=20>",
+        "tag_attrs": "nstancePrefix\":\"us-prod\"},\"disclaimer\":null,\"metrics\":{},\"suppliesSearch\":{\"searchResults\":null,\"loading\":false,\"latestSearch\":\"\"},\"caasHeaderEnabled\":true,\"caasErrors\":[]} -->\n        </div>\n        "
+      },
+      {
+        "size": 30,
+        "top_keys": [
+          "namedChunks"
+        ],
+        "tag_attrs": " id=\"__LOADABLE_REQUIRED_CHUNKS__\" type=\"application/json\">[5480,614,1832,4852,9079,8196,6435,172,4778,2035,1863,7807,1822,9023,3643,8241,3595,3531,2777,160]</script>"
+      }
+    ],
+    "static_surfaces": {
+      "table_count": 0,
+      "dl_count": 0,
+      "tr_count": 0,
+      "distinct_data_attrs": [],
+      "data_attr_total": 0,
+      "heading_hits": {
+        "Specifications": 0,
+        "Tech Specs": 0,
+        "Technical specifications": 0,
+        "Features": 0,
+        "What's in the box": 0,
+        "What's Included": 0,
+        "Overview": 0
+      },
+      "class_hints": {
+        "pdpTechSpecs": 1,
+        "detailed-specs": 0,
+        "tech-specs": 0,
+        "spec-card": 0,
+        "product-overview": 0,
+        "feature-card": 0,
+        "feature-grid": 0,
+        "key-features": 0
+      },
+      "li_strong_pair_count": 0,
+      "li_strong_sample": []
+    }
+  }
+]
