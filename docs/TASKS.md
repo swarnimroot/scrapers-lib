@@ -1,6 +1,6 @@
 # scrapers-lib — Tasks and Roadmap
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 (v1.6.0 HP STO PDP fallback + `HPProductNotFoundError` for delisted slugs) &nbsp;·&nbsp; **Library version:** 1.6.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-14 (v1.7.0 YouTube `audio_fallback` — local STT for POT-gated captions) &nbsp;·&nbsp; **Library version:** 1.7.0
 
 This is the operational roadmap. Library-intrinsic priorities lead — the downstream consumer projects (Demo 2, Demo 3, Pilot 1) are now built externally in their own repos and no longer drive the order in which library work happens. Wave history below records the past order accurately, including which consumer drove each Tier 2 / Tier 3 wave; future direction is library-intrinsic.
 
@@ -8,15 +8,15 @@ This is the operational roadmap. Library-intrinsic priorities lead — the downs
 
 ## Current state
 
-**Last updated:** 2026-05-13 (v1.6.0 shipped: HP `parse_hp_product_page` now dispatches on PDP shape — CTO unchanged, STO (`…nr`) gains fallback, delisted slugs raise `HPProductNotFoundError`)
+**Last updated:** 2026-05-14 (v1.7.0 shipped: `fetch_youtube_transcript` gained opt-in `audio_fallback` — POT-gated or caption-absent videos route to local yt-dlp + faster-whisper speech-to-text)
 
-- **Latest tag:** **v1.6.0** (2026-05-13) — Wave 2i. `parse_hp_product_page` gained a three-way dispatcher keyed off `slugInfo.templateKey` + presence of CTO/STO data: (a) CTO customizer URLs (slugs `…av-1`) — unchanged behavior (~23-26 specs per tile via config-picker + async). (b) STO SKU-final URLs (slugs `…nr`) — new path emitting one snapshot per URL with `source_id=productInitial.sku`, specs from the same async `pdpTechSpecs` endpoint (28+ categories), prices/rating/image/title from `productInitial` + `productInitialPrice` + `pdpImages` (filtering `.mp4`/`.webm`/`.mov`). (c) Delisted slugs (`templateKey="home"`, HP silently redirects to shop homepage) — raises new typed `HPProductNotFoundError(RuntimeError)`. Triggered by an external consumer hitting `AttributeError` on `…nr` URLs (the v1.5 chain `.get("pdpCTOConfiguration", {})` did not fire its default because STO sets the value to `None`, not missing). Public API additive — CTO callers unchanged; STO callers go from crash to working snapshot; consumers can `except HPProductNotFoundError` to skip dead slugs cleanly. No new dependencies. Prior tags: v1.5.0 (Wave 2h: Dell `include_options` + `ComponentOption`, 2026-05-13), v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added, 2026-05-12), v1.3.1 (Wave 2g: `warmed_curl_session()` graduated into `tier2/base`, 2026-05-07), v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
-- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper graduated, v1.3.1)** → **v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added)** → **Wave 2h (Dell configurator option menu, v1.5.0)** → **Wave 2i (HP PDP shape dispatcher: STO fallback + delisted-slug typed error, v1.6.0)**.
-- **In progress:** none — v1.6.0 shipped 2026-05-13.
-- **Next direction:** **Library is at a stable resting state at v1.6.0.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives.
-- **Test state:** **see CHANGELOG `[1.6.0]` for the post-release baseline** (1147 passed, 22 skipped — +33 new unit tests; no new gated-live integration tests).
-- **New dep:** none. `curl_cffi>=0.7` (used by MSI) already shipped in Wave 2c.
-- **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`.
+- **Latest tag:** **v1.7.0** (2026-05-14) — Tier 1 re-open (not part of the Tier 2 "2x" wave series; same standalone-version convention as v1.4.0). `fetch_youtube_transcript` gained two optional kwargs (`audio_fallback: bool = False`, `audio_model: str = "small.en"`). YouTube extended Proof-of-Origin Token gating to the caption (timedtext) endpoint through 2025-2026, so ~50% of caption requests from residential IPs now fail with `BlockedError`. With `audio_fallback=True`, a `BlockedError` or an empty caption result (`[]`, captions disabled) routes to a local speech-to-text path — yt-dlp downloads audio-only, faster-whisper transcribes on CPU (`small.en`, int8); a real caption hit short-circuits it. Same chunked `RawMention` output + `&t=<s>s` deep-links — downstream consumers need no changes. New optional `[youtube-audio]` extra (`yt-dlp>=2024.10`, `faster-whisper>=1.0`; lazy-imported, NOT in the core install). Public API additive — default behavior byte-for-byte identical to v1.6.0; v1.0 surface stays frozen. Prior tag: v1.6.0 (Wave 2i: HP PDP shape dispatcher — STO fallback + `HPProductNotFoundError`, 2026-05-13). Before that: `parse_hp_product_page` gained a three-way dispatcher keyed off `slugInfo.templateKey` + presence of CTO/STO data: (a) CTO customizer URLs (slugs `…av-1`) — unchanged behavior (~23-26 specs per tile via config-picker + async). (b) STO SKU-final URLs (slugs `…nr`) — new path emitting one snapshot per URL with `source_id=productInitial.sku`, specs from the same async `pdpTechSpecs` endpoint (28+ categories), prices/rating/image/title from `productInitial` + `productInitialPrice` + `pdpImages` (filtering `.mp4`/`.webm`/`.mov`). (c) Delisted slugs (`templateKey="home"`, HP silently redirects to shop homepage) — raises new typed `HPProductNotFoundError(RuntimeError)`. Triggered by an external consumer hitting `AttributeError` on `…nr` URLs (the v1.5 chain `.get("pdpCTOConfiguration", {})` did not fire its default because STO sets the value to `None`, not missing). Public API additive — CTO callers unchanged; STO callers go from crash to working snapshot; consumers can `except HPProductNotFoundError` to skip dead slugs cleanly. No new dependencies. Prior tags: v1.5.0 (Wave 2h: Dell `include_options` + `ComponentOption`, 2026-05-13), v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added, 2026-05-12), v1.3.1 (Wave 2g: `warmed_curl_session()` graduated into `tier2/base`, 2026-05-07), v1.3.0 (Wave 2f: Acer + MSI greenfield, 2026-05-07), v1.2.1 (2026-05-07, `emit_all_comments` kwarg patch), v1.2.0 (Wave 2e: HP coverage fix + ASUS www, 2026-05-07), v1.1.0 (Wave 2d: BestBuy reviews pagination, 2026-04-22), v1.0.0 (public API freeze, 2026-04-22).
+- **Wave history (all shipped):** Wave 0 (scaffold) → Wave 1 (core, v0.1.0) → Wave 2a (Dell, v0.2.0) → Wave 2b (HP/Lenovo/ASUS, v0.3.0) → Wave 2c (BestBuy + Amazon, v0.4.0) → Wave 3 (RSS/article/Reddit/YouTube, v0.5.0) → **Wave 4 (v1.0 readiness, v1.0.0)** → Wave 2d (BestBuy reviews pagination, v1.1.0) → Wave 2e (HP coverage fix + ASUS www, v1.2.0) → **Wave 2f (Acer + MSI greenfield, v1.3.0)** → **Wave 2g (warmed_curl_session helper graduated, v1.3.1)** → **v1.4.0 (article fetcher upgraded; `curl_session` module graduated; notebookcheck added)** → **Wave 2h (Dell configurator option menu, v1.5.0)** → **Wave 2i (HP PDP shape dispatcher: STO fallback + delisted-slug typed error, v1.6.0)** → **v1.7.0 (YouTube `audio_fallback`: local STT for POT-gated captions)**.
+- **In progress:** none — v1.7.0 shipped 2026-05-14.
+- **Next direction:** **Library is at a stable resting state at v1.7.0.** No further library work planned — consumer projects (Demo 2 / Demo 3 / Pilot 1) are built externally and the library is sufficient for them. Library-intrinsic candidates (plugin / extension API; PyPI publication; Tier 1/3 source catalog: Walmart affiliate API, YouTube Data API channel monitoring, Newegg / Target / Costco, forums) remain available but deferred until concrete demand arrives.
+- **Test state:** **see CHANGELOG `[1.7.0]` for the post-release baseline** (1169 passed, 22 skipped — +22 new unit tests in `tests/tier1/test_youtube_audio.py`; no new gated-live integration tests).
+- **New dep:** none in the core install. `yt-dlp>=2024.10` + `faster-whisper>=1.0` ship only as the optional `[youtube-audio]` extra (lazy-imported; consumers that don't enable the fallback pay nothing at install/import).
+- **Dev env:** `.venv/` with all library deps (pydantic, httpx, curl_cffi, beautifulsoup4, playwright, playwright-stealth, feedparser, trafilatura, youtube-transcript-api, diskcache, python-dotenv, py_mini_racer). Chromium installed via `playwright install chromium`. `yt-dlp` + `faster-whisper` are an OPTIONAL `[youtube-audio]` extra — not in the base .venv deps list; install with `pip install -e ".[youtube-audio]"` to exercise the audio fallback.
 - **Open questions:** none blocking library work.
 
 ### How to resume in a new session
@@ -294,6 +294,51 @@ refactor — public API unchanged on top of the frozen v1.0 surface.
   pattern types — new "Reusable primitive" subsection).
 - [x] CHANGELOG `[1.3.1]` entry; `_version.py` bumped 1.3.0 → 1.3.1;
   tag `v1.3.1`.
+
+## v1.7.0 — YouTube audio fallback (Tier 1 re-open) *(shipped 2026-05-14)*
+
+**Closed 2026-05-14 at v1.7.0.** The external gaming-chatter consumer
+hit a ~50% caption-block rate: YouTube extended Proof-of-Origin Token
+enforcement to the caption (timedtext) endpoint through 2025-2026, so
+roughly half of caption requests from residential IPs now fail with
+`BlockedError` (`PoTokenRequired` / `IpBlocked` / `RequestBlocked`).
+Swapping caption libraries does not help — yt-dlp's caption path hits
+the same gated endpoint. v1.7.0 adds an opt-in local speech-to-text
+fallback. Additive on the frozen v1.0 public API.
+
+- [x] **Two new optional kwargs** on `fetch_youtube_transcript`:
+  `audio_fallback: bool = False` and `audio_model: str = "small.en"`.
+  Default behavior byte-for-byte identical to v1.6.0; v1.0 surface
+  stays frozen.
+- [x] **New `_youtube_audio` module.** With `audio_fallback=True`, two
+  conditions route to the audio path: (a) the caption fetch raises
+  `BlockedError`, (b) it returns `[]` (uploader disabled captions / no
+  track in requested languages). A real caption hit short-circuits the
+  audio path. yt-dlp downloads audio-only; faster-whisper transcribes
+  locally on CPU (`small.en` default, int8). Output is the same chunked
+  `RawMention` list with the same `&t=<s>s` deep-links — downstream
+  consumers need no changes. Video-unavailable markers
+  (private/deleted/age-gated/region-locked/members-only/upcoming-livestream)
+  return `[]` like the captions path; other yt-dlp failures raise
+  `BlockedError`.
+- [x] **New optional `[youtube-audio]` extra** = `yt-dlp>=2024.10`,
+  `faster-whisper>=1.0`. Lazy-imported, NOT in the core install; opt in
+  with `pip install -e ".[youtube-audio]"`. First audio call lazily
+  caches ~150 MB of small.en weights via the HuggingFace hub.
+  Consumers that don't enable the fallback pay nothing at
+  install/import.
+- [x] **+22 new unit tests** in `tests/tier1/test_youtube_audio.py`.
+  Unit suite: **1169 passed, 22 skipped** (was 1147 / 22 at v1.6.0).
+  No new gated-live integration tests.
+- [x] **No new dependencies in the core install** — yt-dlp +
+  faster-whisper ship only as the optional extra.
+- [x] Docs updated: `README.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md`
+  (§11 YouTube row, §14 tag list), `docs/CONSUMER_GUIDE.md` (install +
+  §9 YouTube row + empty-list reasons), `docs/SOURCE_ATLAS.md` (source
+  table + §5.4 YouTube entry), `docs/TASKS.md` (Current state + this
+  closed-wave entry), `CHANGELOG.md` (`[1.7.0]` entry).
+- [x] CHANGELOG `[1.7.0]` entry; `_version.py` bumped 1.6.0 → 1.7.0;
+  tag `v1.7.0` (commit `39330a7`).
 
 ## Wave 2i — HP PDP shape dispatcher *(shipped v1.6.0, 2026-05-13)*
 

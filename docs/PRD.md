@@ -1,6 +1,6 @@
 # scrapers-lib — Product Requirements Document
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Library version:** 1.6.0
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-14 &nbsp;·&nbsp; **Library version:** 1.7.0
 
 ---
 
@@ -31,7 +31,7 @@ The library is designed so none of these use cases leak into its code. New consu
 **v1.0.0 shipped on 2026-04-22 with the following guarantees, all met:**
 
 - Three schemas (Anchor, ProductSnapshot, RawMention) stable and documented; backward-compatible changes only within the 1.x line.
-- Working fetchers across all three tiers: six Tier 1 (rss, article, reddit, reddit_comments, youtube, bestbuy_api), six Tier 2 (dell, hp, lenovo, asus, acer, msi), three Tier 3 (amazon, amazon_reviews, bestbuy_reviews). API-based, feed-based, and scraping-based sources all represented. (Tier 2 expanded post-v1.0 in Waves 2e + 2f, and the shared `warmed_curl_session()` helper graduated in Wave 2g, all without changing existing signatures.)
+- Working fetchers across all three tiers: six Tier 1 (rss, article, reddit, reddit_comments, youtube, bestbuy_api), six Tier 2 (dell, hp, lenovo, asus, acer, msi), three Tier 3 (amazon, amazon_reviews, bestbuy_reviews). API-based, feed-based, and scraping-based sources all represented. (Tier 2 expanded post-v1.0 in Waves 2e + 2f, and the shared `warmed_curl_session()` helper graduated in Wave 2g, and the YouTube `audio_fallback` opt-in was added in v1.7.0, all without changing existing signatures.)
 - A queue-based Scheduler that can run unattended for days on a single laptop without losing state.
 - Reasonable success rates per source, documented honestly in ARCHITECTURE.md §11 (coverage, fields populated, and known limitations called out per source — no marketing claims about reliability).
 - Consumers pin a library version and depend on its public API behavior within the 1.x line.

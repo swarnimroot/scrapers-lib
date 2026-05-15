@@ -1,6 +1,6 @@
 # Source Atlas — how each source is scraped
 
-**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Library version:** 1.6.0
+**Status:** active &nbsp;·&nbsp; **Last updated:** 2026-05-14 &nbsp;·&nbsp; **Library version:** 1.7.0
 
 > A 2-minute map of every source the library can read — or drill into one row for the full story. For dense field-by-field shape, see [`ARCHITECTURE.md §11`](ARCHITECTURE.md#11-per-source-coverage) and [`CONSUMER_GUIDE.md §9`](CONSUMER_GUIDE.md#9-data-shape-quick-reference).
 
@@ -27,7 +27,7 @@ Sources are grouped by **how likely they are to break**, not by subject matter.
 | `rss` | RSS feed parser | feedparser |
 | `article` | Main-content extractor over a Chrome-impersonated session | trafilatura + curl_cffi |
 | `reddit`, `reddit_comments` | Plain JSON endpoint | httpx |
-| `youtube` | Caption-track API | youtube-transcript-api |
+| `youtube` | Caption-track API (optional yt-dlp + faster-whisper audio fallback) | youtube-transcript-api |
 | `bestbuy_api` | Official product API | httpx + API key |
 | `dell` | Stealth browser → internal API | Playwright + playwright-stealth |
 | `hp` | Chrome-impersonated fetch + warmed session → parse embedded JSON + async GraphQL | curl_cffi |
@@ -80,6 +80,8 @@ These sources publish their data. We ask politely and they hand it over.
 - **Returns:** `RawMention` per **60-second chunk** of speech — `raw_text`, `raw.chunk_start_seconds`, and a deep-linked `source_url` (`?t=NNs`) that jumps to the chunk's start moment.
 - **Example:** `https://www.youtube.com/watch?v=dQw4w9WgXcQ` → N chunks, each jumpable.
 - **Gap:** no title/channel/date — those need Google's Data API, which requires credentials we don't have.
+- **POT gating (2025-2026):** YouTube extended Proof-of-Origin Token enforcement to the caption (timedtext) endpoint, so ~50% of caption requests from residential IPs now fail with `BlockedError` (swapping caption libraries doesn't help — yt-dlp's caption path hits the same gated endpoint).
+- **Audio fallback (v1.7.0, opt-in):** pass `audio_fallback=True`. When the caption fetch raises `BlockedError` or returns `[]` (uploader disabled captions), yt-dlp downloads audio-only and faster-whisper transcribes it locally on CPU (`small.en`, int8); a real caption hit short-circuits the audio path. Same chunked, deep-linked `RawMention` output — downstream consumers need no changes. Behind the optional `[youtube-audio]` extra (`pip install -e ".[youtube-audio]"`; lazy-imported, ~150 MB small.en weights cached on first call).
 
 ## 5.5 BestBuy Developer API (`bestbuy_api`) — dormant
 

@@ -1,6 +1,6 @@
 # scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Library version:** 1.6.0
+**Status:** stable &nbsp;·&nbsp; **Library version:** 1.7.0
 
 A reusable Python library for fetching, normalizing, and attributing data from multiple web sources — community posts, product pages, news articles, video transcripts — into consistent schemas that any Python project can consume.
 
@@ -28,6 +28,10 @@ Prerequisites: **Python 3.12** and, on Windows, git-bash or PowerShell.
 ```bash
 # From inside the scrapers-lib/ folder:
 pip install -e .
+
+# Optional: enable YouTube's local speech-to-text fallback (yt-dlp +
+# faster-whisper) for POT-gated / caption-disabled videos:
+pip install -e ".[youtube-audio]"
 
 # Install Playwright browsers (needed for Tier 2/3 sources):
 playwright install chromium

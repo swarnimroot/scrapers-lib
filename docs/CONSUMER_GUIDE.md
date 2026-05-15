@@ -1,6 +1,6 @@
 # Consumer Guide — building projects on scrapers-lib
 
-**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-13 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.6.0+
+**Status:** stable &nbsp;·&nbsp; **Last updated:** 2026-05-14 &nbsp;·&nbsp; **Targets:** scrapers-lib v1.7.0+
 
 This guide is for people building a *consumer project* that uses
 `scrapers-lib` as a data-fetching library. The library returns typed
@@ -72,6 +72,7 @@ From inside the consumer project directory:
 python -m venv .venv
 .venv\Scripts\activate  # Windows; use `source .venv/bin/activate` on Unix
 pip install -e ../scrapers-lib
+pip install -e "../scrapers-lib[youtube-audio]"  # optional: YouTube local STT fallback (yt-dlp + faster-whisper) for POT-gated / caption-disabled videos
 playwright install chromium    # only needed if you use Tier 2/3 sources
 ```
 
@@ -577,7 +578,7 @@ This is **not** an error — it's partial success. Several fetchers
 return `[]` when they legitimately found no content:
 
 - `article` — paywall, body too short, 404 page.
-- `youtube` — video has no captions.
+- `youtube` — video has no captions. (Passing `audio_fallback=True`, with the `[youtube-audio]` extra installed, recovers a transcript for such videos via local speech-to-text instead of returning `[]`.)
 - `rss` — feed was fetched but had no new entries matching anchors.
 
 Your sink's `len(results) == 0` branch should be a no-op, not an alert.
@@ -642,7 +643,7 @@ see [`ARCHITECTURE.md`](ARCHITECTURE.md) §11.
 | `article` | `list[RawMention]` | Full body via trafilatura. Fetched through `warmed_curl_session()` (Chrome impersonation + HTTP/1.1) since v1.4.0, so Cloudflare-fronted reviewer sites (notebookcheck and similar) now work. `source` = your `source_slug`. Returns `[]` on paywall / short body. |
 | `reddit` | `list[RawMention]` | `source_type="post"`. `channel="r/<sub>"`. `raw.score`, `raw.num_comments` present. |
 | `reddit_comments` | `list[RawMention]` | Post first + comment tree. `source_type="post"` or `"comment"`. `parent_id=t3_<post_id>`. |
-| `youtube` | `list[RawMention]` | `source_type="transcript_chunk"`. `source_url` deep-linked with `&t=<s>s`. No `author` / `channel` / `published_at` (would need YouTube Data API). |
+| `youtube` | `list[RawMention]` | `source_type="transcript_chunk"`. `source_url` deep-linked with `&t=<s>s`. No `author` / `channel` / `published_at` (would need YouTube Data API). `audio_fallback: bool = False` / `audio_model: str = "small.en"` kwargs enable the local-STT fallback (yt-dlp + faster-whisper) for POT-gated / caption-disabled videos; needs the `[youtube-audio]` extra. |
 | `bestbuy_api` | `list[ProductSnapshot]` | Developer API fetcher. Requires `BESTBUY_API_KEY`. Indefinitely dormant without credential. |
 
 ### Tier 2 — manufacturer spec pages (all return `list[ProductSnapshot]`)
