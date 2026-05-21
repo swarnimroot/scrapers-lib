@@ -310,10 +310,21 @@ section, .section { margin-bottom: var(--gap-section); }
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 40px 56px;
-  align-items: start;
+  align-items: center;
 }
 
-.hero-text { display: flex; flex-direction: column; gap: 16px; max-width: 60ch; }
+.hero-text { display: flex; flex-direction: column; gap: 22px; max-width: 60ch; }
+
+.hero-block { display: flex; flex-direction: column; gap: 6px; }
+
+.hero-block-label {
+  font-family: var(--serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
 
 .hero-text p {
   font-family: var(--serif);
@@ -321,8 +332,6 @@ section, .section { margin-bottom: var(--gap-section); }
   line-height: 1.6;
   color: var(--ink);
 }
-
-.hero-text p + p { color: var(--ink-soft); }
 
 .hero-stats { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--ink); }
 
@@ -1222,7 +1231,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
 <header class="masthead">
   <div class="masthead-id">
     <h1>scrapers-lib</h1>
-    <p class="hook">A Python library that scrapes and collects data from multiple public sites to pull relevant data and make it available for synthesis. Built in <span class="u-stat">2 weeks</span>!</p>
+    <p class="hook">A Python library that gathers product intelligence from across the consumer-tech web. Built in <span class="u-stat">2 weeks</span>!</p>
   </div>
   <div class="masthead-credit">
     <span class="by">By Swarnim Bagre</span>
@@ -1237,8 +1246,18 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   <div class="hero-grid">
 
     <div class="hero-text">
-      <p>Scrapers-lib gathers product information and reader sentiment from across the consumer-tech web: manufacturer pages, retailer listings, news outlets, video reviews, and online forums. It produces two record types: point-in-time product snapshots, and verbatim mentions of named products.</p>
-      <p>Downstream projects consume these records as their data layer. The library itself takes no opinion on what to do with them. Its job is to deliver consistent, well-shaped data, nothing more.</p>
+      <div class="hero-block">
+        <span class="hero-block-label">Problem</span>
+        <p>Product intelligence lives scattered across the consumer-tech web &mdash; manufacturer pages, retailers, news, video, forums &mdash; each with a different shape and scraping quirks of its own.</p>
+      </div>
+      <div class="hero-block">
+        <span class="hero-block-label">What it does</span>
+        <p>Scrapers-lib gathers from all five and emits two record types: point-in-time product snapshots, and verbatim mentions of named products.</p>
+      </div>
+      <div class="hero-block">
+        <span class="hero-block-label">Why this way</span>
+        <p>A library, not a service. Free-tier throughout, with fetchers grouped into tiers by how each source exposes data.</p>
+      </div>
     </div>
 
     <div class="hero-stats">
