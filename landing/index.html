@@ -112,6 +112,30 @@ a { color: inherit; }
   outline-offset: 2px;
 }
 
+/* Floating variant: bottom-right, revealed after ~1 viewport of scroll */
+.back-top-float {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  background: var(--bg);
+  border-color: var(--rule);
+  box-shadow: 0 2px 10px rgba(24, 24, 22, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0.22s,
+              color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.back-top-float.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s,
+              color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
 /* ============ TOP NAV ==================================== */
 
 .topnav {
@@ -681,64 +705,38 @@ section, .section { margin-bottom: var(--gap-section); }
   line-height: 1.45;
 }
 
-/* ============ CHALLENGES (grouped table) ================ */
+/* ============ CHALLENGES (accordion) ==================== */
 
-.ch-table {
-  width: 100%;
-  border-collapse: collapse;
+.ch-list {
   margin-top: 4px;
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
-  table-layout: fixed;
 }
 
-.ch-table colgroup col:nth-child(1) { width: 160px; }
-.ch-table colgroup col:nth-child(2) { width: 28%; }
-.ch-table colgroup col:nth-child(3) { width: auto; }
-.ch-table colgroup col:nth-child(4) { width: auto; }
-
-.ch-table thead th {
-  font-family: var(--serif);
-  font-size: 0.6875rem;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.16em;
-  color: var(--ink-faint);
-  font-weight: 700;
-  text-align: left;
-  padding: 10px 20px;
+.ch-item {
   border-bottom: 1px solid var(--rule);
-  vertical-align: bottom;
+}
+.ch-item:last-child { border-bottom: none; }
+
+/* All items share the default ink color; BLOCKED stands out in dark rust */
+.ch-item[data-status="design"],
+.ch-item[data-status="solved"],
+.ch-item[data-status="working"] { --row-color: #181816; --row-h3: #181816; }
+.ch-item[data-status="blocked"] { --row-color: #5e1f0a; --row-h3: #421405; }
+
+.ch-item > summary {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  align-items: baseline;
+  column-gap: 20px;
+  cursor: pointer;
+  padding: 18px 0;
+  list-style: none;
+  user-select: none;
 }
 
-.ch-table thead th:first-child { padding-left: 0; }
-.ch-table thead th:last-child { padding-right: 0; }
-
-.ch-table tbody td {
-  font-family: var(--serif);
-  font-size: 0.875rem;
-  color: var(--row-color, var(--ink-soft));
-  padding: 18px 20px;
-  vertical-align: top;
-  line-height: 1.5;
-  border-bottom: 1px solid var(--rule-soft);
-}
-
-/* All rows share the default ink color; BLOCKED stands out in dark rust */
-tr[data-status="design"],
-tr[data-status="solved"],
-tr[data-status="working"] { --row-color: #181816; --row-h3: #181816; }
-tr[data-status="blocked"] { --row-color: #5e1f0a; --row-h3: #421405; }
-
-.ch-table tbody td:last-child { padding-right: 0; }
-
-.ch-table tbody td.ch-status-cell {
-  padding-left: 0;
-  padding-right: 20px;
-  border-bottom: 1px solid var(--rule);
-  border-right: 1px solid var(--rule-soft);
-}
-
-.ch-table tbody tr.ch-group-end td:not(.ch-status-cell) { border-bottom: 1px solid var(--rule); }
+.ch-item > summary::-webkit-details-marker { display: none; }
+.ch-item > summary::marker { display: none; }
 
 .ch-status {
   font-family: var(--serif);
@@ -765,19 +763,19 @@ tr[data-status="blocked"] { --row-color: #5e1f0a; --row-h3: #421405; }
 }
 
 /* BY DESIGN: darkest, solid square */
-tr[data-status="design"]  .ch-status::before { background: var(--row-color); }
+.ch-item[data-status="design"]  .ch-status::before { background: var(--row-color); }
 
 /* SOLVED: still strong, solid square */
-tr[data-status="solved"]  .ch-status::before { background: var(--row-color); }
+.ch-item[data-status="solved"]  .ch-status::before { background: var(--row-color); }
 
 /* WORKING AROUND: medium, solid square */
-tr[data-status="working"] .ch-status::before { background: var(--row-color); }
+.ch-item[data-status="working"] .ch-status::before { background: var(--row-color); }
 
 /* BLOCKED: lightest, italicized, hollow square */
-tr[data-status="blocked"] .ch-status { font-style: italic; }
-tr[data-status="blocked"] .ch-status::before { background: none; border: 1px solid var(--row-color); }
+.ch-item[data-status="blocked"] .ch-status { font-style: italic; }
+.ch-item[data-status="blocked"] .ch-status::before { background: none; border: 1px solid var(--row-color); }
 
-.ch-table h3 {
+.ch-item summary h3 {
   font-family: var(--serif);
   font-size: 0.9375rem;
   font-weight: 700;
@@ -786,127 +784,87 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
   line-height: 1.35;
 }
 
-@media (max-width: 720px) {
-  .ch-table, .ch-table colgroup, .ch-table col,
-  .ch-table thead, .ch-table tbody, .ch-table tr, .ch-table td, .ch-table th {
-    display: block;
-    width: 100%;
-  }
-  .ch-table { border: none; }
-  .ch-table thead { display: none; }
-
-  .ch-table tbody tr {
-    border-bottom: 1px solid var(--rule);
-    padding: 18px 0;
-  }
-  .ch-table tbody tr:first-child { border-top: 1px solid var(--ink); }
-
-  .ch-table tbody td {
-    border: none;
-    padding: 4px 0;
-  }
-  .ch-table tbody td.ch-status-cell {
-    border: none;
-    padding: 0 0 8px 0;
-    width: auto;
-  }
-
-  .ch-table tbody td:not(.ch-status-cell)::before {
-    content: attr(data-label);
-    display: block;
-    font-family: var(--serif);
-    font-size: 0.6875rem;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.14em;
-    color: var(--ink-faint);
-    font-weight: 700;
-    margin-top: 8px;
-    margin-bottom: 2px;
-  }
-
-  /* Mobile: each row needs its own status visible.
-     For continuation rows in a SOLVED group (no rowspan'd cell on mobile),
-     fall back to data-status-label injected via attr(). */
-  .ch-table tbody tr.ch-continuation::before {
-    content: attr(data-status-label);
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    font-family: var(--serif);
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.16em;
-    font-weight: 700;
-    font-size: 0.75rem;
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-}
-
-/* ============ OUTPUT (JSON specimens) ==================== */
-
-.spec { margin: 0 0 28px 0; }
-.spec:last-child { margin-bottom: 0; }
-
-.spec figcaption {
+.ch-toggle {
   font-family: var(--serif);
-  font-size: 0.875rem;
-  color: var(--ink-soft);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: baseline;
-  gap: 6px 12px;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 8px;
+  font-size: 1.125rem;
+  font-weight: 400;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  align-self: center;
+  transition: transform 0.32s cubic-bezier(0.32,0.72,0.34,1.04),
+              background 0.18s ease,
+              color 0.18s ease;
+  line-height: 1;
 }
 
-.spec-label {
-  font-family: var(--mono);
-  font-size: 0.875rem;
-  color: var(--accent);
-  font-weight: 700;
+.ch-item:hover .ch-toggle { background: var(--accent-soft); }
+
+.ch-item[open] .ch-toggle {
+  transform: rotate(135deg);
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
 }
 
-.spec-desc { color: var(--ink-soft); }
+.ch-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.36s cubic-bezier(0.32,0.72,0.34,1.04);
+}
 
-.spec-meta {
-  margin-left: auto;
+.ch-item[open] .ch-reveal { grid-template-rows: 1fr; }
+
+.ch-reveal-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.ch-reveal-pad {
+  padding: 0 0 22px 180px;
+  display: grid;
+  gap: 16px;
+}
+
+.ch-field { display: flex; flex-direction: column; gap: 4px; }
+
+.ch-field-label {
   font-family: var(--serif);
   font-size: 0.6875rem;
-  color: var(--ink-faint);
   font-variant-caps: all-small-caps;
-  letter-spacing: 0.12em;
-}
-
-.spec-meta b {
-  font-family: var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
   font-weight: 700;
-  color: var(--ink-soft);
-  font-variant-caps: normal;
-  letter-spacing: 0;
-  font-size: 0.95em;
 }
 
-.spec pre {
-  background: var(--bg-alt);
-  padding: 18px 22px;
-  font-family: var(--mono);
-  font-size: 0.78125rem;
-  line-height: 1.6;
-  overflow-x: auto;
-  border-left: 2px solid var(--ink);
+.ch-field p {
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  color: var(--row-color, var(--ink-soft));
   margin: 0;
-  color: var(--ink);
-  -moz-tab-size: 2;
-  tab-size: 2;
+  line-height: 1.5;
 }
 
-.spec pre code { font-family: inherit; color: inherit; background: none; }
-.spec pre .k  { color: var(--accent); }
-.spec pre .s  { color: var(--ink); }
-.spec pre .b  { color: var(--accent); font-style: italic; }
-.spec pre .nu { color: var(--ink-faint); font-style: italic; }
-.spec pre .p  { color: var(--rule); }
+@media (max-width: 720px) {
+  .ch-item > summary {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "status toggle"
+      "title  title";
+    column-gap: 16px;
+    row-gap: 8px;
+  }
+  .ch-item > summary .ch-status { grid-area: status; }
+  .ch-item > summary h3 { grid-area: title; }
+  .ch-item > summary .ch-toggle { grid-area: toggle; }
+
+  .ch-reveal-pad { padding-left: 0; }
+}
 
 /* ============ COLOPHON =================================== */
 
@@ -1198,7 +1156,7 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
 /* ============ PRINT ====================================== */
 
 @media print {
-  .topnav, .src-icon, .stat-toggle { display: none; }
+  .topnav, .src-icon, .stat-toggle, .back-top-float { display: none; }
   body { background: white; color: black; }
   .stat-reveal { grid-template-rows: 1fr !important; }
   section { break-inside: avoid; }
@@ -1217,7 +1175,6 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
       <li><a href="#overview">Overview</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#challenges">Challenges</a></li>
-      <li><a href="#output">Output</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
   </div>
@@ -1310,7 +1267,6 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
     </div>
 
   </div>
-  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
 </section>
 
 <!-- ========================================================
@@ -1403,7 +1359,6 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
 
   </div>
 
-  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
 </section>
 
 <!-- ========================================================
@@ -1415,141 +1370,124 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
     <span class="sec-meta">solved or worked around &middot; with what would unlock a proper fix</span>
   </header>
 
-  <table class="ch-table">
-    <colgroup>
-      <col>
-      <col>
-      <col>
-      <col>
-    </colgroup>
-    <thead>
-      <tr>
-        <th scope="col">Status</th>
-        <th scope="col">Challenge</th>
-        <th scope="col">How I handled it</th>
-        <th scope="col">What would unlock a proper fix</th>
-      </tr>
-    </thead>
-    <tbody>
+  <div class="ch-list">
 
-      <!-- BY DESIGN at the top -->
-      <tr data-status="design" data-status-label="By design" class="ch-group-end">
-        <td class="ch-status-cell"><span class="ch-status">By design</span></td>
-        <td data-label="Challenge"><h3>Built without paid infrastructure (a scaling ceiling)</h3></td>
-        <td data-label="How handled">Free-tier infrastructure throughout: no paid proxies, no managed scraping, no premium APIs. Careful pacing keeps within free quotas.</td>
-        <td data-label="Proper fix">A budget unlocks proxy pools, commercial scraping, and premium data APIs for higher volume.</td>
-      </tr>
+    <!-- BY DESIGN at the top -->
+    <details class="ch-item" data-status="design" data-status-label="By design">
+      <summary>
+        <span class="ch-status">By design</span>
+        <h3>Built without paid infrastructure (a scaling ceiling)</h3>
+        <span class="ch-toggle" aria-hidden="true">+</span>
+      </summary>
+      <div class="ch-reveal">
+        <div class="ch-reveal-inner">
+          <div class="ch-reveal-pad">
+            <div class="ch-field">
+              <span class="ch-field-label">How I handled it</span>
+              <p>Free-tier infrastructure throughout: no paid proxies, no managed scraping, no premium APIs. Careful pacing keeps within free quotas.</p>
+            </div>
+            <div class="ch-field">
+              <span class="ch-field-label">What would unlock a proper fix</span>
+              <p>A budget unlocks proxy pools, commercial scraping, and premium data APIs for higher volume.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
 
-      <!-- SOLVED group: 2 rows under one status cell (rowspan) -->
-      <tr data-status="solved" data-status-label="Solved">
-        <td class="ch-status-cell" rowspan="2"><span class="ch-status">Solved</span></td>
-        <td data-label="Challenge"><h3>Retailer pages actively block scrapers</h3></td>
-        <td data-label="How handled">A slow, browser-mimicking approach reliably collects reviews from Amazon and Best Buy.</td>
-        <td data-label="Proper fix">Official merchant APIs (e.g.&nbsp;Amazon Selling Partner API) replace scraping with sanctioned, stable feeds.</td>
-      </tr>
-      <tr data-status="solved" data-status-label="Solved" class="ch-continuation ch-group-end">
-        <td data-label="Challenge"><h3>Manufacturer sites use different, shifting back-ends</h3></td>
-        <td data-label="How handled">Six tailored fetchers (one per brand) plus a shared session helper for common patterns. Every site rebuild requires re-research.</td>
-        <td data-label="Proper fix">Direct partner data feeds from each manufacturer would replace per-site scraping with stable, structured access.</td>
-      </tr>
+    <!-- SOLVED: retailer pages -->
+    <details class="ch-item" data-status="solved" data-status-label="Solved">
+      <summary>
+        <span class="ch-status">Solved</span>
+        <h3>Retailer pages actively block scrapers</h3>
+        <span class="ch-toggle" aria-hidden="true">+</span>
+      </summary>
+      <div class="ch-reveal">
+        <div class="ch-reveal-inner">
+          <div class="ch-reveal-pad">
+            <div class="ch-field">
+              <span class="ch-field-label">How I handled it</span>
+              <p>A slow, browser-mimicking approach reliably collects reviews from Amazon and Best Buy.</p>
+            </div>
+            <div class="ch-field">
+              <span class="ch-field-label">What would unlock a proper fix</span>
+              <p>Official merchant APIs (e.g.&nbsp;Amazon Selling Partner API) replace scraping with sanctioned, stable feeds.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
 
-      <!-- WORKING AROUND -->
-      <tr data-status="working" data-status-label="Working around" class="ch-group-end">
-        <td class="ch-status-cell"><span class="ch-status">Working around</span></td>
-        <td data-label="Challenge"><h3>Reddit closed self-service API access in late 2025</h3></td>
-        <td data-label="How handled">Switched to public JSON and RSS endpoints, the same data anyone can read without logging in. Caps at 100 posts per request; the library paginates from there.</td>
-        <td data-label="Proper fix">An approved Reddit API key would unlock authenticated quotas, private communities, and richer metadata.</td>
-      </tr>
+    <!-- SOLVED: manufacturer back-ends -->
+    <details class="ch-item" data-status="solved" data-status-label="Solved">
+      <summary>
+        <span class="ch-status">Solved</span>
+        <h3>Manufacturer sites use different, shifting back-ends</h3>
+        <span class="ch-toggle" aria-hidden="true">+</span>
+      </summary>
+      <div class="ch-reveal">
+        <div class="ch-reveal-inner">
+          <div class="ch-reveal-pad">
+            <div class="ch-field">
+              <span class="ch-field-label">How I handled it</span>
+              <p>Six tailored fetchers (one per brand) plus a shared session helper for common patterns. Every site rebuild requires re-research.</p>
+            </div>
+            <div class="ch-field">
+              <span class="ch-field-label">What would unlock a proper fix</span>
+              <p>Direct partner data feeds from each manufacturer would replace per-site scraping with stable, structured access.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
 
-      <!-- BLOCKED -->
-      <tr data-status="blocked" data-status-label="Blocked" class="ch-group-end">
-        <td class="ch-status-cell"><span class="ch-status">Blocked</span></td>
-        <td data-label="Challenge"><h3>Best Buy product &amp; price data sits behind closed developer keys</h3></td>
-        <td data-label="How handled">Built the official-API connector anyway, so it&rsquo;s ready to activate; for now Best Buy product data stays dormant.</td>
-        <td data-label="Proper fix">A Best Buy Developer API credential turns it on immediately.</td>
-      </tr>
+    <!-- WORKING AROUND -->
+    <details class="ch-item" data-status="working" data-status-label="Working around">
+      <summary>
+        <span class="ch-status">Working around</span>
+        <h3>Reddit closed self-service API access in late 2025</h3>
+        <span class="ch-toggle" aria-hidden="true">+</span>
+      </summary>
+      <div class="ch-reveal">
+        <div class="ch-reveal-inner">
+          <div class="ch-reveal-pad">
+            <div class="ch-field">
+              <span class="ch-field-label">How I handled it</span>
+              <p>Switched to public JSON and RSS endpoints, the same data anyone can read without logging in. Caps at 100 posts per request; the library paginates from there.</p>
+            </div>
+            <div class="ch-field">
+              <span class="ch-field-label">What would unlock a proper fix</span>
+              <p>An approved Reddit API key would unlock authenticated quotas, private communities, and richer metadata.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
 
-    </tbody>
-  </table>
+    <!-- BLOCKED -->
+    <details class="ch-item" data-status="blocked" data-status-label="Blocked">
+      <summary>
+        <span class="ch-status">Blocked</span>
+        <h3>Best Buy product &amp; price data sits behind closed developer keys</h3>
+        <span class="ch-toggle" aria-hidden="true">+</span>
+      </summary>
+      <div class="ch-reveal">
+        <div class="ch-reveal-inner">
+          <div class="ch-reveal-pad">
+            <div class="ch-field">
+              <span class="ch-field-label">How I handled it</span>
+              <p>Built the official-API connector anyway, so it&rsquo;s ready to activate; for now Best Buy product data stays dormant.</p>
+            </div>
+            <div class="ch-field">
+              <span class="ch-field-label">What would unlock a proper fix</span>
+              <p>A Best Buy Developer API credential turns it on immediately.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
 
-  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
-</section>
-
-<!-- ========================================================
-     OUTPUT (JSON specimens)
-     ======================================================== -->
-<section class="specimens" id="output">
-  <header class="sec-mark">
-    <span class="sec-title">Output Shape</span>
-    <span class="sec-meta">two record types &middot; verbatim from <code>scrapers_lib/core/schemas.py</code></span>
-  </header>
-
-  <figure class="spec">
-    <figcaption>
-      <span class="spec-label">ProductSnapshot</span>
-      <span class="spec-desc">: a point-in-time observation of a product as listed on a specific source.</span>
-      <span class="spec-meta"><b>21</b>&nbsp;fields</span>
-    </figcaption>
-<pre><code>{
-  <span class="k">"source"</span>:            <span class="s">"dell"</span>,
-  <span class="k">"source_id"</span>:         <span class="s">"xps-15-9530-i7-rtx4070-oled"</span>,
-  <span class="k">"variant_key"</span>:       <span class="s">"16gb-512gb"</span>,
-  <span class="k">"anchor_id"</span>:         <span class="s">"dell:xps-15-9530"</span>,
-  <span class="k">"url"</span>:               <span class="s">"https://www.dell.com/en-us/shop/laptops/xps-15/spd/xps-15-9530-laptop"</span>,
-  <span class="k">"title"</span>:             <span class="s">"XPS 15 Laptop"</span>,
-  <span class="k">"brand"</span>:             <span class="s">"Dell"</span>,
-  <span class="k">"model"</span>:             <span class="s">"XPS 15 9530"</span>,
-  <span class="k">"category"</span>:          <span class="s">"laptop"</span>,
-  <span class="k">"config_summary"</span>:    <span class="s">"Intel Core i7-13700H &middot; 16GB DDR5 &middot; 512GB NVMe &middot; 15.6\" OLED 3.5K &middot; RTX 4070"</span>,
-  <span class="k">"price"</span>:             <span class="s">"1899.99"</span>,
-  <span class="k">"list_price"</span>:        <span class="s">"2099.99"</span>,
-  <span class="k">"currency"</span>:          <span class="s">"USD"</span>,
-  <span class="k">"in_stock"</span>:          <span class="b">true</span>,
-  <span class="k">"availability_text"</span>: <span class="s">"Ships in 3-5 business days"</span>,
-  <span class="k">"rating"</span>:            <span class="nu">4.3</span>,
-  <span class="k">"review_count"</span>:      <span class="nu">287</span>,
-  <span class="k">"image_url"</span>:         <span class="s">"https://i.dell.com/is/image/DellContent/xps-15-9530.png"</span>,
-  <span class="k">"specs"</span>: {
-    <span class="k">"cpu"</span>:     <span class="s">"Intel Core i7-13700H"</span>,
-    <span class="k">"ram"</span>:     <span class="s">"16 GB DDR5"</span>,
-    <span class="k">"storage"</span>: <span class="s">"512 GB NVMe SSD"</span>,
-    <span class="k">"display"</span>: <span class="s">"15.6\" OLED 3.5K (3456&times;2160)"</span>,
-    <span class="k">"gpu"</span>:     <span class="s">"NVIDIA RTX 4070 8 GB"</span>
-  },
-  <span class="k">"raw"</span>:               <span class="b">null</span>,
-  <span class="k">"fetched_at"</span>:        <span class="s">"2026-05-07T14:23:11Z"</span>
-}</code></pre>
-  </figure>
-
-  <figure class="spec">
-    <figcaption>
-      <span class="spec-label">RawMention</span>
-      <span class="spec-desc">: verbatim text from a source, optionally attributed to a tracked product.</span>
-      <span class="spec-meta"><b>14</b>&nbsp;fields</span>
-    </figcaption>
-<pre><code>{
-  <span class="k">"mention_id"</span>:    <span class="s">"reddit:t3_1ce8x9p"</span>,
-  <span class="k">"source"</span>:        <span class="s">"reddit"</span>,
-  <span class="k">"source_type"</span>:   <span class="s">"FORUM"</span>,
-  <span class="k">"source_url"</span>:    <span class="s">"https://www.reddit.com/r/laptops/comments/1ce8x9p/two_months_with_the_xps_15_oled/"</span>,
-  <span class="k">"source_title"</span>:  <span class="s">"Two months with the XPS 15 OLED: honest take"</span>,
-  <span class="k">"author"</span>:        <span class="s">"throwaway_keyboard92"</span>,
-  <span class="k">"author_id"</span>:     <span class="s">"t2_xkj4nm"</span>,
-  <span class="k">"channel"</span>:       <span class="s">"r/laptops"</span>,
-  <span class="k">"parent_id"</span>:     <span class="b">null</span>,
-  <span class="k">"published_at"</span>:  <span class="s">"2026-05-02T19:48:00Z"</span>,
-  <span class="k">"fetched_at"</span>:    <span class="s">"2026-05-07T14:23:11Z"</span>,
-  <span class="k">"raw_text"</span>:      <span class="s">"Just hit the 60-day mark with the XPS 15 9530 (i7, RTX 4070, OLED). Build quality is excellent, but the fan curve is aggressive under sustained load. Battery on the OLED panel is rough. Five hours tops in mixed use. Worth it for the screen if you can plug in often."</span>,
-  <span class="k">"attribution"</span>: {
-    <span class="k">"anchor_id"</span>:  <span class="s">"dell:xps-15-9530"</span>,
-    <span class="k">"match_type"</span>: <span class="s">"title"</span>,
-    <span class="k">"confidence"</span>: <span class="nu">0.94</span>
-  },
-  <span class="k">"raw"</span>:           <span class="b">null</span>
-}</code></pre>
-  </figure>
-
-  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
+  </div>
 </section>
 
 <!-- ========================================================
@@ -1582,10 +1520,14 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
     </div>
 
   </div>
-  <div class="sec-foot"><a class="back-top" href="#">Top</a></div>
 </footer>
 
 </main>
+
+<!-- ========================================================
+     FLOATING BACK-TO-TOP
+     ======================================================== -->
+<a class="back-top back-top-float" href="#" id="back-top-float" aria-label="Back to top">Top</a>
 
 <!-- ========================================================
      CONTACT MODAL
@@ -1697,6 +1639,27 @@ tr[data-status="blocked"] .ch-status::before { background: none; border: 1px sol
       if (btn) btn.addEventListener('click', function () { dialog.close(); });
     }, 200);
   });
+
+  // Floating back-to-top: reveal after ~1 viewport of scroll
+  var topBtn = document.getElementById('back-top-float');
+  if (topBtn) {
+    var ticking = false;
+    var toggleTopBtn = function () {
+      if (window.pageYOffset > window.innerHeight) {
+        topBtn.classList.add('is-visible');
+      } else {
+        topBtn.classList.remove('is-visible');
+      }
+      ticking = false;
+    };
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(toggleTopBtn);
+        ticking = true;
+      }
+    }, { passive: true });
+    toggleTopBtn();
+  }
 })();
 </script>
 </body>
