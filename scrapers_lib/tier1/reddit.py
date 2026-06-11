@@ -3,10 +3,24 @@
 **Historical note:** Reddit's Nov-2025 "Responsible Builder Policy"
 closed self-service PRAW OAuth registration for individual researchers.
 The formal application path is also closed for our use case (see
-``project_reddit_api_blocked`` memory). This module therefore uses
-Reddit's **unauthenticated** JSON endpoints (``reddit.com/r/<sub>/new.json``,
-``reddit.com/r/<sub>/comments/<id>.json``) which remain available at
-~60 req/min with a descriptive ``User-Agent``.
+``project_reddit_api_blocked`` memory). Reddit now 403-blocks the **unauthenticated JSON** endpoints
+(``reddit.com/r/<sub>/new.json``, ``reddit.com/r/<sub>/comments/<id>.json``)
+for our IP regardless of User-Agent or TLS fingerprint (curl_cffi Chrome
+impersonation was tried and also 403s). Those JSON fetchers
+(``@register("reddit")`` / ``"reddit_comments"``) are retained for a future
+OAuth swap but are NOT the live path.
+
+The **live** path uses Reddit's public ``.rss`` Atom feeds
+(``@register("reddit_rss")`` / ``"reddit_comments_rss"``), which Reddit still
+serves to a plain browser User-Agent over httpx (notably curl_cffi is itself
+gated on ``.rss`` — plain httpx wins). Listing feeds yield posts; per-post
+feeds yield the post plus its top comments — both parsed into the same
+structured :class:`RawMention` shapes the JSON path produces (same
+``reddit_post_id`` / ``reddit_comment_id`` scheme and ``parent_id`` threading)
+so the corpus dedups and comment-inheritance is unchanged. RSS limits vs JSON:
+recent listing items only (no ``/top?t=year`` historical depth) and ~top-N
+comments per post (no full tree). Callers should pace requests (the consuming
+Scheduler throttles ``www.reddit.com``).
 
 Public function signatures are PRAW-compatible so an OAuth-backed
 implementation can swap in behind the same contract if the policy
@@ -36,7 +50,10 @@ missing depth.
 
 from __future__ import annotations
 
+import html
 import logging
+import re
+import time
 from datetime import datetime, timezone
 from typing import Any, Iterable
 from urllib.parse import urlparse
@@ -50,7 +67,7 @@ from scrapers_lib.core.attribution import (
     reddit_post_id,
 )
 from scrapers_lib.core.registry import register
-from scrapers_lib.core.schemas import Anchor, Attribution, RawMention
+from scrapers_lib.core.schemas import Anchor, RawMention
 
 logger = logging.getLogger(__name__)
 
@@ -285,7 +302,16 @@ def _fetch_json(
     timeout: float,
     user_agent: str,
 ) -> Any:
-    """GET ``url`` with JSON expectations and a descriptive User-Agent."""
+    """GET ``url`` with JSON expectations and a descriptive User-Agent.
+
+    NOTE: Reddit now 403-blocks this unauthenticated JSON path for our IP
+    regardless of User-Agent or TLS fingerprint (curl_cffi impersonation was
+    tried and also 403s). The live collection path uses the ``.rss`` fetchers
+    below — :func:`fetch_reddit_listing_rss` / :func:`fetch_reddit_comments_rss`
+    — which Reddit still serves to a plain browser User-Agent. This JSON
+    fetcher is retained for the PRAW-compatible contract should authenticated
+    access reopen.
+    """
     r = httpx.get(
         url,
         params=params,
@@ -576,3 +602,331 @@ def _count_more_stubs(listing: Any) -> int:
         if isinstance(replies, dict):
             count += _count_more_stubs(replies)
     return count
+
+
+# ---------------------------------------------------------------------------
+# Public API — .rss (Atom) path (the live fetchers; JSON above is 403-blocked)
+# ---------------------------------------------------------------------------
+
+SOURCE_RSS = "reddit_rss"
+SOURCE_COMMENTS_RSS = "reddit_comments_rss"
+
+# Reddit serves the public ``.rss`` Atom feeds to a plain browser User-Agent
+# over httpx, while 403-ing the JSON API and even curl_cffi's TLS fingerprint.
+# A current desktop-Chrome UA string is the only header that matters here.
+_RSS_BROWSER_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+)
+
+# Politeness pause after each ``.rss`` fetch. The consuming Scheduler drains
+# jobs sequentially in ``until_empty`` mode (its RateLimiter is incompatible
+# with that mode — a rate-limited job reads as "no work left" and ends the
+# drain), so pacing must live here. A short per-request sleep keeps a large
+# comment-followup burst (hundreds of per-post feeds) under Reddit's anonymous
+# ceiling. Set to 0 in tests.
+_RSS_THROTTLE_SECONDS = 1.0
+
+
+@register(SOURCE_RSS)
+def fetch_reddit_listing_rss(
+    url: str,
+    anchors: list[Anchor] | None = None,
+    *,
+    timeout: float = 30.0,
+    user_agent: str = _RSS_BROWSER_USER_AGENT,
+    throttle_seconds: float = _RSS_THROTTLE_SECONDS,
+    **_: Any,
+) -> list[RawMention]:
+    """Fetch a subreddit's ``.rss`` listing feed; one post :class:`RawMention` per entry.
+
+    Accepts the same ``url`` forms as :func:`fetch_reddit_listing`. The Atom
+    feed returns recent posts only (no ``sort`` / ``time_filter`` — RSS has no
+    such controls), which suits the daily fresh-capture cadence. Emits the same
+    structured post mentions as the JSON path (``reddit_post_id`` scheme), so
+    rows dedup against any JSON-fetched corpus.
+
+    Raises :class:`httpx.HTTPStatusError` on non-2xx.
+    """
+    subreddit = _extract_subreddit_name(url)
+    feed_url = f"https://www.reddit.com/r/{subreddit}/.rss"
+    feed_text = _fetch_rss_text(
+        feed_url, timeout=timeout, user_agent=user_agent, throttle_seconds=throttle_seconds
+    )
+    return parse_reddit_rss_listing(feed_text, subreddit=subreddit, anchors=anchors)
+
+
+@register(SOURCE_COMMENTS_RSS)
+def fetch_reddit_comments_rss(
+    url: str,
+    anchors: list[Anchor] | None = None,
+    *,
+    timeout: float = 30.0,
+    user_agent: str = _RSS_BROWSER_USER_AGENT,
+    throttle_seconds: float = _RSS_THROTTLE_SECONDS,
+    emit_all_comments: bool = False,
+    **_: Any,
+) -> list[RawMention]:
+    """Fetch a post's ``.rss`` feed; emit the post + one :class:`RawMention` per comment.
+
+    Accepts the same ``url`` forms as :func:`fetch_reddit_comments`. The Atom
+    feed's first entry is the post (``t3_``); the rest are top-level comments
+    (``t1_``) — no nested reply tree or "more" expansion (RSS limit). Comments
+    carry ``parent_id = "t3_<post_id>"`` so downstream comment-inheritance links
+    them to their post exactly as the JSON path does.
+
+    ``emit_all_comments`` mirrors :func:`fetch_reddit_comments`: when ``True``
+    with ``anchors`` set, comments emit unattributed for downstream
+    parent-inheritance instead of per-comment regex matching.
+
+    Raises :class:`httpx.HTTPStatusError` on non-2xx.
+    """
+    subreddit, post_id = _extract_post_location(url)
+    feed_url = f"https://www.reddit.com/comments/{post_id}/.rss"
+    feed_text = _fetch_rss_text(
+        feed_url, timeout=timeout, user_agent=user_agent, throttle_seconds=throttle_seconds
+    )
+    return parse_reddit_rss_comments(
+        feed_text,
+        subreddit=subreddit,
+        post_fullname=f"t3_{post_id}",
+        anchors=anchors,
+        emit_all_comments=emit_all_comments,
+    )
+
+
+def parse_reddit_rss_listing(
+    feed_text: str,
+    *,
+    subreddit: str | None,
+    anchors: list[Anchor] | None = None,
+) -> list[RawMention]:
+    """Pure parse: subreddit ``.rss`` Atom text → list of post :class:`RawMention`."""
+    import feedparser  # noqa: I001  (lazy: keeps core import cheap)
+
+    feed = feedparser.parse(feed_text)
+    mentions: list[RawMention] = []
+    for entry in feed.entries:
+        mentions.extend(
+            _rss_post_to_mentions(entry, subreddit=subreddit, anchors=anchors)
+        )
+    return mentions
+
+
+def parse_reddit_rss_comments(
+    feed_text: str,
+    *,
+    subreddit: str | None,
+    post_fullname: str,
+    anchors: list[Anchor] | None = None,
+    emit_all_comments: bool = False,
+) -> list[RawMention]:
+    """Pure parse: post ``.rss`` Atom text → mentions for the post + its comments.
+
+    Entries are typed by Reddit fullname prefix: ``t3_`` = the post,
+    ``t1_`` = a comment. Deleted / removed bodies are skipped.
+    """
+    import feedparser  # noqa: I001  (lazy: keeps core import cheap)
+
+    feed = feedparser.parse(feed_text)
+    mentions: list[RawMention] = []
+    for entry in feed.entries:
+        raw_id = (entry.get("id") or "")
+        if raw_id.startswith("t3_"):
+            mentions.extend(
+                _rss_post_to_mentions(entry, subreddit=subreddit, anchors=anchors)
+            )
+        elif raw_id.startswith("t1_"):
+            mentions.extend(
+                _rss_comment_to_mentions(
+                    entry,
+                    subreddit=subreddit,
+                    post_fullname=post_fullname,
+                    anchors=anchors,
+                    emit_all_comments=emit_all_comments,
+                )
+            )
+    return mentions
+
+
+# ---------------------------------------------------------------------------
+# RSS I/O + flatteners (pure)
+# ---------------------------------------------------------------------------
+
+
+def _fetch_rss_text(
+    url: str,
+    *,
+    timeout: float,
+    user_agent: str,
+    throttle_seconds: float = _RSS_THROTTLE_SECONDS,
+) -> str:
+    """GET ``url`` as an Atom/RSS feed with a browser User-Agent.
+
+    Sleeps ``throttle_seconds`` after the request to pace the sequential
+    Scheduler drain (see :data:`_RSS_THROTTLE_SECONDS`). The sleep runs in a
+    ``finally`` so a non-2xx still paces the next attempt.
+    """
+    try:
+        r = httpx.get(
+            url,
+            headers={
+                "User-Agent": user_agent,
+                "Accept": (
+                    "application/atom+xml, application/rss+xml, text/xml;q=0.9, */*;q=0.8"
+                ),
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+            follow_redirects=True,
+            timeout=timeout,
+        )
+        r.raise_for_status()
+        return r.text
+    finally:
+        if throttle_seconds > 0:
+            time.sleep(throttle_seconds)
+
+
+def _strip_html_to_text(raw_html: str) -> str:
+    """Strip tags + unescape entities + collapse whitespace.
+
+    Reddit's Atom ``content`` is HTML (``<div class="md">…</div>``); the
+    attribution regex + downstream sentiment only need plain text.
+    """
+    if not raw_html:
+        return ""
+    no_tags = re.sub(r"<[^>]+>", " ", raw_html)
+    return " ".join(html.unescape(no_tags).split())
+
+
+def _rss_entry_datetime(entry: Any) -> datetime | None:
+    """feedparser ``published_parsed`` / ``updated_parsed`` struct_time → UTC datetime."""
+    parsed = entry.get("published_parsed") or entry.get("updated_parsed")
+    if not parsed:
+        return None
+    try:
+        return datetime(
+            parsed[0],
+            parsed[1],
+            parsed[2],
+            parsed[3],
+            parsed[4],
+            parsed[5],
+            tzinfo=timezone.utc,
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def _rss_author(entry: Any) -> str | None:
+    """Reddit Atom author (``/u/name``) → bare username, with deleted → None."""
+    a = entry.get("author")
+    if not a:
+        return None
+    s = str(a).strip()
+    low = s.lower()
+    if low.startswith("/u/"):
+        s = s[3:]
+    elif low.startswith("u/"):
+        s = s[2:]
+    return _cleaned_author(s)
+
+
+def _rss_content_html(entry: Any) -> str:
+    """Best-effort body HTML from a feedparser entry (``content`` then ``summary``)."""
+    content = entry.get("content")
+    if content:
+        try:
+            return content[0].get("value") or ""
+        except (AttributeError, IndexError, TypeError):
+            pass
+    return entry.get("summary") or ""
+
+
+def _post_id_from_link(link: str | None) -> str:
+    """Extract the base-36 post id from a ``…/comments/<id>/…`` permalink."""
+    if not link:
+        return ""
+    m = re.search(r"/comments/([A-Za-z0-9]+)", link)
+    return m.group(1) if m else ""
+
+
+def _rss_post_to_mentions(
+    entry: Any,
+    *,
+    subreddit: str | None,
+    anchors: list[Anchor] | None,
+) -> list[RawMention]:
+    raw_id = entry.get("id") or ""
+    post_id = raw_id[3:] if raw_id.startswith("t3_") else _post_id_from_link(
+        entry.get("link")
+    )
+    if not post_id:
+        return []
+
+    title = (entry.get("title") or "").strip()
+    body = _strip_html_to_text(_rss_content_html(entry))
+    if body in _DELETED_BODY_TOKENS:
+        body = ""
+    text = "\n".join(p for p in (title, body) if p)
+    if not text:
+        return []
+
+    source_url = entry.get("link") or (
+        f"https://www.reddit.com/r/{subreddit}/comments/{post_id}"
+    )
+    base: dict[str, Any] = {
+        "source": SOURCE,
+        "source_type": "post",
+        "source_url": source_url,
+        "source_title": title or None,
+        "author": _rss_author(entry),
+        "channel": f"r/{subreddit}" if subreddit else None,
+        "parent_id": None,
+        "published_at": _rss_entry_datetime(entry),
+        "raw_text": text,
+        "raw": {"post_id": post_id, "via": "rss"},
+    }
+    return list(_fan_out(base, reddit_post_id(post_id), text, anchors))
+
+
+def _rss_comment_to_mentions(
+    entry: Any,
+    *,
+    subreddit: str | None,
+    post_fullname: str,
+    anchors: list[Anchor] | None,
+    emit_all_comments: bool = False,
+) -> list[RawMention]:
+    raw_id = entry.get("id") or ""
+    if not raw_id.startswith("t1_"):
+        return []
+    comment_id = raw_id[3:]
+    if not comment_id:
+        return []
+
+    body = _strip_html_to_text(_rss_content_html(entry))
+    if not body or body in _DELETED_BODY_TOKENS:
+        return []
+
+    source_url = entry.get("link") or (
+        f"https://www.reddit.com/r/{subreddit}/comments//{comment_id}"
+    )
+    base: dict[str, Any] = {
+        "source": SOURCE,
+        "source_type": "comment",
+        "source_url": source_url,
+        "source_title": None,
+        "author": _rss_author(entry),
+        "channel": f"r/{subreddit}" if subreddit else None,
+        # parent_id = the post fullname so consumers group comments under
+        # their post (matches the JSON path's link_id).
+        "parent_id": post_fullname,
+        "published_at": _rss_entry_datetime(entry),
+        "raw_text": body,
+        "raw": {"comment_id": comment_id, "link_id": post_fullname, "via": "rss"},
+    }
+    base_mention_id = reddit_comment_id(comment_id)
+    if emit_all_comments and anchors is not None:
+        return [RawMention(mention_id=base_mention_id, attribution=None, **base)]
+    return list(_fan_out(base, base_mention_id, body, anchors))
