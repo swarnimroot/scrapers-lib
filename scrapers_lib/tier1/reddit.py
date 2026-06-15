@@ -67,6 +67,7 @@ from scrapers_lib.core.attribution import (
     reddit_post_id,
 )
 from scrapers_lib.core.registry import register
+from scrapers_lib.core.scheduler import BlockedError
 from scrapers_lib.core.schemas import Anchor, RawMention
 
 logger = logging.getLogger(__name__)
@@ -766,6 +767,13 @@ def _fetch_rss_text(
     Sleeps ``throttle_seconds`` after the request to pace the sequential
     Scheduler drain (see :data:`_RSS_THROTTLE_SECONDS`). The sleep runs in a
     ``finally`` so a non-2xx still paces the next attempt.
+
+    A ``429 Too Many Requests`` is raised as :class:`BlockedError` so the
+    Scheduler backs the whole reddit domain off immediately rather than
+    hammering through three per-job retries first. Scoped to 429 only: a
+    ``403`` (e.g. a restricted subreddit) stays an ordinary
+    :class:`httpx.HTTPStatusError` so one restricted sub can't park all of
+    reddit.com.
     """
     try:
         r = httpx.get(
@@ -780,6 +788,8 @@ def _fetch_rss_text(
             follow_redirects=True,
             timeout=timeout,
         )
+        if r.status_code == 429:
+            raise BlockedError(f"reddit: 429 Too Many Requests for {url}")
         r.raise_for_status()
         return r.text
     finally:
