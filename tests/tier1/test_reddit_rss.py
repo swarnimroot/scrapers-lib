@@ -15,8 +15,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+import httpx
+import pytest
+
 from scrapers_lib.core.schemas import Anchor, AttributionRegex
 from scrapers_lib.tier1.reddit import (
+    _fetch_rss_text,
     _rss_author,
     _strip_html_to_text,
     parse_reddit_rss_comments,
@@ -173,3 +177,25 @@ def test_rss_author_strips_prefix_and_handles_deleted() -> None:
     assert _rss_author({"author": "u/someone"}) == "someone"
     assert _rss_author({"author": "[deleted]"}) is None
     assert _rss_author({}) is None
+
+
+def test_fetch_rss_429_raises_http_status_error_not_blocked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A 429 must surface as an ordinary HTTPStatusError, never BlockedError.
+
+    A BlockedError triggers the Scheduler's multi-hour domain block, which
+    strands every other reddit job in the run as unrunnable ``pending`` work
+    (pulse-check SESSION_LOG bug #1). A plain HTTPStatusError is retried and
+    only backs the domain off via the standard consecutive-failure path.
+    """
+    url = "https://www.reddit.com/r/GamingLaptops/.rss"
+
+    def _fake_get(_url: str, **_kwargs: object) -> httpx.Response:
+        return httpx.Response(429, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", _fake_get)
+    monkeypatch.setattr("scrapers_lib.tier1.reddit.time.sleep", lambda _s: None)
+
+    with pytest.raises(httpx.HTTPStatusError):
+        _fetch_rss_text(url, timeout=1.0, user_agent="ua", throttle_seconds=0.0)
